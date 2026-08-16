@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+/*
+  Dallas Detailz design tokens — PRD §7.2
+  Dark base, photo-forward. Electric blue reserved for action.
+*/
+@theme {
+  --color-base: #0a0a0c; /* page background */
+  --color-surface: #141619; /* cards, panels */
+  --color-surface-alt: #1e2127; /* elevated / hover */
+  --color-border: #2a2e35;
+
+  --color-accent: #1e6fe8; /* electric blue — CTA, links, active states */
+  --color-accent-hi: #4a8fff; /* hover */
+
+  --color-ink: #ffffff;
+  --color-muted: #9ba1a9;
+
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+
+  --font-display: "Archivo", "Barlow Condensed", sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-base);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Big touch targets — PRD §7.3.4 minimum 48px */
+.tap {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
