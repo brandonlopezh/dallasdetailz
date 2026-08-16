@@ -12,7 +12,8 @@ Booking & operations platform for a DFW mobile detailing crew. Next.js + Supabas
 - ✅ DB-level double-booking prevention (Postgres `tstzrange` exclusion constraint) — PRD BK-10
 - ✅ Admin auth (Supabase magic-link, email allowlist) + `/admin` shell — PRD AD-1
 - ✅ Image manager: upload/manage hero, gallery, and before/after photos that render on the homepage (Supabase Storage)
-- ⬜ Google Calendar sync, SMS/email (Twilio/Resend), bookings/schedule admin, Instagram — next
+- ✅ Operator admin: Today view (AD-2), Schedule (AD-3), Requests queue (AD-4), booking detail with status/reschedule/notes (AD-5/6), manual booking creation (AD-7)
+- ⬜ Google Calendar sync, SMS/email (Twilio/Resend), customer records + reporting, audit trail, Instagram — next
 
 ## Stack
 

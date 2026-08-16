@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAdminUser } from "@/lib/auth";
+import { countRequests } from "@/lib/admin-bookings";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import SignOutButton from "@/components/admin/SignOutButton";
 
 const NAV = [
-  { href: "/admin", label: "Dashboard" },
+  { href: "/admin", label: "Today" },
+  { href: "/admin/schedule", label: "Schedule" },
+  { href: "/admin/requests", label: "Requests", badge: true },
   { href: "/admin/media", label: "Images" },
 ];
 
@@ -34,11 +37,13 @@ export default async function DashLayout({
   const user = await getAdminUser();
   if (!user) redirect("/admin/login");
 
+  const requests = await countRequests();
+
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-40 border-b border-border bg-base/85 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
-          <nav className="flex items-center gap-5">
+        <div className="mx-auto flex h-14 max-w-4xl items-center justify-between gap-3 px-4">
+          <nav className="flex items-center gap-4 overflow-x-auto">
             <span className="font-[family-name:var(--font-display)] font-extrabold uppercase">
               Admin
             </span>
@@ -46,9 +51,14 @@ export default async function DashLayout({
               <Link
                 key={n.href}
                 href={n.href}
-                className="text-sm text-muted hover:text-ink"
+                className="relative shrink-0 text-sm text-muted hover:text-ink"
               >
                 {n.label}
+                {n.badge && requests > 0 && (
+                  <span className="ml-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-warning px-1 text-[10px] font-bold text-black">
+                    {requests}
+                  </span>
+                )}
               </Link>
             ))}
           </nav>
