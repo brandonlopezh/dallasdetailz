@@ -2,12 +2,13 @@ import Image from "next/image";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import MobileBookBar from "@/components/MobileBookBar";
-import BeforeAfterSlider from "@/components/BeforeAfterSlider";
+// TEMPORARILY HIDDEN: BeforeAfterSlider powers "The difference" section below.
+// import BeforeAfterSlider from "@/components/BeforeAfterSlider";
 import Faq from "@/components/Faq";
 import { getServices } from "@/lib/catalog";
 import {
-  FALLBACK_GLOSS,
-  getBeforeAfterPairs,
+  // TEMPORARILY HIDDEN: feeds "The difference" + "Recent work" sections below.
+  // getBeforeAfterPairs,
   getGalleryBackgrounds,
   getHeroBackground,
 } from "@/lib/media";
@@ -21,14 +22,20 @@ function money(n: number) {
 export default async function Home() {
   // Images are operator-managed (admin → Images). These getters return real
   // uploads when present, else night-heavy gradient stand-ins (PRD §7.1).
-  const [services, heroBg, gallery, beforeAfter] = await Promise.all([
+  // TEMPORARILY HIDDEN: gallery(6) + getBeforeAfterPairs(3) come back when the
+  // "Recent work" and "The difference" sections below are un-commented.
+  const [services, heroBg, [storyBg]] = await Promise.all([
     getServices(),
     getHeroBackground(),
-    getGalleryBackgrounds(6),
-    getBeforeAfterPairs(3),
+    getGalleryBackgrounds(1),
   ]);
   const priceFrom = (s: (typeof services)[number]) =>
     Math.min(...s.pricing.map((p) => p.price));
+
+  // Media getters fall back to CSS gradients when nothing is uploaded. A real
+  // upload comes back as `url(...)`, which is how we know to show the photo.
+  const hasStoryPhoto = storyBg?.startsWith("url(") ?? false;
+  const hasHeroPhoto = heroBg.startsWith("url(");
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -57,40 +64,141 @@ export default async function Home() {
 
       <main className="flex-1 pb-24 md:pb-0">
         {/* HERO ------------------------------------------------------------ */}
-        <section className="relative overflow-hidden">
-          <div className="absolute inset-0" style={{ background: heroBg }} />
-          <div className="absolute inset-0 bg-gradient-to-b from-base/30 via-base/40 to-base" />
-          <div className="relative mx-auto flex min-h-[82vh] max-w-6xl flex-col justify-center px-4 py-24 sm:px-6">
-            <p className="animate-fade-up mb-4 font-semibold uppercase tracking-[0.2em] text-accent-hi">
-              Mobile detailing · DFW
-            </p>
-            <h1 className="animate-fade-up max-w-3xl font-[family-name:var(--font-display)] text-5xl font-extrabold uppercase leading-[0.95] tracking-tight sm:text-7xl">
-              We come to you.
-              <br />
-              <span className="text-accent-hi">DFW mobile detailing.</span>
-            </h1>
-            <p className="animate-fade-up mt-5 max-w-xl text-lg text-muted">
-              Duncanville · Dallas · DFW. Trucks, SUVs, and everything in
-              between — detailed in your driveway. Book in under 90 seconds.
-            </p>
-            <div className="animate-fade-up mt-8 flex flex-wrap gap-3">
-              <Link
-                href="/book"
-                className="tap inline-flex items-center rounded-[var(--radius-md)] bg-accent px-7 text-lg font-bold text-white transition-colors hover:bg-accent-hi"
-              >
-                Book Now
-              </Link>
-              <a
-                href="#services"
-                className="tap inline-flex items-center rounded-[var(--radius-md)] border border-border bg-surface/60 px-7 text-lg font-semibold text-ink backdrop-blur transition-colors hover:border-accent"
-              >
-                See Pricing
-              </a>
+        <section className="relative isolate overflow-hidden">
+          {/* Background art. An operator-uploaded hero photo (admin → Images)
+              wins; otherwise the shop illustration carries it. */}
+          {hasHeroPhoto ? (
+            <div className="absolute inset-0 -z-10" style={{ background: heroBg }} />
+          ) : (
+            <Image
+              src="/brothers.jpg"
+              alt=""
+              aria-hidden="true"
+              fill
+              priority
+              sizes="100vw"
+              className="-z-10 object-cover object-center"
+            />
+          )}
+
+          {/* Legibility wash: darkens the bottom for the copy, and fades the
+              right side less so the artwork still reads on wide screens. */}
+          <div className="absolute inset-0 -z-10 bg-gradient-to-t from-base via-base/85 to-base/45" />
+          <div className="absolute inset-0 -z-10 bg-gradient-to-r from-base/95 via-base/60 to-transparent" />
+
+          <div className="relative mx-auto flex min-h-[520px] max-w-6xl flex-col justify-end px-4 pb-16 pt-28 sm:min-h-[560px] sm:px-6 lg:min-h-[620px] lg:pb-20">
+            <div className="max-w-2xl">
+              <p className="animate-fade-up mb-5 flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.22em] text-accent-hi">
+                <span className="h-px w-8 bg-accent-hi/60" />
+                Mobile detailing · DFW
+              </p>
+              <h1 className="animate-fade-up font-[family-name:var(--font-display)] text-[2.6rem] font-extrabold uppercase leading-[0.95] tracking-[-0.02em] sm:text-6xl">
+                Nobody puts in
+                <br />
+                the work like us{" "}
+                <span role="img" aria-label="flexed biceps">
+                  💪
+                </span>
+              </h1>
+              <p className="animate-fade-up mt-6 max-w-lg text-lg leading-relaxed text-muted">
+                Two brothers, a truckload of gear, and your driveway. Exterior,
+                interior, and full details across Duncanville, Dallas, and the
+                greater DFW metro.
+              </p>
+              <div className="animate-fade-up mt-9 flex flex-wrap gap-3">
+                <Link
+                  href="/book"
+                  className="tap inline-flex items-center rounded-[var(--radius-md)] bg-accent px-8 text-lg font-bold text-white transition-colors hover:bg-accent-hi"
+                >
+                  Book Now
+                </Link>
+                <a
+                  href="#services"
+                  className="tap inline-flex items-center rounded-[var(--radius-md)] border border-border bg-surface/60 px-8 text-lg font-semibold text-ink backdrop-blur transition-colors hover:border-accent"
+                >
+                  See Pricing
+                </a>
+              </div>
+              <p className="animate-fade-up mt-6 text-sm text-muted">
+                Booking takes about 90 seconds — no deposit, no account.
+              </p>
             </div>
           </div>
         </section>
 
-        {/* PROOF STRIP ----------------------------------------------------- */}
+        {/* OUR STORY ------------------------------------------------------- */}
+        <section
+          id="story"
+          className="scroll-mt-20 border-y border-border bg-band-3"
+        >
+          <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+            <p className="mb-4 flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.22em] text-accent-hi">
+              <span className="h-px w-8 bg-accent-hi/60" />
+              Our story
+            </p>
+            <h2 className="max-w-4xl font-[family-name:var(--font-display)] text-4xl font-extrabold uppercase leading-[0.95] tracking-tight sm:text-5xl">
+              Two brothers, one bucket at a time.
+            </h2>
+
+            <div className="mt-4 rule" />
+
+            {/* Body runs the full width of the section, split into columns so
+                the measure stays readable instead of one 1100px line. */}
+            <div className="mt-8 grid gap-x-12 gap-y-5 text-lg leading-relaxed text-muted md:grid-cols-2">
+              <p>
+                We&apos;re fraternal twins, still in high school, and we started
+                Dallas Detailz for a simple reason: we&apos;d rather put our
+                hours into something that builds us up than into whatever
+                trouble finds kids our age.
+              </p>
+              <p>
+                So we picked up buckets instead. Weekends, evenings after class,
+                summers — we work every job together, one on the exterior and
+                one on the interior, until the truck looks like it just rolled
+                off the lot.
+              </p>
+            </div>
+
+            <p className="mt-8 max-w-4xl text-xl font-medium leading-relaxed text-ink">
+              When you book us, you&apos;re not hiring a franchise. You&apos;re
+              backing two brothers who show up on time, work hard, and treat
+              your vehicle like it&apos;s the only one on the schedule.
+            </p>
+
+            <div className="mt-10 flex flex-wrap items-center gap-8 gap-y-6">
+              <ul className="flex flex-wrap gap-2">
+                {[
+                  "Family-run",
+                  "Locally raised in Duncanville",
+                  "Every job done together",
+                ].map((tag) => (
+                  <li
+                    key={tag}
+                    className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium"
+                  >
+                    {tag}
+                  </li>
+                ))}
+              </ul>
+
+              {/* Operator-managed: upload a photo of the brothers in admin →
+                  Images and it appears here alongside the tags. */}
+              {hasStoryPhoto && (
+                <div
+                  className="h-28 w-40 shrink-0 rounded-[var(--radius-md)] border border-border"
+                  style={{ background: storyBg }}
+                  role="img"
+                  aria-label="The Dallas Detailz brothers at work"
+                />
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* TEMPORARILY HIDDEN — "The difference" before/after proof strip.
+            To restore: un-comment this block, re-add the BeforeAfterSlider
+            import and the getBeforeAfterPairs(3) fetch at the top of this file.
+
         <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
           <div className="mb-8 flex items-end justify-between">
             <h2 className="font-[family-name:var(--font-display)] text-3xl font-extrabold uppercase tracking-tight">
@@ -104,9 +212,10 @@ export default async function Home() {
             ))}
           </div>
         </section>
+        */}
 
         {/* SERVICES -------------------------------------------------------- */}
-        <section id="services" className="scroll-mt-20 border-y border-border bg-surface/40">
+        <section id="services" className="scroll-mt-20 border-b border-border bg-band-2">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
             <h2 className="font-[family-name:var(--font-display)] text-3xl font-extrabold uppercase tracking-tight">
               Pick your service
@@ -149,7 +258,7 @@ export default async function Home() {
         </section>
 
         {/* HOW IT WORKS ---------------------------------------------------- */}
-        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+        <section className="bg-band-1"><div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
           <h2 className="font-[family-name:var(--font-display)] text-3xl font-extrabold uppercase tracking-tight">
             How it works
           </h2>
@@ -168,9 +277,13 @@ export default async function Home() {
               </div>
             ))}
           </div>
-        </section>
+        </div></section>
 
-        {/* GALLERY --------------------------------------------------------- */}
+        {/* TEMPORARILY HIDDEN — "Recent work" gallery.
+            To restore: un-comment this block and change the media fetch at the
+            top of this file back to getGalleryBackgrounds(6) destructured as
+            `gallery`. Also re-add the Gallery link to NAV in SiteHeader.tsx.
+
         <section id="gallery" className="scroll-mt-20 border-y border-border bg-surface/40">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
             <div className="mb-8 flex items-end justify-between">
@@ -197,10 +310,11 @@ export default async function Home() {
             </div>
           </div>
         </section>
+        */}
 
         {/* SERVICE AREA ---------------------------------------------------- */}
-        <section id="area" className="scroll-mt-20 mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <div className="grid gap-8 md:grid-cols-2 md:items-center">
+        <section id="area" className="scroll-mt-20 border-y border-border bg-band-3">
+          <div className="mx-auto grid max-w-6xl gap-8 px-4 py-16 sm:px-6 md:grid-cols-2 md:items-center">
             <div>
               <h2 className="font-[family-name:var(--font-display)] text-3xl font-extrabold uppercase tracking-tight">
                 Where we roll
@@ -221,16 +335,21 @@ export default async function Home() {
                 ))}
               </ul>
             </div>
-            <div
-              className="aspect-video rounded-[var(--radius-lg)] border border-border"
-              style={{ background: FALLBACK_GLOSS }}
-              aria-label="Service area map"
-            />
+            <div className="mx-auto w-full max-w-[260px] overflow-hidden rounded-[var(--radius-lg)] border border-border shadow-2xl shadow-black/50 sm:max-w-[300px]">
+              <Image
+                src="/service-area-map.jpg"
+                alt="Illustrated map of the Dallas Detailz service area centered on northwest Duncanville, showing I-20, US-67, Mountain Creek Lake, and nearby parks"
+                width={669}
+                height={1200}
+                sizes="300px"
+                className="h-full w-full object-cover"
+              />
+            </div>
           </div>
         </section>
 
         {/* FAQ ------------------------------------------------------------- */}
-        <section className="border-t border-border bg-surface/40">
+        <section className="bg-band-2">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
             <h2 className="mb-8 text-center font-[family-name:var(--font-display)] text-3xl font-extrabold uppercase tracking-tight">
               Questions
@@ -240,19 +359,21 @@ export default async function Home() {
         </section>
 
         {/* FINAL CTA ------------------------------------------------------- */}
-        <section className="mx-auto max-w-6xl px-4 py-20 text-center sm:px-6">
-          <h2 className="font-[family-name:var(--font-display)] text-4xl font-extrabold uppercase tracking-tight sm:text-5xl">
-            Ready for that new-car feeling?
-          </h2>
-          <p className="mx-auto mt-4 max-w-lg text-muted">
-            Book online in under 90 seconds. No account, no phone tag.
-          </p>
-          <Link
-            href="/book"
-            className="tap mt-8 inline-flex items-center rounded-[var(--radius-md)] bg-accent px-8 text-lg font-bold text-white transition-colors hover:bg-accent-hi"
-          >
-            Book Now
-          </Link>
+        <section className="border-t border-border bg-band-4">
+          <div className="mx-auto max-w-6xl px-4 py-20 text-center sm:px-6">
+            <h2 className="font-[family-name:var(--font-display)] text-4xl font-extrabold uppercase tracking-tight sm:text-5xl">
+              Ready for that new-car feeling?
+            </h2>
+            <p className="mx-auto mt-4 max-w-lg text-muted">
+              Book online in under 90 seconds. No account, no phone tag.
+            </p>
+            <Link
+              href="/book"
+              className="tap mt-8 inline-flex items-center rounded-[var(--radius-md)] bg-accent px-8 text-lg font-bold text-white transition-colors hover:bg-accent-hi"
+            >
+              Book Now
+            </Link>
+          </div>
         </section>
       </main>
 
