@@ -2,13 +2,14 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
- * Refreshes the Supabase session cookie and guards /admin. Unauthenticated
- * hits to /admin (except the login + auth-callback routes) are redirected to
- * the login page. Admin-email enforcement happens in the admin layout/APIs.
- * If Supabase isn't configured, we let requests through so the admin pages can
- * render a "configure Supabase" notice instead of redirect-looping.
+ * Next.js 16 Proxy (formerly middleware) — runs on the Node.js runtime.
+ * Refreshes the Supabase session cookie and does a convenience redirect for
+ * unauthenticated /admin hits (except login + auth-callback). This is NOT the
+ * auth boundary — real enforcement is in the admin (dash) layout and every
+ * /api/admin route (server-side getAdminUser). If Supabase isn't configured we
+ * let requests through so admin pages can render a "configure" notice.
  */
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
