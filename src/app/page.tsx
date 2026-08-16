@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import MobileBookBar from "@/components/MobileBookBar";
@@ -251,11 +252,20 @@ export default async function Home() {
       {/* FOOTER ------------------------------------------------------------ */}
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <div>
-            <p className="font-[family-name:var(--font-display)] text-lg font-extrabold uppercase">
-              Dallas Detailz
-            </p>
-            <p className="text-sm text-muted">Mobile detailing · DFW</p>
+          <div className="flex items-center gap-3">
+            <Image
+              src="/logo.jpg"
+              alt="Dallas Detailz logo"
+              width={48}
+              height={48}
+              className="h-12 w-12 rounded-full ring-1 ring-border"
+            />
+            <div>
+              <p className="font-[family-name:var(--font-display)] text-lg font-extrabold uppercase">
+                Dallas Detailz
+              </p>
+              <p className="text-sm text-muted">Mobile detailing · DFW</p>
+            </div>
           </div>
           <div className="flex gap-5 text-sm text-muted">
             <a href="tel:+10000000000" className="hover:text-ink">Call</a>
