@@ -17,10 +17,10 @@ export const FALLBACK_SERVICES: Service[] = [
     base_duration_min: 75,
     sort_order: 1,
     pricing: [
-      { tier: "sedan", price: 60, duration_min: 60 },
-      { tier: "mid_suv", price: 75, duration_min: 75 },
-      { tier: "large_suv", price: 90, duration_min: 90 },
-      { tier: "xl", price: 110, duration_min: 105 },
+      { tier: "sedan", price: 35, duration_min: 60 },
+      { tier: "mid_suv", price: 35, duration_min: 75 },
+      { tier: "large_suv", price: 35, duration_min: 90 },
+      { tier: "xl", price: 35, duration_min: 105 },
     ],
   },
   {
@@ -32,10 +32,10 @@ export const FALLBACK_SERVICES: Service[] = [
     base_duration_min: 120,
     sort_order: 2,
     pricing: [
-      { tier: "sedan", price: 90, duration_min: 90 },
-      { tier: "mid_suv", price: 120, duration_min: 120 },
-      { tier: "large_suv", price: 150, duration_min: 150 },
-      { tier: "xl", price: 180, duration_min: 180 },
+      { tier: "sedan", price: 35, duration_min: 90 },
+      { tier: "mid_suv", price: 35, duration_min: 120 },
+      { tier: "large_suv", price: 35, duration_min: 150 },
+      { tier: "xl", price: 35, duration_min: 180 },
     ],
   },
   {
@@ -47,10 +47,10 @@ export const FALLBACK_SERVICES: Service[] = [
     base_duration_min: 180,
     sort_order: 3,
     pricing: [
-      { tier: "sedan", price: 140, duration_min: 150 },
-      { tier: "mid_suv", price: 180, duration_min: 180 },
-      { tier: "large_suv", price: 220, duration_min: 210 },
-      { tier: "xl", price: 260, duration_min: 240 },
+      { tier: "sedan", price: 65, duration_min: 150 },
+      { tier: "mid_suv", price: 65, duration_min: 180 },
+      { tier: "large_suv", price: 65, duration_min: 210 },
+      { tier: "xl", price: 65, duration_min: 240 },
     ],
   },
 ];

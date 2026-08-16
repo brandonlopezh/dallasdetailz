@@ -10,7 +10,9 @@ Booking & operations platform for a DFW mobile detailing crew. Next.js + Supabas
 - ✅ 4-screen booking flow at `/book` (vehicle → service → where/when → confirm), local-storage persistence, live price, real slot picker — PRD §5.1
 - ✅ Backend: Supabase schema + RLS + seed, availability engine, catalog/availability/bookings API routes
 - ✅ DB-level double-booking prevention (Postgres `tstzrange` exclusion constraint) — PRD BK-10
-- ⬜ Google Calendar sync, SMS/email (Twilio/Resend), admin dashboard, Instagram — next
+- ✅ Admin auth (Supabase magic-link, email allowlist) + `/admin` shell — PRD AD-1
+- ✅ Image manager: upload/manage hero, gallery, and before/after photos that render on the homepage (Supabase Storage)
+- ⬜ Google Calendar sync, SMS/email (Twilio/Resend), bookings/schedule admin, Instagram — next
 
 ## Stack
 
@@ -40,8 +42,24 @@ Booking submission needs the database.
    - `supabase/migrations/0001_init.sql` (schema + exclusion constraint)
    - `supabase/migrations/0002_rls.sql` (row-level security)
    - `supabase/migrations/0003_seed.sql` (services, pricing, add-ons)
+   - `supabase/migrations/0004_media.sql` (site images + `site-media` Storage bucket)
 3. Copy Project Settings → API into `.env.local`:
    - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+
+## Admin (`/admin`)
+
+Operators sign in with a **magic link** (Supabase Auth) and manage the site.
+Access is gated by an email allowlist — set `ADMIN_EMAILS` (comma-separated).
+
+1. Add the operator emails to `ADMIN_EMAILS` in `.env.local`.
+2. In Supabase → Authentication → URL Configuration, add the redirect URL
+   `http://localhost:3000/admin/auth/callback` (and the production equivalent).
+3. Visit `/admin`, enter an allowlisted email, click the emailed link.
+
+**Images** (`/admin/media`): upload photos for the homepage hero, gallery grid,
+and before/after sliders. Files go to the public `site-media` Storage bucket;
+the homepage shows them immediately and falls back to gradient placeholders for
+any slot with no image yet.
 
 > The seed pricing/durations are **placeholders**. PRD §11 Q1 is blocking:
 > replace with the real menu and real two-person job times before launch.

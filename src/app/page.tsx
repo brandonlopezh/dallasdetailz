@@ -5,13 +5,13 @@ import MobileBookBar from "@/components/MobileBookBar";
 import BeforeAfterSlider from "@/components/BeforeAfterSlider";
 import Faq from "@/components/Faq";
 import { getServices } from "@/lib/catalog";
+import {
+  FALLBACK_GLOSS,
+  getBeforeAfterPairs,
+  getGalleryBackgrounds,
+  getHeroBackground,
+} from "@/lib/media";
 
-// Photo stand-ins: night-heavy, wet-gloss gradients (PRD §7.1). Swap for real
-// Instagram/shoot photography before launch.
-const GLOSS =
-  "radial-gradient(120% 120% at 70% 20%, #1e6fe8 0%, #0b1b3a 38%, #060608 100%)";
-const DIRTY =
-  "radial-gradient(120% 120% at 30% 30%, #3a352b 0%, #201d17 45%, #0b0a08 100%)";
 const CITIES = ["Duncanville", "Cedar Hill", "DeSoto", "Grand Prairie", "Dallas", "Greater DFW"];
 
 function money(n: number) {
@@ -19,7 +19,14 @@ function money(n: number) {
 }
 
 export default async function Home() {
-  const services = await getServices();
+  // Images are operator-managed (admin → Images). These getters return real
+  // uploads when present, else night-heavy gradient stand-ins (PRD §7.1).
+  const [services, heroBg, gallery, beforeAfter] = await Promise.all([
+    getServices(),
+    getHeroBackground(),
+    getGalleryBackgrounds(6),
+    getBeforeAfterPairs(3),
+  ]);
   const priceFrom = (s: (typeof services)[number]) =>
     Math.min(...s.pricing.map((p) => p.price));
 
@@ -51,7 +58,7 @@ export default async function Home() {
       <main className="flex-1 pb-24 md:pb-0">
         {/* HERO ------------------------------------------------------------ */}
         <section className="relative overflow-hidden">
-          <div className="absolute inset-0" style={{ background: GLOSS }} />
+          <div className="absolute inset-0" style={{ background: heroBg }} />
           <div className="absolute inset-0 bg-gradient-to-b from-base/30 via-base/40 to-base" />
           <div className="relative mx-auto flex min-h-[82vh] max-w-6xl flex-col justify-center px-4 py-24 sm:px-6">
             <p className="animate-fade-up mb-4 font-semibold uppercase tracking-[0.2em] text-accent-hi">
@@ -92,8 +99,8 @@ export default async function Home() {
             <p className="hidden text-sm text-muted sm:block">Drag to reveal →</p>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {[0, 1, 2].map((i) => (
-              <BeforeAfterSlider key={i} before={DIRTY} after={GLOSS} />
+            {beforeAfter.map((pair, i) => (
+              <BeforeAfterSlider key={i} before={pair.before} after={pair.after} />
             ))}
           </div>
         </section>
@@ -180,11 +187,11 @@ export default async function Home() {
               </a>
             </div>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, i) => (
+              {gallery.map((background, i) => (
                 <div
                   key={i}
                   className="aspect-square rounded-[var(--radius-md)] border border-border"
-                  style={{ background: i % 2 ? GLOSS : DIRTY }}
+                  style={{ background }}
                 />
               ))}
             </div>
@@ -216,7 +223,7 @@ export default async function Home() {
             </div>
             <div
               className="aspect-video rounded-[var(--radius-lg)] border border-border"
-              style={{ background: GLOSS }}
+              style={{ background: FALLBACK_GLOSS }}
               aria-label="Service area map"
             />
           </div>
