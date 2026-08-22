@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getAddons, getServices, getSettings } from "@/lib/catalog";
 import { isSupabaseConfigured, supabaseAdmin } from "@/lib/supabase/server";
+import { sendSms } from "@/lib/sms";
 import type { VehicleTier } from "@/lib/types";
 
 const bodySchema = z.object({
@@ -45,12 +46,16 @@ function travelFeeFor(
 }
 
 /**
- * POST /api/bookings — create a confirmed booking from a selected open slot.
+ * POST /api/bookings — create a *requested* booking from a selected open
+ * slot. Nothing is confirmed yet: this is a request the operator (brother)
+ * approves or declines, e.g. by replying to the notification text. Only
+ * `confirmed`/`in_progress` bookings occupy the Postgres exclusion
+ * constraint (no_overlapping_jobs), so two customers can request the same
+ * slot; whichever gets approved first wins it, and approving the second
+ * would then hit the DB-level conflict.
  *
  * Pricing and end time are computed server-side; client totals are never
- * trusted. The booking is written as `confirmed` so the Postgres exclusion
- * constraint (no_overlapping_jobs) enforces BK-10 at the database level — a
- * race between two customers on the same slot yields a 409 for the loser.
+ * trusted.
  */
 export async function POST(req: NextRequest) {
   const json = await req.json().catch(() => null);
@@ -169,7 +174,7 @@ export async function POST(req: NextRequest) {
       lng: b.lng ?? null,
       water_access: b.waterAccess ?? null,
       outlet_access: b.outletAccess ?? null,
-      status: "confirmed",
+      status: "requested",
       source: b.source,
       subtotal,
       addon_total: addonTotal,
@@ -177,7 +182,7 @@ export async function POST(req: NextRequest) {
       total,
       customer_notes: b.notes ?? null,
     })
-    .select("id, ref, manage_token, scheduled_start, scheduled_end, total")
+    .select("id, ref, manage_token, approval_token, scheduled_start, scheduled_end, total")
     .single();
 
   if (bookErr) {
@@ -205,9 +210,31 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // TODO(Phase 1): enqueue SMS+email confirmation (Twilio/Resend) and write the
-  // Google Calendar event. Left as a follow-up so the booking path is testable
-  // without those integrations configured.
+  // Text the operator (brother) a summary + a secure approve/decline link.
+  // He taps a button on /confirm/[approval_token] (no reply-parsing, no
+  // login) — see src/app/api/confirm/[token]/route.ts for what happens next.
+  // No-ops quietly if TEXTBEE_API_KEY / OPERATOR_PHONE aren't set yet.
+  const operatorPhone = process.env.OPERATOR_PHONE;
+  if (operatorPhone) {
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dallasdetailz.com";
+    const when = start.toLocaleString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+    const lines = [
+      `New booking request (${booking.ref})`,
+      `${service.name} — $${Math.round(total)}`,
+      `${b.customer.name}, ${b.customer.phone}`,
+      when,
+      b.address,
+    ];
+    if (b.notes) lines.push(`Note: ${b.notes}`);
+    lines.push(`${siteUrl}/confirm/${booking.approval_token}`);
+    await sendSms(operatorPhone, lines.join("\n"));
+  }
 
   return NextResponse.json(
     {

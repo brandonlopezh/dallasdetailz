@@ -44,8 +44,8 @@ export default async function Home() {
     description: "Mobile auto detailing serving Duncanville, Dallas, and greater DFW.",
     areaServed: CITIES.map((c) => ({ "@type": "City", name: c })),
     priceRange: "$$",
-    telephone: "+1-000-000-0000",
-    address: { "@type": "PostalAddress", addressLocality: "Duncanville", addressRegion: "TX", addressCountry: "US" },
+    telephone: "+1-214-991-3908",
+    address: { "@type": "PostalAddress", addressLocality: "Dallas", addressRegion: "TX", addressCountry: "US" },
     makesOffer: services.map((s) => ({
       "@type": "Offer",
       name: s.name,
@@ -86,11 +86,11 @@ export default async function Home() {
           <div className="absolute inset-0 -z-10 bg-gradient-to-t from-base via-base/85 to-base/45" />
           <div className="absolute inset-0 -z-10 bg-gradient-to-r from-base/95 via-base/60 to-transparent" />
 
-          <div className="relative mx-auto flex min-h-[520px] max-w-6xl flex-col justify-end px-4 pb-16 pt-28 sm:min-h-[560px] sm:px-6 lg:min-h-[620px] lg:pb-20">
+          <div className="relative mx-auto flex min-h-[640px] max-w-6xl flex-col justify-end px-4 pb-16 pt-28 sm:min-h-[700px] sm:px-6 lg:min-h-[780px] lg:pb-20">
             <div className="max-w-2xl">
               <p className="animate-fade-up mb-5 flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.22em] text-accent-hi">
                 <span className="h-px w-8 bg-accent-hi/60" />
-                Mobile detailing · DFW
+                Mobile detailing DFW
               </p>
               <h1 className="animate-fade-up font-[family-name:var(--font-display)] text-[2.6rem] font-extrabold uppercase leading-[0.95] tracking-[-0.02em] sm:text-6xl">
                 Nobody puts in
@@ -101,9 +101,9 @@ export default async function Home() {
                 </span>
               </h1>
               <p className="animate-fade-up mt-6 max-w-lg text-lg leading-relaxed text-muted">
-                Two brothers, a truckload of gear, and your driveway. Exterior,
-                interior, and full details across Duncanville, Dallas, and the
-                greater DFW metro.
+                Two brothers, a truckload of gear, and your driveway.
+                Providing exterior, interior, and full details across
+                Duncanville, Dallas, and Cedar Hill.
               </p>
               <div className="animate-fade-up mt-9 flex flex-wrap gap-3">
                 <Link
@@ -120,7 +120,7 @@ export default async function Home() {
                 </a>
               </div>
               <p className="animate-fade-up mt-6 text-sm text-muted">
-                Booking takes about 90 seconds — no deposit, no account.
+                Booking takes about 90 seconds. No deposit, no account.
               </p>
             </div>
           </div>
@@ -142,35 +142,24 @@ export default async function Home() {
 
             <div className="mt-4 rule" />
 
-            {/* Body runs the full width of the section, split into columns so
-                the measure stays readable instead of one 1100px line. */}
-            <div className="mt-8 grid gap-x-12 gap-y-5 text-lg leading-relaxed text-muted md:grid-cols-2">
-              <p>
-                We&apos;re fraternal twins, still in high school, and we started
-                Dallas Detailz for a simple reason: we&apos;d rather put our
-                hours into something that builds us up than into whatever
-                trouble finds kids our age.
-              </p>
-              <p>
-                So we picked up buckets instead. Weekends, evenings after class,
-                summers — we work every job together, one on the exterior and
-                one on the interior, until the truck looks like it just rolled
-                off the lot.
-              </p>
-            </div>
+            <p className="mt-8 max-w-4xl text-lg leading-relaxed text-muted">
+              We&apos;re fraternal twins, still in high school, and we started
+              Dallas Detailz to make our family proud and show them we can
+              excel into whatever we put our minds to.
+            </p>
 
-            <p className="mt-8 max-w-4xl text-xl font-medium leading-relaxed text-ink">
+            <p className="mt-6 max-w-4xl text-xl font-medium leading-relaxed text-ink">
               When you book us, you&apos;re not hiring a franchise. You&apos;re
-              backing two brothers who show up on time, work hard, and treat
-              your vehicle like it&apos;s the only one on the schedule.
+              backing two brothers who show up on time, work hard, and make
+              your vehicle shine like it should.
             </p>
 
             <div className="mt-10 flex flex-wrap items-center gap-8 gap-y-6">
               <ul className="flex flex-wrap gap-2">
                 {[
                   "Family-run",
-                  "Locally raised in Duncanville",
-                  "Every job done together",
+                  "Raised in Oak Cliff",
+                  "Every job done with care",
                 ].map((tag) => (
                   <li
                     key={tag}
@@ -221,8 +210,7 @@ export default async function Home() {
               Pick your service
             </h2>
             <p className="mt-2 max-w-xl text-muted">
-              Prices shown are starting points. Your exact price and time depend
-              on your vehicle — you&apos;ll see it before you confirm.
+              Prices shown are final, we accept Zelle and Cash only.
             </p>
             <div className="mt-8 grid gap-5 md:grid-cols-3">
               {services.map((s) => (
@@ -240,7 +228,6 @@ export default async function Home() {
                     {s.description}
                   </p>
                   <div className="mt-5 flex items-baseline gap-2">
-                    <span className="text-sm text-muted">from</span>
                     <span className="font-[family-name:var(--font-display)] text-3xl font-extrabold">
                       {money(priceFrom(s))}
                     </span>
@@ -320,9 +307,7 @@ export default async function Home() {
                 Where we roll
               </h2>
               <p className="mt-3 text-muted">
-                Based in Duncanville, serving the greater DFW metro. Outside our
-                core radius? You can still book — a small travel fee shows before
-                you confirm.
+                Based in Dallas, serving DFW and areas near 75249.
               </p>
               <ul className="mt-6 flex flex-wrap gap-2">
                 {CITIES.map((c) => (
@@ -337,10 +322,10 @@ export default async function Home() {
             </div>
             <div className="mx-auto w-full max-w-[260px] overflow-hidden rounded-[var(--radius-lg)] border border-border shadow-2xl shadow-black/50 sm:max-w-[300px]">
               <Image
-                src="/service-area-map.jpg"
-                alt="Illustrated map of the Dallas Detailz service area centered on northwest Duncanville, showing I-20, US-67, Mountain Creek Lake, and nearby parks"
-                width={669}
-                height={1200}
+                src="/service-area-map.png"
+                alt="Map of the Dallas Detailz service area around Duncanville and Cedar Hill, showing I-20, Belt Line Rd, Cedar Ridge Preserve, and Cedar Hill State Park"
+                width={586}
+                height={654}
                 sizes="300px"
                 className="h-full w-full object-cover"
               />
@@ -392,11 +377,11 @@ export default async function Home() {
               <p className="font-[family-name:var(--font-display)] text-lg font-extrabold uppercase">
                 Dallas Detailz
               </p>
-              <p className="text-sm text-muted">Mobile detailing · DFW</p>
+              <p className="text-sm text-muted">Mobile detailing DFW</p>
             </div>
           </div>
           <div className="flex gap-5 text-sm text-muted">
-            <a href="tel:+10000000000" className="hover:text-ink">Call</a>
+            <a href="tel:+12149913908" className="hover:text-ink">Call</a>
             <a href="https://instagram.com/dallasdetailz" className="hover:text-ink" target="_blank" rel="noopener noreferrer">Instagram</a>
             <Link href="/book" className="hover:text-ink">Book</Link>
           </div>

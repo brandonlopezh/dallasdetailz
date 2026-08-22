@@ -4,10 +4,10 @@
   Dallas Detailz design tokens — PRD §7.2
 
   Palette is pulled from the artwork: warm ink black and bone/cream type from
-  the shop illustration, with a deep green accent picked up from the service
-  area map. Deliberately warm and monochrome rather than the cold
-  blue-on-charcoal default — it reads like a garage sign, and it lets the
-  illustrations carry the page. Accent is reserved for action.
+  the shop illustration, with a muted slate-blue accent. Deliberately warm
+  and monochrome otherwise (not a cold blue-on-charcoal scheme overall) —
+  it reads like a garage sign, and it lets the illustrations carry the page.
+  Accent is reserved for action.
 */
 @theme {
   --color-base: #0b0a09; /* page background — warm near-black */
@@ -25,8 +25,8 @@
   --color-band-3: #0d1210; /* cool green cast */
   --color-band-4: #171309; /* deepest warm, for emphasis bands */
 
-  --color-accent: #3f7d5a; /* deep green — CTA, links, active states */
-  --color-accent-hi: #58a077; /* hover / accent text — lighter green */
+  --color-accent: #3f5c7e; /* slate blue — CTA, links, active states */
+  --color-accent-hi: #597ba1; /* hover / accent text — lighter blue */
 
   --color-ink: #f3ece0; /* bone, not pure white */
   --color-muted: #a1968a;

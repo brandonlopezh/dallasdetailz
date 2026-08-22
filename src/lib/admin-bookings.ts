@@ -54,6 +54,20 @@ export async function getBooking(id: string): Promise<AdminBooking | null> {
   return data as unknown as AdminBooking;
 }
 
+/** Looks up a booking by its operator approval_token (the /confirm/[token]
+ * link). Distinct from the customer-facing manage_token — see
+ * supabase/migrations/0005_approval.sql. */
+export async function getBookingByApprovalToken(
+  token: string,
+): Promise<AdminBooking | null> {
+  const { data } = await supabaseAdmin()
+    .from("bookings")
+    .select(SELECT)
+    .eq("approval_token", token)
+    .maybeSingle();
+  return (data as unknown as AdminBooking) ?? null;
+}
+
 export async function countRequests(): Promise<number> {
   const { count } = await supabaseAdmin()
     .from("bookings")

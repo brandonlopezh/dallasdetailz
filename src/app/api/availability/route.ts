@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getAddons, getServices, getSettings } from "@/lib/catalog";
 import { computeAvailability, type BusyRange } from "@/lib/availability";
 import { isSupabaseConfigured, supabaseAdmin } from "@/lib/supabase/server";
+import { fetchAppleCalendarBusyRanges } from "@/lib/calendarSync";
 import type { VehicleTier } from "@/lib/types";
 
 const querySchema = z.object({
@@ -54,24 +55,25 @@ export async function GET(req: NextRequest) {
 
   const durationMin = pricing.duration_min + addonMinutes;
 
-  // Gather the busy set.
+  // Gather the busy set: confirmed/in-progress bookings, admin-set
+  // availability blocks, and (if configured) live Apple Calendar busy times.
   const busy: BusyRange[] = [];
+  const now = new Date();
+  const horizon = new Date(now.getTime() + settings.booking_horizon_days * 86_400_000);
+
   if (isSupabaseConfigured()) {
     const sb = supabaseAdmin();
-    const horizonEnd = new Date(
-      Date.now() + settings.booking_horizon_days * 86_400_000,
-    ).toISOString();
 
     const [{ data: bookings }, { data: blocks }] = await Promise.all([
       sb
         .from("bookings")
         .select("scheduled_start, scheduled_end")
         .in("status", ["confirmed", "in_progress"])
-        .lt("scheduled_start", horizonEnd),
+        .lt("scheduled_start", horizon.toISOString()),
       sb
         .from("availability_blocks")
         .select("starts_at, ends_at")
-        .lt("starts_at", horizonEnd),
+        .lt("starts_at", horizon.toISOString()),
     ]);
 
     for (const b of bookings ?? []) {
@@ -87,6 +89,10 @@ export async function GET(req: NextRequest) {
       });
     }
   }
+
+  // Live CalDAV fetch — no-ops (returns []) if Apple Calendar isn't
+  // configured. See src/lib/calendarSync.ts for setup + limitations.
+  busy.push(...(await fetchAppleCalendarBusyRanges(now, horizon)));
 
   const days = computeAvailability({
     serviceDurationMin: durationMin,

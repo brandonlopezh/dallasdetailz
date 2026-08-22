@@ -11,7 +11,7 @@ export default function MobileBookBar() {
     <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-base/90 p-3 backdrop-blur md:hidden">
       <div className="mx-auto flex max-w-6xl items-center gap-3">
         <a
-          href="tel:+10000000000"
+          href="tel:+12149913908"
           className="tap grid aspect-square place-items-center rounded-[var(--radius-sm)] border border-border text-lg"
           aria-label="Call Dallas Detailz"
         >

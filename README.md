@@ -13,7 +13,9 @@ Booking & operations platform for a DFW mobile detailing crew. Next.js + Supabas
 - ✅ Admin auth (Supabase magic-link, email allowlist) + `/admin` shell — PRD AD-1
 - ✅ Image manager: upload/manage hero, gallery, and before/after photos that render on the homepage (Supabase Storage)
 - ✅ Operator admin: Today view (AD-2), Schedule (AD-3), Requests queue (AD-4), booking detail with status/reschedule/notes (AD-5/6), manual booking creation (AD-7)
-- ⬜ Google Calendar sync, SMS/email (Twilio/Resend), customer records + reporting, audit trail, Instagram — next
+- ✅ Request → approve/decline workflow: customer submits a request (not an instant booking), the operator gets a text with a secure link, taps Approve/Decline, the customer gets a follow-up text either way
+- ✅ Apple/iCloud Calendar busy-time sync (CalDAV) — personal events block booking slots too, not just confirmed jobs
+- ⬜ Customer records + reporting, audit trail, Instagram — next
 
 ## Stack
 
@@ -22,7 +24,9 @@ Booking & operations platform for a DFW mobile detailing crew. Next.js + Supabas
 | Framework | Next.js 16 (App Router, TS) | — |
 | Hosting | Cloudflare Workers (via OpenNext) | ✅ (100k req/day) |
 | Database + Auth | Supabase (Postgres) | ✅ |
-| SMS / Email | Twilio / Resend | pay-per-use (later) |
+| SMS (booking approval) | [textbee.dev](https://textbee.dev) (Android-phone gateway) | ✅ (50/day, 300/mo) |
+| Calendar sync | Apple/iCloud Calendar (CalDAV) | ✅ |
+| Email | Resend | pay-per-use (later) |
 
 ## Local setup
 
@@ -44,6 +48,7 @@ Booking submission needs the database.
    - `supabase/migrations/0002_rls.sql` (row-level security)
    - `supabase/migrations/0003_seed.sql` (services, pricing, add-ons)
    - `supabase/migrations/0004_media.sql` (site images + `site-media` Storage bucket)
+   - `supabase/migrations/0005_approval.sql` (`bookings.approval_token`, for the operator approve/decline link)
 3. Copy Project Settings → API into `.env.local`:
    - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
 
@@ -64,6 +69,57 @@ any slot with no image yet.
 
 > The seed pricing/durations are **placeholders**. PRD §11 Q1 is blocking:
 > replace with the real menu and real two-person job times before launch.
+
+## Booking approval (SMS) + calendar sync
+
+A customer submitting `/book` creates a `requested` booking — nothing is
+confirmed yet. Here's the full loop:
+
+1. Customer submits a request → gets the "Thank you for requesting service"
+   screen.
+2. The operator's phone (`OPERATOR_PHONE`) gets a text with the job summary
+   and a link to `/confirm/[approval_token]`.
+3. Operator opens the link (no login) and taps **Approve** or **Decline**.
+   - Approve → status becomes `confirmed`; customer gets a text ("was
+     approved, see you soon"). If the slot got taken by another confirmed
+     job in the meantime, the DB rejects it and the page shows a conflict
+     notice instead — nothing texts the customer in that case.
+   - Decline → status becomes `cancelled`; customer gets a text saying that
+     time isn't available with a link back to `/book`.
+
+**Setup — SMS (free, textbee.dev):**
+
+1. Install the [textbee](https://textbee.dev) app on an Android phone that
+   stays on and connected — that phone sends every text this app sends,
+   using its own carrier plan (no per-message fee).
+2. Link the device in the textbee dashboard and copy the API key.
+3. Set `TEXTBEE_API_KEY` and `OPERATOR_PHONE` (E.164, e.g. `+12149913908`)
+   in `.env.local` and in the Cloudflare dashboard for production.
+4. Free tier: 50 messages/day, 300/month — comfortably above what a
+   couple bookings a week needs.
+
+Without `TEXTBEE_API_KEY`/`OPERATOR_PHONE` set, requests still save to the
+database — the operator just won't get a text, so check `/admin` instead.
+
+**Setup — Apple/iCloud Calendar sync (optional):**
+
+1. Generate an app-specific password at [appleid.apple.com](https://appleid.apple.com)
+   → Sign-In and Security → App-Specific Passwords. (Don't use the real
+   Apple ID password — it won't work with 2FA on, and shouldn't be handed
+   to a third-party app regardless.)
+2. Set `APPLE_ICLOUD_USERNAME` (the Apple ID email) and
+   `APPLE_ICLOUD_APP_PASSWORD` in `.env.local` / Cloudflare.
+3. Optional: set `APPLE_ICLOUD_CALENDAR_NAME` to pull busy times from just
+   one named calendar. Unset = every calendar on the account counts,
+   including things like Birthdays/Holidays.
+
+Known limitation: recurring events ("every Tuesday") only block their first
+occurrence, not every future one — expanding RFC 5545 `RRULE`s is a bigger
+project of its own and was deliberately left out rather than getting it
+wrong silently. One-off events work correctly. See
+`src/lib/calendarSync.ts` for details. The live CalDAV fetch also adds a
+little latency to `/api/availability` — fine at this booking volume, but
+worth knowing if the page ever feels slow to load open times.
 
 ## Deploy (Cloudflare Workers)
 

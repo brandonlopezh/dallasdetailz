@@ -1,21 +1,24 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { VEHICLE_TIERS, type Addon, type Service, type VehicleTier } from "@/lib/types";
+import type { Service } from "@/lib/types";
 import type { DaySlots } from "@/lib/availability";
 
-// PRD §5.1: four screens, no login, price updates live, state persists (R4),
-// back preserves input (R3).
-const STORAGE_KEY = "dd-booking-v1";
+// Simplified flow: no vehicle-tier step, no add-ons. Three flat-price
+// services, a spot for custom requests, address + time, then a request
+// (not an instant confirmation) goes to the brothers for approval.
+const STORAGE_KEY = "dd-booking-v2";
+
+// Pricing is flat across vehicle sizes in the catalog already (every tier
+// prices the same for a given service) — this is just which tier's
+// duration we use to size the calendar slot, since we no longer ask.
+const DEFAULT_TIER = "mid_suv" as const;
 
 interface Draft {
-  tier: VehicleTier;
-  year: string;
-  make: string;
-  model: string;
   serviceId: string | null;
-  addonIds: string[];
+  customRequest: string;
   address: string;
   waterAccess: boolean;
   outletAccess: boolean;
@@ -23,16 +26,11 @@ interface Draft {
   name: string;
   phone: string;
   email: string;
-  notes: string;
 }
 
 const EMPTY: Draft = {
-  tier: "mid_suv",
-  year: "",
-  make: "",
-  model: "",
   serviceId: null,
-  addonIds: [],
+  customRequest: "",
   address: "",
   waterAccess: true,
   outletAccess: true,
@@ -40,7 +38,6 @@ const EMPTY: Draft = {
   name: "",
   phone: "",
   email: "",
-  notes: "",
 };
 
 function money(n: number) {
@@ -50,46 +47,38 @@ function money(n: number) {
 export default function BookingFlow() {
   const params = useSearchParams();
   const [step, setStep] = useState(1);
-  const [draft, setDraft] = useState<Draft>(EMPTY);
-  const [services, setServices] = useState<Service[]>([]);
-  const [addons, setAddons] = useState<Addon[]>([]);
-  const [loaded, setLoaded] = useState(false);
-
-  // Restore persisted draft (R4), then apply ?service= deep link from homepage.
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setDraft({ ...EMPTY, ...JSON.parse(raw) });
-    } catch {}
+  // Lazy init (not an effect) so restoring from localStorage doesn't cause an
+  // extra render; window is undefined during SSR, so this only ever reads on
+  // the client.
+  const [draft, setDraft] = useState<Draft>(() => {
+    let restored = EMPTY;
+    if (typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) restored = { ...EMPTY, ...JSON.parse(raw) };
+      } catch {}
+    }
     const svc = params.get("service");
-    if (svc) setDraft((d) => ({ ...d, serviceId: svc }));
-    setLoaded(true);
-  }, [params]);
+    return svc ? { ...restored, serviceId: svc } : restored;
+  });
+  const [services, setServices] = useState<Service[]>([]);
 
-  // Persist on every change.
+  // Persist on every change. draft is already correctly seeded on first
+  // render (see the lazy initializer above), so there's no "wait for
+  // restore" step needed here.
   useEffect(() => {
-    if (loaded) localStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
-  }, [draft, loaded]);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
+  }, [draft]);
 
   useEffect(() => {
     fetch("/api/catalog")
       .then((r) => r.json())
-      .then((d) => {
-        setServices(d.services ?? []);
-        setAddons(d.addons ?? []);
-      })
+      .then((d) => setServices(d.services ?? []))
       .catch(() => {});
   }, []);
 
   const service = services.find((s) => s.id === draft.serviceId) ?? null;
-  const pricing = service?.pricing.find((p) => p.tier === draft.tier) ?? null;
-  const chosenAddons = addons.filter((a) => draft.addonIds.includes(a.id));
-
-  const total = useMemo(() => {
-    const base = pricing?.price ?? 0;
-    const add = chosenAddons.reduce((s, a) => s + a.price, 0);
-    return base + add;
-  }, [pricing, chosenAddons]);
+  const pricing = service?.pricing.find((p) => p.tier === DEFAULT_TIER) ?? null;
 
   const set = (patch: Partial<Draft>) => setDraft((d) => ({ ...d, ...patch }));
 
@@ -97,37 +86,29 @@ export default function BookingFlow() {
     <div>
       <Stepper step={step} />
       {step === 1 && (
-        <StepVehicle draft={draft} set={set} onNext={() => setStep(2)} />
-      )}
-      {step === 2 && (
         <StepService
           draft={draft}
           set={set}
           services={services}
-          addons={addons}
-          total={total}
-          onBack={() => setStep(1)}
-          onNext={() => setStep(3)}
+          onNext={() => setStep(2)}
         />
       )}
-      {step === 3 && service && (
+      {step === 2 && service && (
         <StepWhereWhen
           draft={draft}
           set={set}
           serviceName={service.name}
-          onBack={() => setStep(2)}
-          onNext={() => setStep(4)}
+          onBack={() => setStep(1)}
+          onNext={() => setStep(3)}
         />
       )}
-      {step === 4 && service && pricing && (
+      {step === 3 && service && pricing && (
         <StepConfirm
           draft={draft}
           set={set}
           service={service}
-          basePrice={pricing.price}
-          addons={chosenAddons}
-          total={total}
-          onBack={() => setStep(3)}
+          price={pricing.price}
+          onBack={() => setStep(2)}
         />
       )}
     </div>
@@ -135,7 +116,7 @@ export default function BookingFlow() {
 }
 
 function Stepper({ step }: { step: number }) {
-  const labels = ["Vehicle", "Service", "When", "Confirm"];
+  const labels = ["Service", "When", "Your info"];
   return (
     <div className="mb-6 flex items-center gap-2">
       {labels.map((l, i) => (
@@ -185,98 +166,29 @@ function BackBtn({ onClick }: { onClick: () => void }) {
   );
 }
 
-// STEP 1 --------------------------------------------------------------------
-function StepVehicle({
-  draft,
-  set,
-  onNext,
-}: {
-  draft: Draft;
-  set: (p: Partial<Draft>) => void;
-  onNext: () => void;
-}) {
-  return (
-    <section>
-      <h1 className="font-[family-name:var(--font-display)] text-2xl font-extrabold">
-        What are we detailing?
-      </h1>
-      <p className="mt-1 text-sm text-muted">Bigger vehicle, bigger job — pick the closest match.</p>
-      <div className="mt-5 grid gap-3">
-        {VEHICLE_TIERS.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => set({ tier: t.id })}
-            className={`rounded-[var(--radius-md)] border p-4 text-left transition-colors ${
-              draft.tier === t.id
-                ? "border-accent bg-accent/10"
-                : "border-border bg-surface hover:border-accent/50"
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <span className="font-bold">{t.label}</span>
-              {t.isDefault && (
-                <span className="rounded-full bg-surface-alt px-2 py-0.5 text-[10px] uppercase text-muted">
-                  Most common
-                </span>
-              )}
-            </div>
-            <span className="text-sm text-muted">{t.hint}</span>
-          </button>
-        ))}
-      </div>
-
-      <details className="mt-4 rounded-[var(--radius-md)] border border-border bg-surface p-4">
-        <summary className="cursor-pointer text-sm font-semibold">
-          Add year / make / model (optional)
-        </summary>
-        <div className="mt-3 grid grid-cols-3 gap-2">
-          <input className="input" placeholder="Year" value={draft.year} onChange={(e) => set({ year: e.target.value })} />
-          <input className="input" placeholder="Make" value={draft.make} onChange={(e) => set({ make: e.target.value })} />
-          <input className="input" placeholder="Model" value={draft.model} onChange={(e) => set({ model: e.target.value })} />
-        </div>
-      </details>
-
-      <div className="mt-6">
-        <PrimaryBtn onClick={onNext}>Continue</PrimaryBtn>
-      </div>
-      <InputStyles />
-    </section>
-  );
-}
-
-// STEP 2 --------------------------------------------------------------------
+// STEP 1 — service --------------------------------------------------------
 function StepService({
   draft,
   set,
   services,
-  addons,
-  total,
-  onBack,
   onNext,
 }: {
   draft: Draft;
   set: (p: Partial<Draft>) => void;
   services: Service[];
-  addons: Addon[];
-  total: number;
-  onBack: () => void;
   onNext: () => void;
 }) {
-  const toggleAddon = (id: string) =>
-    set({
-      addonIds: draft.addonIds.includes(id)
-        ? draft.addonIds.filter((a) => a !== id)
-        : [...draft.addonIds, id],
-    });
-
   return (
-    <section className="pb-24">
+    <section>
       <h1 className="font-[family-name:var(--font-display)] text-2xl font-extrabold">
-        Choose your package
+        Choose your service
       </h1>
+      <p className="mt-1 text-sm text-muted">
+        Prices shown are final. We accept Zelle and Cash only.
+      </p>
       <div className="mt-5 grid gap-3">
         {services.map((s) => {
-          const p = s.pricing.find((x) => x.tier === draft.tier);
+          const p = s.pricing.find((x) => x.tier === DEFAULT_TIER);
           const selected = draft.serviceId === s.id;
           return (
             <button
@@ -289,70 +201,36 @@ function StepService({
               <div className="flex items-center justify-between">
                 <span className="font-bold">{s.name}</span>
                 <span className="font-[family-name:var(--font-display)] text-lg font-extrabold">
-                  {p ? money(p.price) : "—"}
+                  {p ? money(p.price) : "TBD"}
                 </span>
               </div>
               <p className="mt-1 text-sm text-muted">{s.description}</p>
-              {p && (
-                <p className="mt-1 text-xs text-muted">
-                  ≈ {Math.round(p.duration_min / 60 * 10) / 10} hrs
-                </p>
-              )}
             </button>
           );
         })}
       </div>
 
-      {draft.serviceId && (
-        <>
-          <h2 className="mt-6 font-bold">Add-ons</h2>
-          <div className="mt-3 grid gap-2">
-            {addons.map((a) => {
-              const on = draft.addonIds.includes(a.id);
-              return (
-                <button
-                  key={a.id}
-                  onClick={() => toggleAddon(a.id)}
-                  className={`flex items-center justify-between rounded-[var(--radius-sm)] border p-3 text-left transition-colors ${
-                    on ? "border-accent bg-accent/10" : "border-border bg-surface"
-                  }`}
-                >
-                  <span className="text-sm">
-                    <span className="mr-2">{on ? "☑" : "☐"}</span>
-                    {a.name}
-                  </span>
-                  <span className="text-sm font-semibold">+{money(a.price)}</span>
-                </button>
-              );
-            })}
-          </div>
-        </>
-      )}
+      <label className="mt-6 block text-sm font-semibold">
+        Need something custom?
+      </label>
+      <textarea
+        className="input mt-2 min-h-24"
+        placeholder="Tell us what you're looking for and we'll follow up (optional)"
+        value={draft.customRequest}
+        onChange={(e) => set({ customRequest: e.target.value })}
+      />
 
-      {/* Running total (PRD §5.1 step 2) */}
-      <div className="fixed inset-x-0 bottom-0 border-t border-border bg-base/95 p-3 backdrop-blur">
-        <div className="mx-auto flex max-w-lg items-center gap-3">
-          <div className="flex-1">
-            <p className="text-xs text-muted">Total</p>
-            <p className="font-[family-name:var(--font-display)] text-xl font-extrabold">
-              {money(total)}
-            </p>
-          </div>
-          <BackBtn onClick={onBack} />
-          <button
-            onClick={onNext}
-            disabled={!draft.serviceId}
-            className="tap rounded-[var(--radius-md)] bg-accent px-6 font-bold text-white disabled:opacity-40"
-          >
-            Continue
-          </button>
-        </div>
+      <div className="mt-6">
+        <PrimaryBtn onClick={onNext} disabled={!draft.serviceId}>
+          Continue
+        </PrimaryBtn>
       </div>
+      <InputStyles />
     </section>
   );
 }
 
-// STEP 3 --------------------------------------------------------------------
+// STEP 2 — where & when -----------------------------------------------------
 function StepWhereWhen({
   draft,
   set,
@@ -374,8 +252,7 @@ function StepWhereWhen({
     setLoading(true);
     const qs = new URLSearchParams({
       serviceId: draft.serviceId!,
-      tier: draft.tier,
-      addons: draft.addonIds.join(","),
+      tier: DEFAULT_TIER,
     });
     fetch(`/api/availability?${qs}`)
       .then((r) => r.json())
@@ -397,9 +274,6 @@ function StepWhereWhen({
         value={draft.address}
         onChange={(e) => set({ address: e.target.value })}
       />
-      <p className="mt-1 text-xs text-muted">
-        Google Places autocomplete + radius check plugs in here (PRD §5.1 step 3).
-      </p>
 
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Toggle label="Water access?" on={draft.waterAccess} onChange={(v) => set({ waterAccess: v })} />
@@ -421,7 +295,7 @@ function StepWhereWhen({
           {days.length === 0 ? (
             <div className="rounded-[var(--radius-md)] border border-warning/40 bg-warning/10 p-4 text-sm">
               No open times in the next few weeks. Leave your info on the next
-              step and we&apos;ll text you a time (PRD §5.1 R2 fallback).
+              step and we&apos;ll text you a time.
             </div>
           ) : (
             <>
@@ -498,22 +372,18 @@ function Toggle({
   );
 }
 
-// STEP 4 --------------------------------------------------------------------
+// STEP 3 — your info / request to book ---------------------------------------
 function StepConfirm({
   draft,
   set,
   service,
-  basePrice,
-  addons,
-  total,
+  price,
   onBack,
 }: {
   draft: Draft;
   set: (p: Partial<Draft>) => void;
   service: Service;
-  basePrice: number;
-  addons: Addon[];
-  total: number;
+  price: number;
   onBack: () => void;
 }) {
   const [submitting, setSubmitting] = useState(false);
@@ -531,19 +401,14 @@ function StepConfirm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           serviceId: service.id,
-          tier: draft.tier,
-          addonIds: draft.addonIds,
+          tier: DEFAULT_TIER,
+          addonIds: [],
           slotStart: draft.slotStart,
           address: draft.address,
           waterAccess: draft.waterAccess,
           outletAccess: draft.outletAccess,
           customer: { name: draft.name, phone: draft.phone, email: draft.email },
-          vehicle: {
-            year: draft.year ? Number(draft.year) : undefined,
-            make: draft.make || undefined,
-            model: draft.model || undefined,
-          },
-          notes: draft.notes,
+          notes: draft.customRequest || undefined,
         }),
       });
       const data = await res.json();
@@ -567,15 +432,15 @@ function StepConfirm({
           ✓
         </div>
         <h1 className="mt-4 font-[family-name:var(--font-display)] text-2xl font-extrabold">
-          You&apos;re booked!
+          Thank you for requesting service!
         </h1>
         <p className="mt-2 text-muted">
-          Confirmation ref <span className="font-mono text-ink">{done.ref}</span>.
-          We&apos;ll text and email you the details.
+          We will confirm your appointment shortly. Reference{" "}
+          <span className="font-mono text-ink">{done.ref}</span>.
         </p>
-        <a href="/" className="tap mt-6 inline-flex rounded-[var(--radius-md)] bg-accent px-6 font-bold text-white">
+        <Link href="/" className="tap mt-6 inline-flex rounded-[var(--radius-md)] bg-accent px-6 font-bold text-white">
           Done
-        </a>
+        </Link>
       </section>
     );
   }
@@ -585,21 +450,18 @@ function StepConfirm({
   return (
     <section>
       <h1 className="font-[family-name:var(--font-display)] text-2xl font-extrabold">
-        Your details
+        Your info
       </h1>
       <div className="mt-4 grid gap-2">
         <input className="input" placeholder="Full name" value={draft.name} onChange={(e) => set({ name: e.target.value })} />
         <input className="input" placeholder="Mobile number" inputMode="tel" value={draft.phone} onChange={(e) => set({ phone: e.target.value })} />
         <input className="input" placeholder="Email (optional)" inputMode="email" value={draft.email} onChange={(e) => set({ email: e.target.value })} />
-        <textarea className="input min-h-20" placeholder="Anything we should know? (optional)" value={draft.notes} onChange={(e) => set({ notes: e.target.value })} />
       </div>
 
       {/* Summary card */}
       <div className="mt-5 rounded-[var(--radius-md)] border border-border bg-surface p-4 text-sm">
-        <Row label={service.name} value={money(basePrice)} />
-        {addons.map((a) => (
-          <Row key={a.id} label={a.name} value={`+${money(a.price)}`} muted />
-        ))}
+        <Row label={service.name} value={money(price)} />
+        {draft.customRequest && <Row label="Custom request" value={draft.customRequest} muted />}
         <div className="my-2 border-t border-border" />
         <Row
           label="When"
@@ -612,13 +474,15 @@ function StepConfirm({
                   hour: "numeric",
                   minute: "2-digit",
                 })
-              : "—"
+              : "Not selected"
           }
         />
-        <Row label="Where" value={draft.address || "—"} />
+        <Row label="Where" value={draft.address || "Not entered"} />
         <div className="my-2 border-t border-border" />
-        <Row label="Total" value={money(total)} bold />
-        <p className="mt-1 text-xs text-muted">Paid in person. No deposit required.</p>
+        <Row label="Total" value={money(price)} bold />
+        <p className="mt-1 text-xs text-muted">
+          Zelle or Cash in person. This is a request, not a confirmed booking.
+        </p>
       </div>
 
       {error && (
@@ -630,7 +494,7 @@ function StepConfirm({
       <div className="mt-6 flex gap-3">
         <BackBtn onClick={onBack} />
         <PrimaryBtn onClick={submit} disabled={!canSubmit || submitting}>
-          {submitting ? "Booking…" : "Confirm booking"}
+          {submitting ? "Sending…" : "Request to Book"}
         </PrimaryBtn>
       </div>
       <InputStyles />
@@ -650,9 +514,9 @@ function Row({
   muted?: boolean;
 }) {
   return (
-    <div className={`flex items-center justify-between py-0.5 ${muted ? "text-muted" : ""}`}>
+    <div className={`flex items-center justify-between gap-3 py-0.5 ${muted ? "text-muted" : ""}`}>
       <span className={bold ? "font-bold" : ""}>{label}</span>
-      <span className={bold ? "font-[family-name:var(--font-display)] text-lg font-extrabold" : ""}>
+      <span className={`text-right ${bold ? "font-[family-name:var(--font-display)] text-lg font-extrabold" : ""}`}>
         {value}
       </span>
     </div>
