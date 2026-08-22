@@ -122,6 +122,23 @@ wrong silently. One-off events work correctly. See
 little latency to `/api/availability` — fine at this booking volume, but
 worth knowing if the page ever feels slow to load open times.
 
+## Instagram feed (optional)
+
+The homepage's "On Instagram" section can show real post thumbnails via
+[SnapWidget](https://snapwidget.com) — a free, no-code Instagram embed. They
+handle the Instagram connection and token refresh on their end, so there's
+nothing to maintain on ours (unlike the Graph API, which needs a token
+refreshed every ~60 days — deliberately avoided here for that reason).
+
+1. Go to [snapwidget.com](https://snapwidget.com), choose an Instagram feed
+   widget, and connect the `@dallasdetailz` account.
+2. Copy the numeric widget ID from the embed code it gives you.
+3. Set `NEXT_PUBLIC_SNAPWIDGET_ID` in `.env.local` and in the Cloudflare
+   dashboard.
+
+Without it set, the section shows a plain "Follow us on Instagram" card
+instead of an empty or broken embed — see `src/components/InstagramFeed.tsx`.
+
 ## Deploy (Cloudflare Workers)
 
 Hosted on Cloudflare Workers via the [OpenNext](https://opennext.js.org/cloudflare)

@@ -162,3 +162,20 @@ body::after {
 .animate-fade-up {
   animation: fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+
+/* "Leaving the site" transition (BookNowLink → Instagram). Skipped entirely
+   under prefers-reduced-motion by the component, not just muted here. */
+@keyframes bucket-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0 var(--color-accent-hi));
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    filter: drop-shadow(0 0 22px var(--color-accent-hi));
+    transform: scale(1.1) rotate(-4deg);
+  }
+}
+.animate-bucket-glow {
+  animation: bucket-glow 0.9s ease-in-out infinite;
+}

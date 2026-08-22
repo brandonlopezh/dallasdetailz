@@ -8,7 +8,6 @@ import BookNowLink from "./BookNowLink";
 const NAV = [
   { href: "#services", label: "Services" },
   // TEMPORARILY HIDDEN: { href: "#gallery", label: "Gallery" },
-  { href: "#story", label: "Our Story" },
   { href: "#area", label: "Area" },
 ];
 

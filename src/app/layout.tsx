@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     template: "%s | Dallas Detailz",
   },
   description:
-    "Mobile auto detailing across Duncanville, Dallas & DFW. We come to you for exterior, interior, and full details for trucks, SUVs, and more. Book online in under 90 seconds.",
+    "Mobile auto detailing across Duncanville, Dallas & DFW. We come to you for exterior, interior, and full details for trucks, SUVs, and more.",
   keywords: [
     "mobile detailing Dallas",
     "car detailing Duncanville",
@@ -32,8 +32,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "Dallas Detailz. We come to you. DFW mobile detailing.",
-    description:
-      "Exterior, interior, and full details across DFW. Book online in under 90 seconds.",
+    description: "Exterior, interior, and full details across DFW.",
     url: SITE_URL,
     siteName: "Dallas Detailz",
     type: "website",

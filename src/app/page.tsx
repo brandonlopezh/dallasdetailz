@@ -3,11 +3,12 @@ import SiteHeader from "@/components/SiteHeader";
 import MobileBookBar from "@/components/MobileBookBar";
 import BookNowLink from "@/components/BookNowLink";
 import InstagramNudge from "@/components/InstagramNudge";
+import InstagramFeed from "@/components/InstagramFeed";
 // TEMPORARILY HIDDEN: BeforeAfterSlider powers "The difference" section below.
 // import BeforeAfterSlider from "@/components/BeforeAfterSlider";
 import Faq from "@/components/Faq";
 import { getServices } from "@/lib/catalog";
-import { INSTAGRAM_URL, PHONE_TEL } from "@/lib/site-config";
+import { INSTAGRAM_HANDLE, INSTAGRAM_URL, PHONE_TEL } from "@/lib/site-config";
 import {
   // TEMPORARILY HIDDEN: feeds "The difference" + "Recent work" sections below.
   // getBeforeAfterPairs,
@@ -88,8 +89,8 @@ export default async function Home() {
           <div className="absolute inset-0 -z-10 bg-gradient-to-t from-base via-base/85 to-base/45" />
           <div className="absolute inset-0 -z-10 bg-gradient-to-r from-base/95 via-base/60 to-transparent" />
 
-          <div className="relative mx-auto flex min-h-[640px] max-w-6xl flex-col justify-end px-4 pb-16 pt-28 sm:min-h-[700px] sm:px-6 lg:min-h-[780px] lg:pb-20">
-            <div className="max-w-2xl">
+          <div className="relative mx-auto grid min-h-[640px] max-w-6xl gap-8 px-4 pb-16 pt-28 sm:min-h-[700px] sm:px-6 lg:min-h-[780px] lg:grid-cols-[1.1fr_0.9fr] lg:items-end lg:gap-14 lg:pb-20">
+            <div>
               <p className="animate-fade-up mb-5 flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.22em] text-accent-hi">
                 <span className="h-px w-8 bg-accent-hi/60" />
                 Mobile detailing DFW
@@ -122,63 +123,44 @@ export default async function Home() {
                 <InstagramNudge />
               </div>
             </div>
-          </div>
-        </section>
 
-        {/* OUR STORY ------------------------------------------------------- */}
-        <section
-          id="story"
-          className="scroll-mt-20 border-y border-border bg-band-3"
-        >
-          <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-            <p className="mb-4 flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.22em] text-accent-hi">
-              <span className="h-px w-8 bg-accent-hi/60" />
-              Our story
-            </p>
-            <h2 className="max-w-4xl font-[family-name:var(--font-display)] text-4xl font-extrabold uppercase leading-[0.95] tracking-tight sm:text-5xl">
-              Two brothers, one bucket at a time.
-            </h2>
-
-            <div className="mt-4 rule" />
-
-            <p className="mt-8 max-w-4xl text-lg leading-relaxed text-muted">
-              We&apos;re fraternal twins, still in high school, and we started
-              Dallas Detailz to make our family proud and show them we can
-              excel into whatever we put our minds to.
-            </p>
-
-            <p className="mt-6 max-w-4xl text-xl font-medium leading-relaxed text-ink">
-              When you book us, you&apos;re not hiring a franchise. You&apos;re
-              backing two brothers who show up on time, work hard, and make
-              your vehicle shine like it should.
-            </p>
-
-            <div className="mt-10 flex flex-wrap items-center gap-8 gap-y-6">
-              <ul className="flex flex-wrap gap-2">
-                {[
-                  "Family-run",
-                  "Raised in Oak Cliff",
-                  "Every job done with care",
-                ].map((tag) => (
-                  <li
-                    key={tag}
-                    className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium"
-                  >
-                    {tag}
-                  </li>
-                ))}
-              </ul>
-
+            {/* Family/trust card — was its own "Our Story" section, folded in
+                here as the hero's second column instead. */}
+            <div className="animate-fade-up rounded-[var(--radius-lg)] border border-border bg-surface/70 p-6 backdrop-blur lg:p-7">
               {/* Operator-managed: upload a photo of the brothers in admin →
-                  Images and it appears here alongside the tags. */}
+                  Images and it appears here. */}
               {hasStoryPhoto && (
                 <div
-                  className="h-28 w-40 shrink-0 rounded-[var(--radius-md)] border border-border"
+                  className="mb-5 h-36 w-full rounded-[var(--radius-md)] border border-border"
                   style={{ background: storyBg }}
                   role="img"
                   aria-label="The Dallas Detailz brothers at work"
                 />
               )}
+              <p className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-accent-hi">
+                <span className="h-px w-6 bg-accent-hi/60" />
+                Family-run
+              </p>
+              <p className="text-lg font-medium leading-relaxed text-ink">
+                We&apos;re fraternal twins, still in high school, and we
+                started Dallas Detailz to make our family proud and show them
+                we can excel into whatever we put our minds to.
+              </p>
+              <p className="mt-4 text-sm leading-relaxed text-muted">
+                When you book us, you&apos;re not hiring a franchise.
+                You&apos;re backing two brothers who show up on time, work
+                hard, and make your vehicle shine like it should.
+              </p>
+              <ul className="mt-5 flex flex-wrap gap-2">
+                {["Raised in Oak Cliff", "Every job done with care"].map((tag) => (
+                  <li
+                    key={tag}
+                    className="rounded-full border border-border bg-base/40 px-3 py-1.5 text-xs font-medium"
+                  >
+                    {tag}
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </section>
@@ -241,6 +223,26 @@ export default async function Home() {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* INSTAGRAM --------------------------------------------------------- */}
+        <section className="border-b border-border bg-band-3">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+            <div className="mb-8 flex items-end justify-between">
+              <h2 className="font-[family-name:var(--font-display)] text-3xl font-extrabold uppercase tracking-tight">
+                On Instagram
+              </h2>
+              <a
+                href={INSTAGRAM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="link-sweep text-sm font-semibold text-accent-hi"
+              >
+                {INSTAGRAM_HANDLE} →
+              </a>
+            </div>
+            <InstagramFeed />
           </div>
         </section>
 
@@ -307,11 +309,11 @@ export default async function Home() {
         */}
 
         {/* SERVICE AREA ---------------------------------------------------- */}
-        <section id="area" className="scroll-mt-20 border-y border-border bg-band-3">
+        <section id="area" className="scroll-mt-20 border-y border-border bg-band-1">
           <div className="mx-auto grid max-w-6xl gap-8 px-4 py-16 sm:px-6 md:grid-cols-2 md:items-center">
             <div>
               <h2 className="font-[family-name:var(--font-display)] text-3xl font-extrabold uppercase tracking-tight">
-                Where we roll
+                Where we bring the shine ✨
               </h2>
               <p className="mt-3 text-muted">
                 Based in Dallas, serving DFW and areas near 75249.
@@ -356,9 +358,6 @@ export default async function Home() {
             <h2 className="font-[family-name:var(--font-display)] text-4xl font-extrabold uppercase tracking-tight sm:text-5xl">
               Ready for that new-car feeling?
             </h2>
-            <p className="mx-auto mt-4 max-w-lg text-muted">
-              Book online in under 90 seconds.
-            </p>
             <BookNowLink className="tap mt-8 inline-flex items-center rounded-[var(--radius-md)] bg-accent px-8 text-lg font-bold text-white transition-colors hover:bg-accent-hi">
               Book Now
             </BookNowLink>

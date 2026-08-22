@@ -8,6 +8,16 @@ export const PHONE_TEL = "tel:+12149913908";
 export const PHONE_DISPLAY = "(214) 991-3908";
 
 /**
+ * Powers the "On Instagram" feed section. SnapWidget (snapwidget.com) is a
+ * free, no-code Instagram feed embed — connect the @dallasdetailz account on
+ * their site once, and they hand you back a numeric widget ID; no API keys
+ * or token refreshing on our end (they maintain that connection on theirs).
+ * Set NEXT_PUBLIC_SNAPWIDGET_ID to that ID. Unset = the section falls back
+ * to a plain "Follow us on Instagram" card instead of an empty/broken embed.
+ */
+export const SNAPWIDGET_ID = process.env.NEXT_PUBLIC_SNAPWIDGET_ID;
+
+/**
  * The in-site request flow (/book → operator SMS approval → customer
  * follow-up text, plus Apple Calendar busy-time sync) is fully built — see
  * README "Booking approval (SMS) + calendar sync" — but nothing fires until
