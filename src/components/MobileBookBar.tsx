@@ -2,6 +2,7 @@
 
 import BookNowLink from "./BookNowLink";
 import InstagramIcon from "./icons/InstagramIcon";
+import { useLanguage } from "./LanguageProvider";
 import { INSTAGRAM_URL, PHONE_TEL } from "@/lib/site-config";
 
 /**
@@ -9,14 +10,15 @@ import { INSTAGRAM_URL, PHONE_TEL } from "@/lib/site-config";
  * Hidden on md+ where the header CTA is always visible.
  */
 export default function MobileBookBar() {
+  const { t } = useLanguage();
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-base/90 p-3 backdrop-blur md:hidden">
       <div className="mx-auto flex max-w-6xl items-center gap-2">
         <a
           href={PHONE_TEL}
           className="tap grid aspect-square place-items-center rounded-[var(--radius-sm)] border border-border text-lg"
-          aria-label="Call Dallas Detailz"
-          title="Call Dallas Detailz"
+          aria-label={t.mobileBar.callLabel}
+          title={t.mobileBar.callLabel}
         >
           📞
         </a>
@@ -25,16 +27,16 @@ export default function MobileBookBar() {
           target="_blank"
           rel="noopener noreferrer"
           className="tap group relative grid aspect-square place-items-center rounded-[var(--radius-sm)] border border-border"
-          aria-label="DM Dallas Detailz on Instagram for a quicker response"
-          title="DM on Instagram for a quicker response"
+          aria-label={t.mobileBar.instagramTooltip}
+          title={t.mobileBar.instagramTooltip}
         >
           <InstagramIcon className="h-5 w-5" />
           <span className="pointer-events-none absolute bottom-full left-1/2 mb-2 w-max max-w-[11rem] -translate-x-1/2 scale-90 rounded-md bg-ink px-2 py-1 text-center text-xs font-medium text-[var(--color-base)] opacity-0 shadow-lg transition-all duration-150 group-hover:scale-100 group-hover:opacity-100">
-            DM on Instagram for a quicker response
+            {t.mobileBar.instagramTooltip}
           </span>
         </a>
         <BookNowLink className="tap flex flex-1 items-center justify-center rounded-[var(--radius-sm)] bg-accent px-4 text-base font-bold text-white transition-colors hover:bg-accent-hi">
-          Book Now
+          {t.common.bookNow}
         </BookNowLink>
       </div>
     </div>

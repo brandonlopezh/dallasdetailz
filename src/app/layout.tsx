@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Archivo, Inter } from "next/font/google";
+import { LanguageProvider } from "@/components/LanguageProvider";
 import "./globals.css";
 
 const display = Archivo({
@@ -46,7 +47,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${display.variable} ${body.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-base text-ink">
-        {children}
+        <LanguageProvider>{children}</LanguageProvider>
       </body>
     </html>
   );

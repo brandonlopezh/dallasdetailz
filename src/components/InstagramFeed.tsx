@@ -1,12 +1,24 @@
+"use client";
+
+import InstagramEmbedGrid from "./InstagramEmbedGrid";
 import InstagramIcon from "./icons/InstagramIcon";
+import { useLanguage } from "./LanguageProvider";
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL, SNAPWIDGET_ID } from "@/lib/site-config";
+import { INSTAGRAM_POST_URLS } from "@/lib/instagram-posts";
 
 /**
- * Embeds the @dallasdetailz feed via SnapWidget (see site-config.ts for
- * setup). Falls back to a simple "Follow us" card when no widget ID is
- * configured yet, so this section never renders empty or broken.
+ * Three tiers, in priority order:
+ *  1. SnapWidget (see SNAPWIDGET_ID in site-config.ts) — a real live-syncing
+ *     feed, once that connection is set up.
+ *  2. A manually curated grid of posts (see instagram-posts.ts) — what's
+ *     live today. No API keys, but doesn't auto-update; someone has to
+ *     paste in new post URLs occasionally.
+ *  3. A plain "Follow us" card, only if neither of the above is configured
+ *     — so this section never renders empty or broken.
  */
 export default function InstagramFeed() {
+  const { t } = useLanguage();
+
   if (SNAPWIDGET_ID) {
     return (
       <div className="overflow-hidden rounded-[var(--radius-lg)] border border-border">
@@ -20,6 +32,10 @@ export default function InstagramFeed() {
     );
   }
 
+  if (INSTAGRAM_POST_URLS.length > 0) {
+    return <InstagramEmbedGrid />;
+  }
+
   return (
     <a
       href={INSTAGRAM_URL}
@@ -29,11 +45,9 @@ export default function InstagramFeed() {
     >
       <InstagramIcon className="h-9 w-9 text-accent-hi" />
       <p className="font-[family-name:var(--font-display)] text-xl font-bold">
-        Follow {INSTAGRAM_HANDLE}
+        {INSTAGRAM_HANDLE}
       </p>
-      <p className="max-w-sm text-sm text-muted">
-        See our latest jobs and behind-the-scenes on Instagram.
-      </p>
+      <p className="max-w-sm text-sm text-muted">{t.instagram.followBody}</p>
     </a>
   );
 }

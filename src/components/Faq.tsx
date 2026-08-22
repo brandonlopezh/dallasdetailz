@@ -1,43 +1,14 @@
 "use client";
 
 import { useState } from "react";
-
-const FAQS: { q: string; a: string }[] = [
-  {
-    q: "Do you really come to me?",
-    a: "Yes, we're fully mobile. We bring everything to your home or office anywhere in DFW. Just tell us where to park.",
-  },
-  {
-    q: "Do you need water and power access?",
-    a: "Yes, this is required. We need an outdoor water spigot and a standard power outlet at the address to detail your vehicle. If you're not sure you have both, let us know before booking.",
-  },
-  {
-    q: "How long does a detail take?",
-    a: "Depends on the vehicle and package. An exterior on a mid-size truck runs about 75 minutes; a full detail on a large SUV can take 3-4 hours. Your exact time shows before you confirm.",
-  },
-  {
-    q: "What if it rains?",
-    a: "We watch the forecast and flag rain risk on your booking. If the weather won't cooperate, we'll reach out to reschedule. No charge, no hassle.",
-  },
-  {
-    q: "How do I pay?",
-    a: "We accept Zelle and Cash only. Prices shown are final, no deposit required to book.",
-  },
-  {
-    q: "What areas do you serve?",
-    a: "Duncanville, Cedar Hill, DeSoto, Grand Prairie, Dallas, and the greater DFW metro, including areas near 75249.",
-  },
-  {
-    q: "How fast do we reply?",
-    a: "We're still in high school, so we'll ideally reply before 8 AM and after 4 PM. Please bear with us!",
-  },
-];
+import { useLanguage } from "./LanguageProvider";
 
 export default function Faq() {
   const [open, setOpen] = useState<number | null>(0);
+  const { t } = useLanguage();
   return (
     <div className="mx-auto max-w-3xl divide-y divide-border rounded-[var(--radius-md)] border border-border bg-surface">
-      {FAQS.map((item, i) => {
+      {t.faq.items.map((item, i) => {
         const isOpen = open === i;
         return (
           <div key={item.q}>

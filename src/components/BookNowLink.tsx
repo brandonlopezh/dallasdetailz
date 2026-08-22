@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useLanguage } from "./LanguageProvider";
 import { BOOKING_FLOW_LIVE, INSTAGRAM_URL, bookHref } from "@/lib/site-config";
 
 interface BookNowLinkProps {
@@ -76,6 +77,7 @@ export default function BookNowLink({
 }
 
 function LeavingOverlay() {
+  const { t } = useLanguage();
   return (
     <div
       className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-3 bg-base/90 backdrop-blur-sm"
@@ -85,17 +87,15 @@ function LeavingOverlay() {
       <span className="animate-bucket-glow text-6xl" aria-hidden="true">
         🪣
       </span>
-      <p className="font-[family-name:var(--font-display)] text-lg font-bold">
-        Taking you to Instagram…
-      </p>
-      <p className="text-sm text-muted">Opening in a new tab</p>
+      <p className="font-[family-name:var(--font-display)] text-lg font-bold">{t.leaving.title}</p>
+      <p className="text-sm text-muted">{t.leaving.subtitle}</p>
       <a
         href={INSTAGRAM_URL}
         target="_blank"
         rel="noopener noreferrer"
         className="link-sweep mt-2 text-sm font-semibold text-accent-hi"
       >
-        Tap here if it doesn&apos;t open
+        {t.leaving.tapHere}
       </a>
     </div>
   );

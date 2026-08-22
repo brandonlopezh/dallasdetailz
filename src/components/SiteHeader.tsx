@@ -4,15 +4,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import BookNowLink from "./BookNowLink";
-
-const NAV = [
-  { href: "#services", label: "Services" },
-  // TEMPORARILY HIDDEN: { href: "#gallery", label: "Gallery" },
-  { href: "#area", label: "Area" },
-];
+import { useLanguage } from "./LanguageProvider";
 
 export default function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
+  const { t, toggleLang } = useLanguage();
+  const NAV = [
+    { href: "#services", label: t.nav.services },
+    // TEMPORARILY HIDDEN: { href: "#gallery", label: "Gallery" },
+    { href: "#area", label: t.nav.area },
+  ];
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
@@ -28,7 +30,7 @@ export default function SiteHeader() {
           : "border-transparent bg-transparent"
       }`}
     >
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2.5">
           <Image
             src="/logo.jpg"
@@ -55,9 +57,18 @@ export default function SiteHeader() {
           ))}
         </nav>
 
-        <BookNowLink className="tap inline-flex items-center rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-hi">
-          Book Now
-        </BookNowLink>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={toggleLang}
+            className="tap whitespace-nowrap rounded-full border border-border bg-surface/60 px-3 py-1.5 text-xs font-semibold text-ink backdrop-blur transition-colors hover:border-accent sm:text-sm"
+          >
+            {t.languageToggle.label}
+          </button>
+          <BookNowLink className="tap inline-flex items-center rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-hi">
+            {t.common.bookNow}
+          </BookNowLink>
+        </div>
       </div>
     </header>
   );
