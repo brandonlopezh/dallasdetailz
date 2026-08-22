@@ -1,6 +1,6 @@
 # Dallas Detailz
 
-Booking & operations platform for a DFW mobile detailing crew. Next.js + Supabase, built to run entirely on free tiers (Vercel + Supabase). See `dallas-detailz-prd.md`… (PRD kept in the repo root) for the full spec.
+Booking & operations platform for a DFW mobile detailing crew. Next.js + Supabase, built to run entirely on free tiers (Cloudflare Workers + Supabase). See `dallas-detailz-prd.md`… (PRD kept in the repo root) for the full spec.
 
 ## Status
 
@@ -20,7 +20,7 @@ Booking & operations platform for a DFW mobile detailing crew. Next.js + Supabas
 | Layer | Choice | Free tier |
 |---|---|---|
 | Framework | Next.js 16 (App Router, TS) | — |
-| Hosting | Vercel | ✅ |
+| Hosting | Cloudflare Workers (via OpenNext) | ✅ (100k req/day) |
 | Database + Auth | Supabase (Postgres) | ✅ |
 | SMS / Email | Twilio / Resend | pay-per-use (later) |
 
@@ -65,10 +65,68 @@ any slot with no image yet.
 > The seed pricing/durations are **placeholders**. PRD §11 Q1 is blocking:
 > replace with the real menu and real two-person job times before launch.
 
-## Deploy (Vercel)
+## Deploy (Cloudflare Workers)
 
-Import the repo, add the same env vars in Vercel Project Settings, deploy.
-The homepage is static; API routes are serverless functions.
+Hosted on Cloudflare Workers via the [OpenNext](https://opennext.js.org/cloudflare)
+adapter (`@opennextjs/cloudflare`) — API routes and server components keep
+running server-side, unlike a static export. Free tier covers 100k
+requests/day, which is far more than this site needs.
+
+> **No `proxy.ts`.** Next.js 16's `proxy.ts` (formerly middleware) always
+> runs on the Node.js runtime, and Cloudflare's OpenNext adapter doesn't
+> support Node.js middleware yet (open issue, no ETA:
+> [cloudflare/workers-sdk#13755](https://github.com/cloudflare/workers-sdk/issues/13755)).
+> It wasn't the auth boundary anyway — `getAdminUser()` is checked
+> independently in the `(dash)` layout and every `/api/admin/*` route — but
+> it *was* what silently refreshed the Supabase session cookie on every
+> `/admin` request. That job now belongs to `GET /api/admin/refresh`, pinged
+> every 10 min by `<SessionRefresher>` (rendered in the admin layout) so a
+> session doesn't go stale mid-task. If Cloudflare/OpenNext ever ships
+> Node.js middleware support, `proxy.ts` (still in `_to_delete/` from the
+> migration, restorable) could come back and this workaround could go away.
+
+**One-time setup:**
+
+1. `npx wrangler login` — authorizes the CLI against your (free) Cloudflare
+   account in the browser.
+2. In the Cloudflare dashboard → Workers & Pages → your Worker → Settings →
+   Variables, add the same vars as `.env.example`
+   (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `ADMIN_EMAILS`,
+   `NEXT_PUBLIC_SITE_URL`) and add `SUPABASE_SERVICE_ROLE_KEY` as an
+   **encrypted secret** (`npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY`)
+   rather than a plaintext variable.
+3. **Deploy command:** set it to `npm run deploy`, not the dashboard's
+   default `npx wrangler deploy` — the default triggers Wrangler's
+   auto-config/migrate step, which regenerates `wrangler.jsonc` /
+   `open-next.config.ts` on every build instead of using the ones committed
+   here.
+4. In Supabase → Authentication → URL Configuration, add the production
+   redirect URL: `https://<your-worker>.workers.dev/admin/auth/callback`
+   (or your custom domain, once attached).
+
+**Deploy:**
+
+```bash
+npm run deploy      # opennextjs-cloudflare build + wrangler deploy
+```
+
+Or connect the GitHub repo in the Cloudflare dashboard (Workers & Pages →
+Create → Connect to Git) for automatic deploys on every push to `main`,
+same as the old Vercel flow — just make sure the deploy command is
+`npm run deploy` (see step 3 above).
+
+**Local preview under the real Workers runtime** (optional, catches
+Workers-specific issues `next dev` won't):
+
+```bash
+cp .dev.vars.example .dev.vars   # fill in the same values as .env.local
+npm run preview
+```
+
+A custom domain (e.g. `dallasdetailz.com`) can be attached for free in
+Workers & Pages → your Worker → Settings → Domains & Routes — Cloudflare
+handles the DNS/SSL at no cost as long as the domain's nameservers point to
+Cloudflare.
 
 ## API
 
@@ -77,6 +135,7 @@ The homepage is static; API routes are serverless functions.
 | `GET /api/catalog` | Services + pricing, add-ons, public settings |
 | `GET /api/availability?serviceId=&tier=&addons=` | Open slots for the horizon |
 | `POST /api/bookings` | Create a confirmed booking (server-priced, DB-guarded) |
+| `GET /api/admin/refresh` | Refreshes the admin's Supabase session cookie (pinged by `<SessionRefresher>`) |
 
 ## Architecture notes
 

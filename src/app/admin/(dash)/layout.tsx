@@ -4,6 +4,7 @@ import { getAdminUser } from "@/lib/auth";
 import { countRequests } from "@/lib/admin-bookings";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import SignOutButton from "@/components/admin/SignOutButton";
+import SessionRefresher from "@/components/admin/SessionRefresher";
 
 const NAV = [
   { href: "/admin", label: "Today" },
@@ -41,6 +42,7 @@ export default async function DashLayout({
 
   return (
     <div className="min-h-screen">
+      <SessionRefresher />
       <header className="sticky top-0 z-40 border-b border-border bg-base/85 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-4xl items-center justify-between gap-3 px-4">
           <nav className="flex items-center gap-4 overflow-x-auto">

@@ -1,0 +1,9 @@
+# Copy to .dev.vars and fill in to run `npm run preview` (Workers runtime,
+# via `wrangler`) locally. Same values as .env.local — `next dev` reads
+# .env.local directly, so this file is only needed for the Workers preview.
+
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_SITE_URL=http://localhost:8788
+ADMIN_EMAILS=brandolopz@gmail.com
