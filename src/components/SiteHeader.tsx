@@ -65,7 +65,7 @@ export default function SiteHeader() {
           >
             {t.languageToggle.label}
           </button>
-          <BookNowLink className="tap inline-flex items-center rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-hi">
+          <BookNowLink className="tap hidden items-center rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-hi md:inline-flex">
             {t.common.bookNow}
           </BookNowLink>
         </div>

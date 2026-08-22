@@ -133,7 +133,7 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
       subtitle: "Opening in a new tab",
       tapHere: "Tap here if it doesn't open",
     },
-    languageToggle: { label: "Hablamos Español" },
+    languageToggle: { label: "Español" },
   },
   es: {
     nav: { services: "Servicios", area: "Zona" },
