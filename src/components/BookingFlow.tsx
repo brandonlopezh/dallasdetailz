@@ -275,9 +275,10 @@ function StepWhereWhen({
         onChange={(e) => set({ address: e.target.value })}
       />
 
-      <div className="mt-4 grid grid-cols-2 gap-3">
-        <Toggle label="Water access?" on={draft.waterAccess} onChange={(v) => set({ waterAccess: v })} />
-        <Toggle label="Outlet access?" on={draft.outletAccess} onChange={(v) => set({ outletAccess: v })} />
+      <div className="mt-4 rounded-[var(--radius-md)] border border-warning/40 bg-warning/10 p-3 text-sm">
+        <span className="font-semibold">Required:</span> outdoor water access
+        and a working power outlet at the address. We can&apos;t detail
+        without both.
       </div>
 
       <button
@@ -347,28 +348,6 @@ function StepWhereWhen({
       </div>
       <InputStyles />
     </section>
-  );
-}
-
-function Toggle({
-  label,
-  on,
-  onChange,
-}: {
-  label: string;
-  on: boolean;
-  onChange: (v: boolean) => void;
-}) {
-  return (
-    <button
-      onClick={() => onChange(!on)}
-      className={`flex items-center justify-between rounded-[var(--radius-md)] border px-4 py-3 text-sm ${
-        on ? "border-accent bg-accent/10" : "border-border bg-surface"
-      }`}
-    >
-      {label}
-      <span className="font-bold">{on ? "Yes" : "No"}</span>
-    </button>
   );
 }
 

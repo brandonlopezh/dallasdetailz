@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import BookingFlow from "@/components/BookingFlow";
+import InstagramNudge from "@/components/InstagramNudge";
 
 export const metadata = {
   title: "Book a Detail",
@@ -12,10 +13,11 @@ export default function BookPage() {
     <main className="mx-auto flex min-h-screen max-w-lg flex-col px-4 py-6">
       <Link
         href="/"
-        className="mb-4 inline-flex items-center gap-2 text-sm text-muted hover:text-ink"
+        className="link-sweep mb-4 inline-flex items-center gap-2 text-sm text-muted hover:text-ink"
       >
         ← Dallas Detailz
       </Link>
+      <InstagramNudge className="mb-5" />
       <Suspense fallback={<p className="text-muted">Loading…</p>}>
         <BookingFlow />
       </Suspense>

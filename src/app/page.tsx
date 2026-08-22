@@ -1,11 +1,13 @@
 import Image from "next/image";
-import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import MobileBookBar from "@/components/MobileBookBar";
+import BookNowLink from "@/components/BookNowLink";
+import InstagramNudge from "@/components/InstagramNudge";
 // TEMPORARILY HIDDEN: BeforeAfterSlider powers "The difference" section below.
 // import BeforeAfterSlider from "@/components/BeforeAfterSlider";
 import Faq from "@/components/Faq";
 import { getServices } from "@/lib/catalog";
+import { INSTAGRAM_URL, PHONE_TEL } from "@/lib/site-config";
 import {
   // TEMPORARILY HIDDEN: feeds "The difference" + "Recent work" sections below.
   // getBeforeAfterPairs,
@@ -106,12 +108,9 @@ export default async function Home() {
                 Duncanville, Dallas, and Cedar Hill.
               </p>
               <div className="animate-fade-up mt-9 flex flex-wrap gap-3">
-                <Link
-                  href="/book"
-                  className="tap inline-flex items-center rounded-[var(--radius-md)] bg-accent px-8 text-lg font-bold text-white transition-colors hover:bg-accent-hi"
-                >
+                <BookNowLink className="tap inline-flex items-center rounded-[var(--radius-md)] bg-accent px-8 text-lg font-bold text-white transition-colors hover:bg-accent-hi">
                   Book Now
-                </Link>
+                </BookNowLink>
                 <a
                   href="#services"
                   className="tap inline-flex items-center rounded-[var(--radius-md)] border border-border bg-surface/60 px-8 text-lg font-semibold text-ink backdrop-blur transition-colors hover:border-accent"
@@ -119,9 +118,9 @@ export default async function Home() {
                   See Pricing
                 </a>
               </div>
-              <p className="animate-fade-up mt-6 text-sm text-muted">
-                Booking takes about 90 seconds. No deposit, no account.
-              </p>
+              <div className="animate-fade-up mt-6">
+                <InstagramNudge />
+              </div>
             </div>
           </div>
         </section>
@@ -212,11 +211,12 @@ export default async function Home() {
             <p className="mt-2 max-w-xl text-muted">
               Prices shown are final, we accept Zelle and Cash only.
             </p>
-            <div className="mt-8 grid gap-5 md:grid-cols-3">
+            <p className="mt-1 text-xs text-muted sm:hidden">Swipe to compare →</p>
+            <div className="no-scrollbar mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2 sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0">
               {services.map((s) => (
                 <div
                   key={s.id}
-                  className="flex flex-col rounded-[var(--radius-lg)] border border-border bg-surface p-6 transition-colors hover:border-accent"
+                  className="hover-lift flex w-[82%] shrink-0 snap-start flex-col rounded-[var(--radius-lg)] border border-border bg-surface p-6 transition-colors hover:border-accent sm:w-auto sm:shrink"
                 >
                   <p className="text-sm font-semibold uppercase tracking-wide text-accent-hi">
                     {s.category}
@@ -232,19 +232,25 @@ export default async function Home() {
                       {money(priceFrom(s))}
                     </span>
                   </div>
-                  <Link
-                    href={`/book?service=${s.id}`}
+                  <BookNowLink
+                    serviceId={s.id}
                     className="tap mt-5 inline-flex items-center justify-center rounded-[var(--radius-sm)] bg-accent px-5 font-bold text-white transition-colors hover:bg-accent-hi"
                   >
                     Book this
-                  </Link>
+                  </BookNowLink>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* HOW IT WORKS ---------------------------------------------------- */}
+        {/* TEMPORARILY HIDDEN — "How it works". Its 3 steps describe the live
+            online-booking flow ("price updates live", "see real open slots",
+            "lock one in") which isn't the current front door — see
+            BOOKING_FLOW_LIVE in src/lib/site-config.ts. Re-add once that's
+            flipped back on, or rewrite the steps to match the current
+            call/DM-first flow.
+
         <section className="bg-band-1"><div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
           <h2 className="font-[family-name:var(--font-display)] text-3xl font-extrabold uppercase tracking-tight">
             How it works
@@ -255,7 +261,7 @@ export default async function Home() {
               { n: "2", t: "Pick your time", d: "See real open slots for the next 3 weeks and lock one in." },
               { n: "3", t: "We show up", d: "We roll to your driveway with everything and get to work." },
             ].map((step) => (
-              <div key={step.n} className="rounded-[var(--radius-lg)] border border-border bg-surface p-6">
+              <div key={step.n} className="hover-lift rounded-[var(--radius-lg)] border border-border bg-surface p-6 transition-colors hover:border-accent">
                 <span className="grid h-11 w-11 place-items-center rounded-full bg-accent font-[family-name:var(--font-display)] text-lg font-extrabold text-white">
                   {step.n}
                 </span>
@@ -265,6 +271,7 @@ export default async function Home() {
             ))}
           </div>
         </div></section>
+        */}
 
         {/* TEMPORARILY HIDDEN — "Recent work" gallery.
             To restore: un-comment this block and change the media fetch at the
@@ -350,14 +357,11 @@ export default async function Home() {
               Ready for that new-car feeling?
             </h2>
             <p className="mx-auto mt-4 max-w-lg text-muted">
-              Book online in under 90 seconds. No account, no phone tag.
+              Book online in under 90 seconds.
             </p>
-            <Link
-              href="/book"
-              className="tap mt-8 inline-flex items-center rounded-[var(--radius-md)] bg-accent px-8 text-lg font-bold text-white transition-colors hover:bg-accent-hi"
-            >
+            <BookNowLink className="tap mt-8 inline-flex items-center rounded-[var(--radius-md)] bg-accent px-8 text-lg font-bold text-white transition-colors hover:bg-accent-hi">
               Book Now
-            </Link>
+            </BookNowLink>
           </div>
         </section>
       </main>
@@ -381,9 +385,9 @@ export default async function Home() {
             </div>
           </div>
           <div className="flex gap-5 text-sm text-muted">
-            <a href="tel:+12149913908" className="hover:text-ink">Call</a>
-            <a href="https://instagram.com/dallasdetailz" className="hover:text-ink" target="_blank" rel="noopener noreferrer">Instagram</a>
-            <Link href="/book" className="hover:text-ink">Book</Link>
+            <a href={PHONE_TEL} className="link-sweep hover:text-ink">Call</a>
+            <a href={INSTAGRAM_URL} className="link-sweep hover:text-ink" target="_blank" rel="noopener noreferrer">Instagram</a>
+            <BookNowLink className="link-sweep hover:text-ink">Book</BookNowLink>
           </div>
           <p className="text-xs text-muted">
             © {new Date().getFullYear()} Dallas Detailz

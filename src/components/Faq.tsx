@@ -9,7 +9,7 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "Do you need water and power access?",
-    a: "Ideally yes, an outdoor spigot and a standard outlet make things easiest. No water or power? Let us know when you book and we'll bring our own setup where possible.",
+    a: "Yes, this is required. We need an outdoor water spigot and a standard power outlet at the address to detail your vehicle. If you're not sure you have both, let us know before booking.",
   },
   {
     q: "How long does a detail take?",
@@ -42,7 +42,7 @@ export default function Faq() {
         return (
           <div key={item.q}>
             <button
-              className="tap flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
+              className="tap flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-surface-alt"
               aria-expanded={isOpen}
               onClick={() => setOpen(isOpen ? null : i)}
             >

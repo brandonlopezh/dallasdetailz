@@ -49,6 +49,7 @@ Booking submission needs the database.
    - `supabase/migrations/0003_seed.sql` (services, pricing, add-ons)
    - `supabase/migrations/0004_media.sql` (site images + `site-media` Storage bucket)
    - `supabase/migrations/0005_approval.sql` (`bookings.approval_token`, for the operator approve/decline link)
+   - `supabase/migrations/0006_interior_copy.sql` (updates the Interior Detail description; only needed if you already ran 0003 before this copy change)
 3. Copy Project Settings → API into `.env.local`:
    - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
 

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import BookNowLink from "./BookNowLink";
 
 const NAV = [
   { href: "#services", label: "Services" },
@@ -48,19 +49,16 @@ export default function SiteHeader() {
             <a
               key={n.href}
               href={n.href}
-              className="text-sm font-medium text-muted transition-colors hover:text-ink"
+              className="link-sweep text-sm font-medium text-muted transition-colors hover:text-ink"
             >
               {n.label}
             </a>
           ))}
         </nav>
 
-        <Link
-          href="/book"
-          className="tap inline-flex items-center rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-hi"
-        >
+        <BookNowLink className="tap inline-flex items-center rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-hi">
           Book Now
-        </Link>
+        </BookNowLink>
       </div>
     </header>
   );

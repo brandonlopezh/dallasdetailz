@@ -27,7 +27,7 @@ export const FALLBACK_SERVICES: Service[] = [
     id: "22222222-2222-2222-2222-222222222222",
     name: "Interior Detail",
     description:
-      "Full vacuum, steam & shampoo, leather/plastic wipe-down, windows, deodorize.",
+      "Full vacuum, leather/plastic wipe-down, window cleaning, deodorize.",
     category: "interior",
     base_duration_min: 120,
     sort_order: 2,
