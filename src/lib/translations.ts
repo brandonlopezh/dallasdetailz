@@ -16,17 +16,9 @@ interface Translations {
   nav: { services: string; area: string };
   common: { bookNow: string };
   hero: {
-    eyebrow: string;
-    headlineLine1: string;
-    headlineLine2: string;
+    title: string;
     summary: string;
     seePricing: string;
-  };
-  familyCard: {
-    eyebrow: string;
-    lead: string;
-    body: string;
-    tags: string[];
   };
   instagramNudge: { question: string; cta: string };
   services: {
@@ -50,20 +42,10 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
     nav: { services: "Services", area: "Area" },
     common: { bookNow: "Book Now" },
     hero: {
-      eyebrow: "Mobile detailing DFW",
-      headlineLine1: "Nobody puts in",
-      headlineLine2: "the work like us",
+      title: "Dallas Detailz",
       summary:
         "Two brothers, a truckload of gear, and your driveway. Providing exterior, interior, and full details across Duncanville, Dallas, and Cedar Hill.",
       seePricing: "See Pricing",
-    },
-    familyCard: {
-      eyebrow: "Family-run",
-      lead:
-        "We're fraternal twins, still in high school, and we started Dallas Detailz to make our family proud and show them we can excel into whatever we put our minds to.",
-      body:
-        "When you book us, you're not hiring a franchise. You're backing two brothers who show up on time, work hard, and make your vehicle shine like it should.",
-      tags: ["Raised in Oak Cliff", "Every job done with care"],
     },
     instagramNudge: {
       question: "Want a quicker response?",
@@ -139,20 +121,10 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
     nav: { services: "Servicios", area: "Zona" },
     common: { bookNow: "Reservar" },
     hero: {
-      eyebrow: "Detailing móvil en DFW",
-      headlineLine1: "Nadie le echa",
-      headlineLine2: "ganas como nosotros",
+      title: "Dallas Detailz",
       summary:
         "Dos hermanos, una camioneta llena de equipo y tu entrada. Ofrecemos limpieza exterior, interior y detallado completo en Duncanville, Dallas y Cedar Hill.",
       seePricing: "Ver precios",
-    },
-    familyCard: {
-      eyebrow: "Negocio familiar",
-      lead:
-        "Somos gemelos, todavía en la prepa (high school), y empezamos Dallas Detailz para enorgullecer a nuestra familia y demostrar que podemos destacar en lo que nos propongamos.",
-      body:
-        "Cuando nos reservas, no estás contratando una franquicia. Estás apoyando a dos hermanos que llegan a tiempo, trabajan duro y dejan tu vehículo brillando como se debe.",
-      tags: ["Criados en Oak Cliff", "Cada trabajo hecho con cuidado"],
     },
     instagramNudge: {
       question: "¿Quieres una respuesta más rápida?",

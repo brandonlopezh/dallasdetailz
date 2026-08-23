@@ -29,7 +29,10 @@ export default function InstagramEmbedGrid() {
     <>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {INSTAGRAM_POST_URLS.map((url) => (
-          <div key={url} className="mx-auto w-full max-w-[400px]">
+          <div
+            key={url}
+            className="mx-auto w-full max-w-[400px] rounded-[var(--radius-lg)] border border-border bg-surface p-4 shadow-lg"
+          >
             <blockquote
               className="instagram-media"
               data-instgrm-captioned=""

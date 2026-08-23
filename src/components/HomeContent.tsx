@@ -7,7 +7,7 @@ import InstagramFeed from "./InstagramFeed";
 import Faq from "./Faq";
 import { useLanguage } from "./LanguageProvider";
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL, PHONE_TEL } from "@/lib/site-config";
-import { CATEGORY_ES, SERVICE_TRANSLATIONS } from "@/lib/translations";
+import { SERVICE_TRANSLATIONS } from "@/lib/translations";
 import type { Service } from "@/lib/types";
 
 function money(n: number) {
@@ -16,61 +16,41 @@ function money(n: number) {
 
 interface HomeContentProps {
   services: Service[];
-  heroBg: string;
-  hasHeroPhoto: boolean;
-  hasStoryPhoto: boolean;
-  storyBg: string | undefined;
 }
 
-export default function HomeContent({
-  services,
-  heroBg,
-  hasHeroPhoto,
-  hasStoryPhoto,
-  storyBg,
-}: HomeContentProps) {
+export default function HomeContent({ services }: HomeContentProps) {
   const { lang, t } = useLanguage();
   const priceFrom = (s: Service) => Math.min(...s.pricing.map((p) => p.price));
 
   return (
     <>
       <main className="flex-1 pb-24 md:pb-0">
+        {/* WALLPAPER WRAPPER ------------------------------------------------
+            Shared blurred backdrop for the entire page above the footer.
+            Every section below keeps its band-color wash, just made
+            translucent so the wallpaper reads through underneath. */}
+        <div className="relative isolate overflow-hidden">
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 -z-20 bg-fixed bg-cover bg-center blur-sm"
+            style={{ backgroundImage: "url('/wallpaper.jpg')" }}
+          />
+          <div aria-hidden="true" className="absolute inset-0 -z-10 bg-base/35" />
+
         {/* HERO ------------------------------------------------------------ */}
         <section className="relative isolate overflow-hidden">
-          {/* Background art. An operator-uploaded hero photo (admin → Images)
-              wins; otherwise the shop illustration carries it. */}
-          {hasHeroPhoto ? (
-            <div className="absolute inset-0 -z-10" style={{ background: heroBg }} />
-          ) : (
-            <Image
-              src="/brothers.jpg"
-              alt=""
-              aria-hidden="true"
-              fill
-              priority
-              sizes="100vw"
-              className="-z-10 object-cover object-center"
-            />
-          )}
-
           {/* Legibility wash: darkens the bottom for the copy, and fades the
-              right side less so the artwork still reads on wide screens. */}
-          <div className="absolute inset-0 -z-10 bg-gradient-to-t from-base via-base/85 to-base/45" />
-          <div className="absolute inset-0 -z-10 bg-gradient-to-r from-base/95 via-base/60 to-transparent" />
+              right side less so the wallpaper still reads on wide screens. */}
+          <div className="absolute inset-0 -z-10 bg-gradient-to-t from-base via-base/70 to-base/30" />
 
-          <div className="relative mx-auto grid min-h-[640px] max-w-6xl gap-8 px-4 pb-16 pt-28 sm:min-h-[700px] sm:px-6 lg:min-h-[780px] lg:grid-cols-[1.1fr_0.9fr] lg:items-end lg:gap-14 lg:pb-20">
+          <div className="relative mx-auto flex min-h-[420px] max-w-6xl flex-col justify-end gap-8 px-4 pb-16 pt-16 sm:min-h-[560px] sm:px-6 sm:pt-28 lg:pb-20">
             <div>
-              <p className="animate-fade-up mb-5 text-sm font-semibold uppercase tracking-[0.22em] text-accent-hi">
-                {t.hero.eyebrow}
-              </p>
-              <h1 className="animate-fade-up font-[family-name:var(--font-display)] text-4xl font-extrabold uppercase leading-[0.95] tracking-[-0.02em] sm:text-6xl">
-                {t.hero.headlineLine1}
-                <br />
-                {t.hero.headlineLine2}
+              <h1 className="animate-fade-up font-[family-name:var(--font-display)] text-5xl uppercase leading-[0.95] tracking-[-0.02em] sm:text-7xl">
+                {t.hero.title}
               </h1>
-              <p className="animate-fade-up mt-6 max-w-lg text-lg leading-relaxed text-muted">
+              <h2 className="animate-fade-up mt-4 max-w-lg text-base font-normal leading-relaxed text-muted sm:mt-6 sm:text-lg">
                 {t.hero.summary}
-              </p>
+              </h2>
               <div className="animate-fade-up mt-9 flex flex-wrap gap-3">
                 <BookNowLink className="tap inline-flex items-center rounded-[var(--radius-md)] bg-accent px-8 text-lg font-bold text-white transition-colors hover:bg-accent-hi">
                   {t.common.bookNow}
@@ -86,41 +66,11 @@ export default function HomeContent({
                 <InstagramNudge />
               </div>
             </div>
-
-            {/* Family/trust card — was its own "Our Story" section, folded in
-                here as the hero's second column instead. */}
-            <div className="animate-fade-up rounded-[var(--radius-lg)] border border-border bg-surface/70 p-6 backdrop-blur lg:p-7">
-              {/* Operator-managed: upload a photo of the brothers in admin →
-                  Images and it appears here. */}
-              {hasStoryPhoto && (
-                <div
-                  className="mb-5 h-36 w-full rounded-[var(--radius-md)] border border-border"
-                  style={{ background: storyBg }}
-                  role="img"
-                  aria-label="The Dallas Detailz brothers at work"
-                />
-              )}
-              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-accent-hi">
-                {t.familyCard.eyebrow}
-              </p>
-              <p className="text-lg font-medium leading-relaxed text-ink">{t.familyCard.lead}</p>
-              <p className="mt-4 text-sm leading-relaxed text-muted">{t.familyCard.body}</p>
-              <ul className="mt-5 flex flex-wrap gap-2">
-                {t.familyCard.tags.map((tag) => (
-                  <li
-                    key={tag}
-                    className="rounded-full border border-border bg-base/40 px-3 py-1.5 text-xs font-medium"
-                  >
-                    {tag}
-                  </li>
-                ))}
-              </ul>
-            </div>
           </div>
         </section>
 
         {/* SERVICES -------------------------------------------------------- */}
-        <section id="services" className="scroll-mt-20 border-b border-border bg-band-2">
+        <section id="services" className="scroll-mt-20 border-b border-border bg-band-2/70">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
             <h2 className="font-[family-name:var(--font-display)] text-3xl font-extrabold uppercase tracking-tight">
               {t.services.heading}
@@ -130,7 +80,6 @@ export default function HomeContent({
             <div className="no-scrollbar mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2 sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0">
               {services.map((s) => {
                 const es = lang === "es" ? SERVICE_TRANSLATIONS[s.id] : undefined;
-                const category = lang === "es" ? (CATEGORY_ES[s.category] ?? s.category) : s.category;
                 const name = es?.name ?? s.name;
                 const description = es?.description ?? s.description;
                 return (
@@ -138,10 +87,7 @@ export default function HomeContent({
                     key={s.id}
                     className="hover-lift flex w-[82%] shrink-0 snap-start flex-col rounded-[var(--radius-lg)] border border-border bg-surface p-6 transition-colors hover:border-accent sm:w-auto sm:shrink"
                   >
-                    <p className="text-sm font-semibold uppercase tracking-wide text-accent-hi">
-                      {category}
-                    </p>
-                    <h3 className="mt-1 font-[family-name:var(--font-display)] text-2xl font-bold">
+                    <h3 className="font-[family-name:var(--font-display)] text-2xl font-bold">
                       {name}
                     </h3>
                     <p className="mt-3 flex-1 text-sm leading-relaxed text-muted">{description}</p>
@@ -164,7 +110,7 @@ export default function HomeContent({
         </section>
 
         {/* INSTAGRAM --------------------------------------------------------- */}
-        <section className="border-b border-border bg-band-3">
+        <section className="border-b border-border bg-band-3/70">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
             <div className="mb-8 flex items-end justify-between">
               <h2 className="font-[family-name:var(--font-display)] text-3xl font-extrabold uppercase tracking-tight">
@@ -184,7 +130,7 @@ export default function HomeContent({
         </section>
 
         {/* SERVICE AREA ---------------------------------------------------- */}
-        <section id="area" className="scroll-mt-20 border-y border-border bg-band-1">
+        <section id="area" className="scroll-mt-20 border-y border-border bg-band-1/70">
           <div className="mx-auto grid max-w-6xl gap-8 px-4 py-16 sm:px-6 md:grid-cols-2 md:items-center">
             <div>
               <h2 className="font-[family-name:var(--font-display)] text-3xl font-extrabold uppercase tracking-tight">
@@ -216,7 +162,7 @@ export default function HomeContent({
         </section>
 
         {/* FAQ ------------------------------------------------------------- */}
-        <section className="bg-band-2">
+        <section className="bg-band-2/70">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
             <h2 className="mb-8 text-center font-[family-name:var(--font-display)] text-3xl font-extrabold uppercase tracking-tight">
               {t.faq.heading}
@@ -226,7 +172,7 @@ export default function HomeContent({
         </section>
 
         {/* FINAL CTA ------------------------------------------------------- */}
-        <section className="border-t border-border bg-band-4">
+        <section className="border-t border-border bg-band-4/70">
           <div className="mx-auto max-w-6xl px-4 py-20 text-center sm:px-6">
             <h2 className="font-[family-name:var(--font-display)] text-4xl font-extrabold uppercase tracking-tight sm:text-5xl">
               {t.finalCta.heading}
@@ -236,10 +182,11 @@ export default function HomeContent({
             </BookNowLink>
           </div>
         </section>
+        </div>
       </main>
 
       {/* FOOTER ------------------------------------------------------------ */}
-      <footer className="border-t border-border">
+      <footer className="border-t border-border bg-base">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <div className="flex items-center gap-3">
             <Image

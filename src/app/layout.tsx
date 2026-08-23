@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Archivo, Inter } from "next/font/google";
+import { Racing_Sans_One, Inter } from "next/font/google";
 import { LanguageProvider } from "@/components/LanguageProvider";
 import "./globals.css";
 
-const display = Archivo({
+const display = Racing_Sans_One({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["600", "700", "800", "900"],
+  weight: "400",
 });
 
 const body = Inter({
