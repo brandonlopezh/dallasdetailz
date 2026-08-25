@@ -5,7 +5,7 @@ import BookNowLink from "./BookNowLink";
 import InstagramFeed from "./InstagramFeed";
 import Faq from "./Faq";
 import { useLanguage } from "./LanguageProvider";
-import { INSTAGRAM_HANDLE, INSTAGRAM_URL, PHONE_TEL } from "@/lib/site-config";
+import { INSTAGRAM_HANDLE, INSTAGRAM_URL, PHONE_SMS, PHONE_TEL } from "@/lib/site-config";
 import { SERVICE_TRANSLATIONS } from "@/lib/translations";
 import type { Service } from "@/lib/types";
 
@@ -20,6 +20,12 @@ interface HomeContentProps {
 export default function HomeContent({ services }: HomeContentProps) {
   const { lang, t } = useLanguage();
   const priceFrom = (s: Service) => Math.min(...s.pricing.map((p) => p.price));
+  const bookSmsHref = (s: Service) => {
+    const label = t.services.smsLabels[s.category] ?? s.name;
+    const template = s.category === "full" ? t.services.smsBodyFull : t.services.smsBody;
+    const body = template.replace("{service}", label);
+    return `${PHONE_SMS}?&body=${encodeURIComponent(body)}`;
+  };
 
   return (
     <>
@@ -141,12 +147,12 @@ export default function HomeContent({ services }: HomeContentProps) {
                           {money(priceFrom(s))}
                         </span>
                       </div>
-                      <BookNowLink
-                        serviceId={s.id}
-                        className="tap mt-5 inline-flex items-center justify-center rounded-[var(--radius-sm)] bg-accent px-5 font-bold text-white transition-colors hover:bg-accent-hi"
+                      <a
+                        href={bookSmsHref(s)}
+                        className="tap mt-5 inline-flex items-center justify-center rounded-[var(--radius-sm)] bg-accent px-5 font-bold text-white transition-colors hover:bg-accent-hi sm:hidden"
                       >
                         {t.services.bookThis}
-                      </BookNowLink>
+                      </a>
                     </div>
                   </div>
                 );

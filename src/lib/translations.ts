@@ -26,13 +26,16 @@ interface Translations {
     swipeHint: string;
     bookThis: string;
     bestDeal: string;
+    smsBody: string;
+    smsBodyFull: string;
+    smsLabels: { exterior: string; interior: string; full: string };
   };
   instagram: { visit: string; followBody: string };
   area: { heading: string; description: string; cities: string[] };
   faq: { heading: string; items: FaqItem[] };
   finalCta: { heading: string };
   footer: { tagline: string; call: string; instagram: string; book: string };
-  mobileBar: { callLabel: string; textTooltip: string };
+  mobileBar: { callLabel: string; instagramTooltip: string; bookNowSmsBody: string };
   leaving: { title: string; subtitle: string; tapHere: string };
   languageToggle: { label: string };
 }
@@ -53,6 +56,10 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
       swipeHint: "Swipe to compare →",
       bookThis: "Book this",
       bestDeal: "Best Deal",
+      smsBody: "Hello, I am interested in booking the {service} service! Let me know when there is availability.",
+      smsBodyFull:
+        "Hello, I am interested in your best deal, the {service} service! Let me know when there is availability.",
+      smsLabels: { exterior: "Exterior", interior: "Interior", full: "Full Detail" },
     },
     instagram: {
       visit: "Visit →",
@@ -105,7 +112,8 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
     },
     mobileBar: {
       callLabel: "Call Dallas Detailz",
-      textTooltip: "Text Dallas Detailz",
+      instagramTooltip: "Follow Dallas Detailz on Instagram",
+      bookNowSmsBody: "Hello, I am interested in a service, what do you recommend?",
     },
     leaving: {
       title: "Taking you to Instagram…",
@@ -129,6 +137,10 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
       swipeHint: "Desliza para comparar →",
       bookThis: "Reservar esto",
       bestDeal: "Mejor oferta",
+      smsBody: "Hola, me interesa reservar el servicio de {service}. Avísame cuándo hay disponibilidad.",
+      smsBodyFull:
+        "Hola, me interesa su mejor oferta, el servicio de {service}. Avísame cuándo hay disponibilidad.",
+      smsLabels: { exterior: "Exterior", interior: "Interior", full: "Detallado Completo" },
     },
     instagram: {
       visit: "Visitar →",
@@ -181,7 +193,8 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
     },
     mobileBar: {
       callLabel: "Llamar a Dallas Detailz",
-      textTooltip: "Enviar un mensaje de texto a Dallas Detailz",
+      instagramTooltip: "Síguenos en Instagram",
+      bookNowSmsBody: "Hola, me interesa un servicio, ¿qué me recomienda?",
     },
     leaving: {
       title: "Te llevamos a Instagram…",

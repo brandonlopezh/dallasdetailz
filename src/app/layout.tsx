@@ -30,6 +30,8 @@ export const metadata: Metadata = {
     "DFW auto detailing",
     "mobile car wash Dallas",
     "truck detailing",
+    "car detailing near 75249",
+    "mobile detailing 75249",
   ],
   openGraph: {
     title: "Dallas Detailz. We come to you. DFW mobile detailing.",
