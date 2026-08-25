@@ -31,7 +31,7 @@ export default function SiteHeader() {
       }`}
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2.5">
+        <Link href="/" className="flex items-center">
           <Image
             src="/logo.jpg"
             alt="Dallas Detailz logo"
@@ -40,9 +40,6 @@ export default function SiteHeader() {
             priority
             className="h-10 w-10 rounded-full ring-1 ring-border"
           />
-          <span className="font-[family-name:var(--font-display)] text-lg font-extrabold uppercase tracking-tight">
-            Dallas Detailz
-          </span>
         </Link>
 
         <nav className="hidden items-center gap-7 md:flex">

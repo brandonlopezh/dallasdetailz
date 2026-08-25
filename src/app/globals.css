@@ -179,3 +179,29 @@ body::after {
 .animate-bucket-glow {
   animation: bucket-glow 0.9s ease-in-out infinite;
 }
+
+/* Hero badge photos — scale up, shake, and glow blue on hover. */
+@keyframes badge-shake {
+  0%,
+  100% {
+    transform: scale(1.15) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.15) rotate(-6deg);
+  }
+  50% {
+    transform: scale(1.15) rotate(0deg);
+  }
+  75% {
+    transform: scale(1.15) rotate(6deg);
+  }
+}
+.hover-badge {
+  transition: transform 0.2s ease, box-shadow 0.25s ease;
+}
+@media (hover: hover) {
+  .hover-badge:hover {
+    animation: badge-shake 0.5s ease-in-out infinite;
+    box-shadow: 0 0 0 3px var(--color-accent-hi), 0 0 30px 8px var(--color-accent-hi);
+  }
+}
