@@ -20,19 +20,19 @@ interface Translations {
     summary: string;
     seePricing: string;
   };
-  instagramNudge: { question: string; cta: string };
   services: {
     heading: string;
     disclaimer: string;
     swipeHint: string;
     bookThis: string;
+    bestDeal: string;
   };
   instagram: { visit: string; followBody: string };
   area: { heading: string; description: string; cities: string[] };
   faq: { heading: string; items: FaqItem[] };
   finalCta: { heading: string };
   footer: { tagline: string; call: string; instagram: string; book: string };
-  mobileBar: { callLabel: string; instagramTooltip: string };
+  mobileBar: { callLabel: string; textTooltip: string };
   leaving: { title: string; subtitle: string; tapHere: string };
   languageToggle: { label: string };
 }
@@ -47,15 +47,12 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
         "Two brothers, a truckload of gear, and your driveway. Providing exterior, interior, and full details across Duncanville, Dallas, and Cedar Hill.",
       seePricing: "See Pricing",
     },
-    instagramNudge: {
-      question: "Want a quicker response?",
-      cta: "DM us on Instagram",
-    },
     services: {
       heading: "Pick your service",
       disclaimer: "Prices shown are final, we accept Zelle and Cash only.",
       swipeHint: "Swipe to compare →",
       bookThis: "Book this",
+      bestDeal: "Best Deal",
     },
     instagram: {
       visit: "Visit →",
@@ -108,7 +105,7 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
     },
     mobileBar: {
       callLabel: "Call Dallas Detailz",
-      instagramTooltip: "DM on Instagram for a quicker response",
+      textTooltip: "Text Dallas Detailz",
     },
     leaving: {
       title: "Taking you to Instagram…",
@@ -126,15 +123,12 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
         "Dos hermanos, una camioneta llena de equipo y tu entrada. Ofrecemos limpieza exterior, interior y detallado completo en Duncanville, Dallas y Cedar Hill.",
       seePricing: "Ver precios",
     },
-    instagramNudge: {
-      question: "¿Quieres una respuesta más rápida?",
-      cta: "Escríbenos por Instagram",
-    },
     services: {
       heading: "Elige tu servicio",
       disclaimer: "Los precios mostrados son finales, aceptamos solo Zelle y efectivo.",
       swipeHint: "Desliza para comparar →",
       bookThis: "Reservar esto",
+      bestDeal: "Mejor oferta",
     },
     instagram: {
       visit: "Visitar →",
@@ -187,7 +181,7 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
     },
     mobileBar: {
       callLabel: "Llamar a Dallas Detailz",
-      instagramTooltip: "Escríbenos por Instagram para una respuesta más rápida",
+      textTooltip: "Enviar un mensaje de texto a Dallas Detailz",
     },
     leaving: {
       title: "Te llevamos a Instagram…",

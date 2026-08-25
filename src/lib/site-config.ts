@@ -5,6 +5,7 @@
 export const INSTAGRAM_URL = "https://www.instagram.com/dallasdetailz";
 export const INSTAGRAM_HANDLE = "@dallasdetailz";
 export const PHONE_TEL = "tel:+12149913908";
+export const PHONE_SMS = "sms:+12149913908";
 export const PHONE_DISPLAY = "(214) 991-3908";
 
 /**

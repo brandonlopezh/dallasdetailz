@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import BookNowLink from "./BookNowLink";
-import InstagramNudge from "./InstagramNudge";
 import InstagramFeed from "./InstagramFeed";
 import Faq from "./Faq";
 import { useLanguage } from "./LanguageProvider";
@@ -43,18 +42,19 @@ export default function HomeContent({ services }: HomeContentProps) {
               right side less so the wallpaper still reads on wide screens. */}
           <div className="absolute inset-0 -z-10 bg-gradient-to-t from-base via-base/70 to-base/30" />
 
-          <div className="relative mx-auto flex min-h-[420px] max-w-6xl flex-col items-center justify-end gap-8 px-4 pb-16 pt-16 text-center sm:min-h-[560px] sm:px-6 sm:pt-28 lg:pb-20">
+          <div className="relative mx-auto flex min-h-[420px] max-w-6xl flex-col items-center justify-center gap-8 px-4 pb-16 pt-8 text-center sm:min-h-[560px] sm:px-6 sm:pt-12 lg:pb-20">
             <div className="flex w-full flex-col items-center gap-8 md:flex-row md:items-center md:justify-center">
               <Image
                 src="/ad.png"
                 alt="Dallas Detailz exterior detailing"
                 width={200}
                 height={200}
+                loading="eager"
                 className="hover-badge hidden h-32 w-32 shrink-0 rounded-full ring-2 ring-border md:block lg:h-40 lg:w-40"
               />
 
               <div className="flex flex-col items-center">
-                <h1 className="animate-fade-up font-[family-name:var(--font-display)] text-5xl uppercase leading-[0.95] tracking-[-0.02em] sm:text-7xl">
+                <h1 className="animate-fade-up font-[family-name:var(--font-display)] text-6xl uppercase leading-[0.95] tracking-[-0.02em] sm:text-8xl">
                   {t.hero.title}
                 </h1>
                 <h2 className="animate-fade-up mx-auto mt-6 max-w-lg text-base font-normal leading-relaxed text-muted sm:text-lg">
@@ -71,15 +71,13 @@ export default function HomeContent({ services }: HomeContentProps) {
                     {t.hero.seePricing}
                   </a>
                 </div>
-                <div className="animate-fade-up mt-6">
-                  <InstagramNudge />
-                </div>
                 <div className="animate-fade-up mt-8 flex justify-center gap-6 md:hidden">
                   <Image
                     src="/ad.png"
                     alt="Dallas Detailz exterior detailing"
                     width={200}
                     height={200}
+                    loading="eager"
                     className="hover-badge h-28 w-28 rounded-full ring-2 ring-border"
                   />
                   <Image
@@ -116,26 +114,40 @@ export default function HomeContent({ services }: HomeContentProps) {
                 const es = lang === "es" ? SERVICE_TRANSLATIONS[s.id] : undefined;
                 const name = es?.name ?? s.name;
                 const description = es?.description ?? s.description;
+                const isBestDeal = s.category === "full";
                 return (
                   <div
                     key={s.id}
-                    className="hover-lift flex w-[82%] shrink-0 snap-start flex-col rounded-[var(--radius-lg)] border border-border bg-surface p-6 transition-colors hover:border-accent sm:w-auto sm:shrink"
+                    className={`relative flex w-[82%] shrink-0 snap-start flex-col pt-3 sm:w-auto sm:shrink ${isBestDeal ? "sm:z-10" : ""}`}
                   >
-                    <h3 className="font-[family-name:var(--font-display)] text-2xl font-bold">
-                      {name}
-                    </h3>
-                    <p className="mt-3 flex-1 text-sm leading-relaxed text-muted">{description}</p>
-                    <div className="mt-5 flex items-baseline gap-2">
-                      <span className="font-[family-name:var(--font-display)] text-3xl font-extrabold">
-                        {money(priceFrom(s))}
+                    {isBestDeal && (
+                      <span className="absolute left-1/2 top-0 z-10 -translate-x-1/2 rounded-full bg-blue-500 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white shadow">
+                        {t.services.bestDeal}
                       </span>
-                    </div>
-                    <BookNowLink
-                      serviceId={s.id}
-                      className="tap mt-5 inline-flex items-center justify-center rounded-[var(--radius-sm)] bg-accent px-5 font-bold text-white transition-colors hover:bg-accent-hi"
+                    )}
+                    <div
+                      className={`hover-lift flex flex-1 flex-col rounded-[var(--radius-lg)] bg-surface p-6 transition-colors ${
+                        isBestDeal
+                          ? "border-2 border-border hover:border-accent sm:scale-105"
+                          : "border border-border hover:border-accent"
+                      }`}
                     >
-                      {t.services.bookThis}
-                    </BookNowLink>
+                      <h3 className="font-[family-name:var(--font-display)] text-2xl font-bold">
+                        {name}
+                      </h3>
+                      <p className="mt-3 flex-1 text-sm leading-relaxed text-muted">{description}</p>
+                      <div className="mt-5 flex items-baseline gap-2">
+                        <span className="font-[family-name:var(--font-display)] text-3xl font-extrabold">
+                          {money(priceFrom(s))}
+                        </span>
+                      </div>
+                      <BookNowLink
+                        serviceId={s.id}
+                        className="tap mt-5 inline-flex items-center justify-center rounded-[var(--radius-sm)] bg-accent px-5 font-bold text-white transition-colors hover:bg-accent-hi"
+                      >
+                        {t.services.bookThis}
+                      </BookNowLink>
+                    </div>
                   </div>
                 );
               })}

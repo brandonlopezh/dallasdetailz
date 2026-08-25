@@ -37,7 +37,7 @@ export default function SiteHeader() {
             alt="Dallas Detailz logo"
             width={40}
             height={40}
-            priority
+            loading="eager"
             className="h-10 w-10 rounded-full ring-1 ring-border"
           />
         </Link>

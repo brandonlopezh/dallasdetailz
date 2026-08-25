@@ -1,9 +1,9 @@
 "use client";
 
 import BookNowLink from "./BookNowLink";
-import InstagramIcon from "./icons/InstagramIcon";
+import MessageIcon from "./icons/MessageIcon";
 import { useLanguage } from "./LanguageProvider";
-import { INSTAGRAM_URL, PHONE_TEL } from "@/lib/site-config";
+import { PHONE_SMS, PHONE_TEL } from "@/lib/site-config";
 
 /**
  * Sticky mobile Book Now bar — PRD §5.1 R1 / §7.4 ("persists throughout").
@@ -23,16 +23,14 @@ export default function MobileBookBar() {
           📞
         </a>
         <a
-          href={INSTAGRAM_URL}
-          target="_blank"
-          rel="noopener noreferrer"
+          href={PHONE_SMS}
           className="tap group relative grid aspect-square place-items-center rounded-[var(--radius-sm)] border border-border"
-          aria-label={t.mobileBar.instagramTooltip}
-          title={t.mobileBar.instagramTooltip}
+          aria-label={t.mobileBar.textTooltip}
+          title={t.mobileBar.textTooltip}
         >
-          <InstagramIcon className="h-5 w-5" />
+          <MessageIcon className="h-5 w-5" />
           <span className="pointer-events-none absolute bottom-full left-1/2 mb-2 w-max max-w-[11rem] -translate-x-1/2 scale-90 rounded-md bg-ink px-2 py-1 text-center text-xs font-medium text-[var(--color-base)] opacity-0 shadow-lg transition-all duration-150 group-hover:scale-100 group-hover:opacity-100">
-            {t.mobileBar.instagramTooltip}
+            {t.mobileBar.textTooltip}
           </span>
         </a>
         <BookNowLink className="tap flex flex-1 items-center justify-center rounded-[var(--radius-sm)] bg-accent px-4 text-base font-bold text-white transition-colors hover:bg-accent-hi">
