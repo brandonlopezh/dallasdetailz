@@ -2,12 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import BookNowLink from "./BookNowLink";
 import { useLanguage } from "./LanguageProvider";
 
 export default function SiteHeader() {
-  const [scrolled, setScrolled] = useState(false);
   const { t, toggleLang } = useLanguage();
   const NAV = [
     { href: "#services", label: t.nav.services },
@@ -15,21 +13,8 @@ export default function SiteHeader() {
     { href: "#area", label: t.nav.area },
   ];
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   return (
-    <header
-      className={`sticky top-0 z-50 border-b transition-colors ${
-        scrolled
-          ? "border-border bg-base/85 backdrop-blur"
-          : "border-transparent bg-transparent"
-      }`}
-    >
+    <header className="sticky top-0 z-50 border-b border-border bg-base/95 backdrop-blur-lg">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:px-6">
         <Link href="/" className="flex items-center">
           <Image
