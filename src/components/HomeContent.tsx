@@ -37,8 +37,8 @@ export default function HomeContent({ services }: HomeContentProps) {
         <div className="relative isolate overflow-hidden">
           <div
             aria-hidden="true"
-            className="absolute inset-0 -z-20 bg-scroll bg-cover bg-center blur-sm"
-            style={{ backgroundImage: "url('/wallpaper.jpg')" }}
+            className="fixed inset-0 -z-20 bg-cover bg-center blur-sm"
+            style={{ backgroundImage: "url('/wallpaper.webp')" }}
           />
           <div aria-hidden="true" className="absolute inset-0 -z-10 bg-base/35" />
 
