@@ -29,7 +29,7 @@ export default function HomeContent({ services }: HomeContentProps) {
 
   return (
     <>
-      <main className="flex-1 pb-24 md:pb-0">
+      <main className="flex-1">
         {/* WALLPAPER WRAPPER ------------------------------------------------
             Shared blurred backdrop for the entire page above the footer.
             Every section below keeps its band-color wash, just made
@@ -239,7 +239,7 @@ export default function HomeContent({ services }: HomeContentProps) {
 
       {/* FOOTER ------------------------------------------------------------ */}
       <footer className="border-t border-border bg-base">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 pt-10 pb-28 sm:flex-row sm:items-center sm:justify-between sm:px-6 md:pb-10">
           <div className="flex items-center gap-3">
             <Image
               src="/logo.jpg"
