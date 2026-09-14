@@ -17,8 +17,15 @@ interface Translations {
   common: { bookNow: string };
   hero: {
     title: string;
+    titleAccent: string;
     summary: string;
     seePricing: string;
+    from: string;
+    trust: string[];
+    reelLabel: string;
+    reelWatch: string;
+    soundOn: string;
+    soundOff: string;
   };
   services: {
     heading: string;
@@ -45,10 +52,17 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
     nav: { services: "Services", area: "Area" },
     common: { bookNow: "Book Now" },
     hero: {
-      title: "Dallas Detailz",
+      title: "A showroom shine",
+      titleAccent: "Right in your driveway",
       summary:
         "Two brothers, a truckload of gear, and your driveway. Providing exterior, interior, and full details across Duncanville, Dallas, and Cedar Hill.",
       seePricing: "See Pricing",
+      from: "from",
+      trust: ["We come to you", "Final prices, no surprises", "Hablamos Español"],
+      reelLabel: "Dallas Detailz reel showing a truck interior detail",
+      reelWatch: "Watch on Instagram",
+      soundOn: "Turn sound on",
+      soundOff: "Mute",
     },
     services: {
       heading: "Pick your service",
@@ -126,10 +140,17 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
     nav: { services: "Servicios", area: "Zona" },
     common: { bookNow: "Reservar" },
     hero: {
-      title: "Dallas Detailz",
+      title: "Brillo de agencia",
+      titleAccent: "En la entrada de tu casa",
       summary:
         "Dos hermanos, una camioneta llena de equipo y tu entrada. Ofrecemos limpieza exterior, interior y detallado completo en Duncanville, Dallas y Cedar Hill.",
       seePricing: "Ver precios",
+      from: "desde",
+      trust: ["Vamos a ti", "Precios finales, sin sorpresas", "Hablamos inglés y español"],
+      reelLabel: "Reel de Dallas Detailz mostrando el detallado interior de una camioneta",
+      reelWatch: "Ver en Instagram",
+      soundOn: "Activar sonido",
+      soundOff: "Silenciar",
     },
     services: {
       heading: "Elige tu servicio",

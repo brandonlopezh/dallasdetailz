@@ -4,6 +4,8 @@ import Image from "next/image";
 import BookNowLink from "./BookNowLink";
 import InstagramFeed from "./InstagramFeed";
 import Faq from "./Faq";
+import HeroReel from "./HeroReel";
+import InstagramIcon from "./icons/InstagramIcon";
 import { useLanguage } from "./LanguageProvider";
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL, PHONE_SMS, PHONE_TEL } from "@/lib/site-config";
 import { SERVICE_TRANSLATIONS } from "@/lib/translations";
@@ -20,6 +22,7 @@ interface HomeContentProps {
 export default function HomeContent({ services }: HomeContentProps) {
   const { lang, t } = useLanguage();
   const priceFrom = (s: Service) => Math.min(...s.pricing.map((p) => p.price));
+  const lowestPrice = Math.min(...services.map(priceFrom));
   const bookSmsHref = (s: Service) => {
     const label = t.services.smsLabels[s.category] ?? s.name;
     const template = s.category === "full" ? t.services.smsBodyFull : t.services.smsBody;
@@ -48,60 +51,100 @@ export default function HomeContent({ services }: HomeContentProps) {
               right side less so the wallpaper still reads on wide screens. */}
           <div className="absolute inset-0 -z-10 bg-gradient-to-t from-base via-base/70 to-base/30" />
 
-          <div className="relative mx-auto flex min-h-[420px] max-w-6xl flex-col items-center justify-center gap-8 px-4 pb-16 pt-8 text-center sm:min-h-[560px] sm:px-6 sm:pt-12 lg:pb-20">
-            <div className="flex w-full flex-col items-center gap-8 md:flex-row md:items-center md:justify-center">
-              <Image
-                src="/ad.png"
-                alt="Dallas Detailz exterior detailing"
-                width={200}
-                height={200}
-                loading="eager"
-                className="hover-badge hidden h-32 w-32 shrink-0 rounded-full ring-2 ring-border md:block lg:h-40 lg:w-40"
-              />
+          <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pb-16 pt-10 sm:px-6 sm:pt-16 md:min-h-[600px] md:grid-cols-[1.25fr_0.75fr] lg:pb-20">
+            {/* Copy column — centered on phones, left-aligned beside the art on
+                wider screens so the eye runs headline → summary → CTA in one line. */}
+            <div className="flex flex-col items-center text-center md:items-start md:text-left">
+              {/* Two-line title: white line on top, blue accent line below. */}
+              <h1 className="animate-fade-up flex flex-col text-balance font-[family-name:var(--font-display)] text-5xl uppercase leading-[0.95] tracking-[-0.02em] sm:text-6xl lg:text-7xl">
+                <span className="text-ink">{t.hero.title}</span>
+                <span className="mt-1 text-accent-hi">{t.hero.titleAccent}</span>
+              </h1>
 
-              <div className="flex flex-col items-center">
-                <h1 className="animate-fade-up font-[family-name:var(--font-display)] text-6xl uppercase leading-[0.95] tracking-[-0.02em] sm:text-8xl">
-                  {t.hero.title}
-                </h1>
-                <h2 className="animate-fade-up mx-auto mt-6 max-w-lg text-base font-normal leading-relaxed text-muted sm:text-lg">
-                  {t.hero.summary}
-                </h2>
-                <div className="animate-fade-up mt-9 flex flex-wrap justify-center gap-3">
-                  <BookNowLink className="tap inline-flex items-center rounded-[var(--radius-md)] bg-accent px-8 text-lg font-bold text-white transition-colors hover:bg-accent-hi">
-                    {t.common.bookNow}
-                  </BookNowLink>
+              {/* Trust points — filled checkboxes read as "already ticked off". */}
+              <ul className="animate-fade-up mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2.5 text-sm font-semibold uppercase tracking-wide text-ink md:justify-start [animation-delay:80ms]">
+                {t.hero.trust.map((item) => (
+                  <li key={item} className="flex items-center gap-2">
+                    <span
+                      aria-hidden="true"
+                      className="grid h-5 w-5 shrink-0 place-items-center rounded-[5px] bg-accent text-white shadow-md shadow-accent/40 ring-1 ring-accent-hi/60"
+                    >
+                      <svg
+                        viewBox="0 0 16 16"
+                        className="h-3.5 w-3.5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2.5}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M3.5 8.5 6.5 11.5 12.5 4.5" />
+                      </svg>
+                    </span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+
+              <p className="animate-fade-up mt-6 max-w-xl text-pretty text-base leading-relaxed text-muted sm:text-lg [animation-delay:160ms]">
+                {t.hero.summary}
+              </p>
+
+              <div className="animate-fade-up mt-9 flex w-full flex-col gap-3 sm:w-auto sm:flex-row [animation-delay:240ms]">
+                <a
+                  href="#services"
+                  className="tap inline-flex items-center justify-center gap-2 rounded-[var(--radius-md)] border border-border bg-surface/60 px-8 text-lg font-semibold text-ink backdrop-blur transition-colors hover:border-accent"
+                >
+                  {t.hero.seePricing}
+                  {Number.isFinite(lowestPrice) && (
+                    <span className="text-sm font-medium text-muted">
+                      {t.hero.from} {money(lowestPrice)}
+                    </span>
+                  )}
+                </a>
+                <div className="flex gap-3">
                   <a
-                    href="#services"
-                    className="tap inline-flex items-center rounded-[var(--radius-md)] border border-border bg-surface/60 px-8 text-lg font-semibold text-ink backdrop-blur transition-colors hover:border-accent"
+                    href={INSTAGRAM_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={t.mobileBar.instagramTooltip}
+                    title={t.mobileBar.instagramTooltip}
+                    className="tap grid aspect-square place-items-center rounded-[var(--radius-md)] border border-border bg-surface/60 text-ink backdrop-blur transition-colors hover:border-accent hover:text-accent-hi"
                   >
-                    {t.hero.seePricing}
+                    <InstagramIcon className="h-6 w-6" />
+                  </a>
+                  <a
+                    href={PHONE_TEL}
+                    className="tap inline-flex flex-1 items-center justify-center gap-2 rounded-[var(--radius-md)] bg-accent px-8 text-lg font-bold text-white shadow-lg shadow-accent/30 transition-colors hover:bg-accent-hi"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                      className="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.18 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.8a2 2 0 0 1-.45 2.11L8.1 9.9a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.84.57 2.8.7A2 2 0 0 1 22 16.92Z" />
+                    </svg>
+                    {t.footer.call}
                   </a>
                 </div>
-                <div className="animate-fade-up mt-8 flex justify-center gap-6 md:hidden">
-                  <Image
-                    src="/ad.png"
-                    alt="Dallas Detailz exterior detailing"
-                    width={200}
-                    height={200}
-                    loading="eager"
-                    className="hover-badge h-28 w-28 rounded-full ring-2 ring-border"
-                  />
-                  <Image
-                    src="/iv.png"
-                    alt="Dallas Detailz interior detailing"
-                    width={200}
-                    height={200}
-                    className="hover-badge h-28 w-28 rounded-full ring-2 ring-border"
-                  />
-                </div>
               </div>
+            </div>
 
-              <Image
-                src="/iv.png"
-                alt="Dallas Detailz interior detailing"
-                width={200}
-                height={200}
-                className="hover-badge hidden h-32 w-32 shrink-0 rounded-full ring-2 ring-border md:block lg:h-40 lg:w-40"
+            {/* Art column — a real reel in a phone frame shows the work where
+                customers already watch it. Hidden on phones so the CTAs stay
+                above the fold. */}
+            <div className="animate-fade-up relative mx-auto hidden md:mx-0 md:mt-16 md:block md:justify-self-start lg:-ml-6 lg:mt-24 [animation-delay:200ms]">
+              <div aria-hidden="true" className="absolute -inset-8 -z-10 rounded-full bg-accent/25 blur-3xl" />
+              <HeroReel
+                label={t.hero.reelLabel}
+                watchLabel={t.hero.reelWatch}
+                soundOnLabel={t.hero.soundOn}
+                soundOffLabel={t.hero.soundOff}
               />
             </div>
           </div>

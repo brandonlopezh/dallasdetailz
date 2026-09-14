@@ -8,7 +8,7 @@
  * Instagram blockquote markup from just the URL.
  */
 export const INSTAGRAM_POST_URLS: string[] = [
-  "https://www.instagram.com/p/DcbY73noBkr/",
-  "https://www.instagram.com/reel/DcaL2U2NzVT/",
-  "https://www.instagram.com/reel/DcZX2VrOYLQ/",
+  "https://www.instagram.com/p/DdAbglPFBrY/",
+  "https://www.instagram.com/p/Dc9GTtxlC3U/",
+  "https://www.instagram.com/p/DcctrorDfQb/",
 ];
