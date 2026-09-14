@@ -19,8 +19,8 @@ interface HeroReelProps {
  * styled like Instagram (Instagram's own embed can't autoplay). Tapping the
  * screen opens the real reel.
  *
- * The column is hidden on phones, so the video is only attached once it's on
- * screen at md+ — phones never download it. Autoplay starts muted (browsers
+ * The video is only attached once the phone scrolls on screen, so it never
+ * slows the first paint (on phones it sits below the CTAs). Autoplay starts muted (browsers
  * block autoplay with sound); visitors can unmute. Reduced-motion visitors
  * get the poster frame and can press play themselves via the sound button.
  */
@@ -37,11 +37,10 @@ export default function HeroReel({ label, watchLabel, soundOnLabel, soundOffLabe
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
-    const wide = window.matchMedia("(min-width: 768px)");
     const io = new IntersectionObserver(([entry]) => {
       const v = videoRef.current;
       if (!v) return;
-      inView.current = entry.isIntersecting && wide.matches;
+      inView.current = entry.isIntersecting;
       if (inView.current) {
         // First time: attaching src triggers onCanPlay, which starts playback.
         setSrc("/hero-reel.mp4");
@@ -66,7 +65,7 @@ export default function HeroReel({ label, watchLabel, soundOnLabel, soundOffLabe
   return (
     <div
       ref={wrapRef}
-      className="relative mx-auto w-[320px] rounded-[3rem] bg-[#0a0a0a] lg:w-[360px] p-3 shadow-2xl shadow-black/70 ring-1 ring-white/10"
+      className="relative mx-auto w-[min(300px,80vw)] rounded-[3rem] md:w-[320px] bg-[#0a0a0a] lg:w-[360px] p-3 shadow-2xl shadow-black/70 ring-1 ring-white/10"
     >
       {/* Side buttons */}
       <span aria-hidden="true" className="absolute -left-[3px] top-28 h-8 w-[3px] rounded-l bg-[#1c1c1c]" />
