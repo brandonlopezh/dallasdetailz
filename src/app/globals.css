@@ -43,6 +43,34 @@
   --radius-lg: 14px;
 }
 
+/*
+  Light theme — same warm/bone palette inverted. Tailwind's @theme tokens are
+  plain CSS variables on :root, so overriding them here re-themes every
+  utility. Dark stays the default (see ThemeToggle + the inline script in
+  layout.tsx, which sets data-theme before first paint).
+*/
+:root[data-theme="light"] {
+  --color-base: #f6f1e7;
+  --color-surface: #fffcf5;
+  --color-surface-alt: #efe7d8;
+  --color-border: #ddd2bf;
+  --color-band-1: #f6f1e7;
+  --color-band-2: #efe8da;
+  --color-band-3: #ebeee6;
+  --color-band-4: #eee5d1;
+  --color-accent: #3f5c7e;
+  --color-accent-hi: #2f4a6a; /* text-on-light needs to be darker, not lighter */
+  --color-ink: #1d1a15;
+  --color-muted: #6b6155;
+  --color-success: #4d7a38;
+  --color-warning: #a8741a;
+  --color-danger: #a8402d;
+  color-scheme: light;
+}
+:root:not([data-theme="light"]) {
+  color-scheme: dark;
+}
+
 body {
   background: var(--color-base);
   color: var(--color-ink);

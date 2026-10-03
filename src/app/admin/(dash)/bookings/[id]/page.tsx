@@ -35,8 +35,8 @@ export default async function BookingDetail({
 
   return (
     <div>
-      <Link href="/admin/schedule" className="text-sm text-muted hover:text-ink">
-        ← Schedule
+      <Link href="/admin" className="text-sm text-muted hover:text-ink">
+        ← Today
       </Link>
 
       <div className="mt-2 flex items-center justify-between gap-3">

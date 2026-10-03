@@ -2,20 +2,20 @@
 
 import InstagramIcon from "./icons/InstagramIcon";
 import { useLanguage } from "./LanguageProvider";
-import { INSTAGRAM_URL, PHONE_SMS, PHONE_TEL } from "@/lib/site-config";
+import { INSTAGRAM_URL } from "@/lib/site-config";
 
 /**
  * Sticky mobile Book Now bar — PRD §5.1 R1 / §7.4 ("persists throughout").
  * Hidden on md+ where the header CTA is always visible.
  */
 export default function MobileBookBar() {
-  const { t } = useLanguage();
-  const bookNowSmsHref = `${PHONE_SMS}?&body=${encodeURIComponent(t.mobileBar.bookNowSmsBody)}`;
+  const { t, contact } = useLanguage();
+  const bookNowSmsHref = `${contact.sms}?&body=${encodeURIComponent(t.mobileBar.bookNowSmsBody)}`;
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-base/90 p-3 backdrop-blur md:hidden">
       <div className="mx-auto flex max-w-6xl items-center gap-2">
         <a
-          href={PHONE_TEL}
+          href={contact.tel}
           className="tap grid aspect-square place-items-center rounded-[var(--radius-sm)] border border-border text-lg"
           aria-label={t.mobileBar.callLabel}
           title={t.mobileBar.callLabel}

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Racing_Sans_One, Inter } from "next/font/google";
+import Script from "next/script";
 import { LanguageProvider } from "@/components/LanguageProvider";
 import "./globals.css";
 
@@ -42,13 +43,20 @@ export const metadata: Metadata = {
   },
 };
 
+// Runs before first paint so a saved "light" choice never flashes dark.
+const THEME_SCRIPT = `try{if(localStorage.getItem("dd-theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${display.variable} ${body.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-base text-ink">
+        <Script id="theme-init" strategy="beforeInteractive">
+          {THEME_SCRIPT}
+        </Script>
         <LanguageProvider>{children}</LanguageProvider>
       </body>
     </html>

@@ -40,3 +40,6 @@ export function bookHref(serviceId?: string): string {
   if (!BOOKING_FLOW_LIVE) return INSTAGRAM_URL;
   return serviceId ? `/book?service=${serviceId}` : "/book";
 }
+
+/** Default target of the hero phone mockup (editable in /admin/website). */
+export const HERO_REEL_URL = "https://www.instagram.com/reel/DcosRMvh6GX/";

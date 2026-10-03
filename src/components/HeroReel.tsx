@@ -5,9 +5,8 @@ import Image from "next/image";
 import InstagramIcon from "./icons/InstagramIcon";
 import { INSTAGRAM_HANDLE } from "@/lib/site-config";
 
-const REEL_URL = "https://www.instagram.com/reel/DcosRMvh6GX/";
-
 interface HeroReelProps {
+  reelUrl: string;
   label: string;
   watchLabel: string;
   soundOnLabel: string;
@@ -24,7 +23,7 @@ interface HeroReelProps {
  * block autoplay with sound); visitors can unmute. Reduced-motion visitors
  * get the poster frame and can press play themselves via the sound button.
  */
-export default function HeroReel({ label, watchLabel, soundOnLabel, soundOffLabel }: HeroReelProps) {
+export default function HeroReel({ reelUrl, label, watchLabel, soundOnLabel, soundOffLabel }: HeroReelProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [src, setSrc] = useState<string>();
@@ -98,7 +97,7 @@ export default function HeroReel({ label, watchLabel, soundOnLabel, soundOffLabe
 
         {/* Whole screen opens the real reel; sits under the sound button. */}
         <a
-          href={REEL_URL}
+          href={reelUrl}
           target="_blank"
           rel="noopener noreferrer"
           aria-label={watchLabel}

@@ -12,7 +12,7 @@ interface FaqItem {
   a: string;
 }
 
-interface Translations {
+export interface Translations {
   nav: { services: string; area: string };
   common: { bookNow: string };
   hero: {
@@ -146,7 +146,7 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
         "Dos hermanos, una camioneta llena de equipo y tu entrada. Ofrecemos limpieza exterior, interior y detallado completo en Duncanville, Dallas y Cedar Hill.",
       seePricing: "Ver precios",
       from: "desde",
-      trust: ["Vamos a ti", "Precios finales, sin sorpresas", "Hablamos inglés y español"],
+      trust: ["Vamos a ti", "Precios finales", "Hablamos inglés y español"],
       reelLabel: "Reel de Dallas Detailz mostrando el detallado interior de una camioneta",
       reelWatch: "Ver en Instagram",
       soundOn: "Activar sonido",

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import BookNowLink from "./BookNowLink";
+import ThemeToggle from "./ThemeToggle";
 import { useLanguage } from "./LanguageProvider";
 
 export default function SiteHeader() {
@@ -40,6 +41,7 @@ export default function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <ThemeToggle className="h-11 w-11 !min-h-0 !min-w-0" />
           <button
             type="button"
             onClick={toggleLang}

@@ -1,16 +1,54 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { LANGUAGE_STORAGE_KEY, TRANSLATIONS, type Lang } from "@/lib/translations";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  LANGUAGE_STORAGE_KEY,
+  SERVICE_TRANSLATIONS,
+  TRANSLATIONS,
+  type Lang,
+  type Translations,
+} from "@/lib/translations";
+import { PHONE_DISPLAY, PHONE_SMS, PHONE_TEL } from "@/lib/site-config";
+import { DEFAULT_PARTS } from "@/lib/content-schema";
+import type { SiteContent } from "@/lib/content";
 
 interface LanguageContextValue {
   lang: Lang;
-  t: (typeof TRANSLATIONS)["en"];
+  t: Translations;
+  serviceTranslations: SiteContent["serviceTranslations"];
+  contact: SiteContent["contact"];
+  parts: SiteContent["parts"];
   setLang: (lang: Lang) => void;
   toggleLang: () => void;
 }
 
-const LanguageContext = createContext<LanguageContextValue | null>(null);
+interface LanguageState {
+  lang: Lang;
+  setLang: (lang: Lang) => void;
+  toggleLang: () => void;
+}
+
+const LanguageContext = createContext<LanguageState | null>(null);
+
+// Operator-edited copy from /admin/website. The homepage wraps itself in
+// <SiteContentProvider>; anywhere without one falls back to the code defaults.
+const DEFAULT_CONTENT: SiteContent = {
+  translations: TRANSLATIONS,
+  serviceTranslations: SERVICE_TRANSLATIONS,
+  contact: { display: PHONE_DISPLAY, tel: PHONE_TEL, sms: PHONE_SMS },
+  parts: DEFAULT_PARTS,
+};
+const SiteContentContext = createContext<SiteContent>(DEFAULT_CONTENT);
+
+export function SiteContentProvider({
+  content,
+  children,
+}: {
+  content: SiteContent;
+  children: React.ReactNode;
+}) {
+  return <SiteContentContext.Provider value={content}>{children}</SiteContentContext.Provider>;
+}
 
 /**
  * Homepage copy is server-rendered in English, so `lang` must also default
@@ -55,7 +93,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   }, [lang, setLang]);
 
   return (
-    <LanguageContext.Provider value={{ lang, t: TRANSLATIONS[lang], setLang, toggleLang }}>
+    <LanguageContext.Provider value={{ lang, setLang, toggleLang }}>
       {children}
     </LanguageContext.Provider>
   );
@@ -63,6 +101,17 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
 export function useLanguage() {
   const ctx = useContext(LanguageContext);
+  const content = useContext(SiteContentContext);
   if (!ctx) throw new Error("useLanguage must be used within a LanguageProvider");
-  return ctx;
+  const { lang } = ctx;
+  return useMemo<LanguageContextValue>(
+    () => ({
+      ...ctx,
+      t: content.translations[lang],
+      serviceTranslations: content.serviceTranslations,
+      contact: content.contact,
+      parts: content.parts,
+    }),
+    [ctx, content, lang],
+  );
 }

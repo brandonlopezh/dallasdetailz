@@ -4,20 +4,19 @@ import InstagramEmbedGrid from "./InstagramEmbedGrid";
 import InstagramIcon from "./icons/InstagramIcon";
 import { useLanguage } from "./LanguageProvider";
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL, SNAPWIDGET_ID } from "@/lib/site-config";
-import { INSTAGRAM_POST_URLS } from "@/lib/instagram-posts";
 
 /**
  * Three tiers, in priority order:
  *  1. SnapWidget (see SNAPWIDGET_ID in site-config.ts) — a real live-syncing
  *     feed, once that connection is set up.
- *  2. A manually curated grid of posts (see instagram-posts.ts) — what's
+ *  2. A manually curated grid of posts (edited in /admin/website; defaults in instagram-posts.ts) — what's
  *     live today. No API keys, but doesn't auto-update; someone has to
  *     paste in new post URLs occasionally.
  *  3. A plain "Follow us" card, only if neither of the above is configured
  *     — so this section never renders empty or broken.
  */
 export default function InstagramFeed() {
-  const { t } = useLanguage();
+  const { t, parts } = useLanguage();
 
   if (SNAPWIDGET_ID) {
     return (
@@ -32,8 +31,8 @@ export default function InstagramFeed() {
     );
   }
 
-  if (INSTAGRAM_POST_URLS.length > 0) {
-    return <InstagramEmbedGrid />;
+  if (parts.instagramPosts.length > 0) {
+    return <InstagramEmbedGrid urls={parts.instagramPosts} />;
   }
 
   return (
