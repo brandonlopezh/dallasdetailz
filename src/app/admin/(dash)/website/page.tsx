@@ -5,7 +5,7 @@ import { ALL_FIELDS, CONTACT_PHONE_KEY, LANGS, serviceKey } from "@/lib/content-
 import { PHONE_DISPLAY } from "@/lib/site-config";
 import { SERVICE_TRANSLATIONS, TRANSLATIONS } from "@/lib/translations";
 
-export const metadata = { title: "Website Edits" };
+export const metadata = { title: "Settings" };
 export const dynamic = "force-dynamic";
 
 function get(obj: unknown, path: string): unknown {
@@ -40,7 +40,7 @@ export default async function WebsiteEditsPage({
   return (
     <div>
       <h1 className="font-[family-name:var(--font-display)] text-2xl font-extrabold">
-        Website Edits
+        Settings
       </h1>
       <p className="mt-1 text-sm text-muted">
         Pick what you want to change on the left. Hit Save and it&apos;s live on

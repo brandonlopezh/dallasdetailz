@@ -10,7 +10,7 @@ export interface UserRow {
 
 const ROLE_LABEL = {
   manager: "Manager — everything except Users",
-  editor: "Editor — Website Edits only",
+  editor: "Editor — Settings only",
 } as const;
 
 const input = "w-full rounded-[var(--radius-sm)] border border-border bg-base px-3 py-2 text-sm";

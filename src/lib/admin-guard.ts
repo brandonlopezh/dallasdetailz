@@ -2,7 +2,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { getAdminUser, type AdminUser } from "./auth";
 
-/** For admin pages about bookings/customers: editors are sent to Website Edits. */
+/** For admin pages about bookings/customers: editors are sent to Settings. */
 export async function requireBookingsAccess(): Promise<AdminUser> {
   const user = await getAdminUser();
   if (!user) redirect("/admin/login");

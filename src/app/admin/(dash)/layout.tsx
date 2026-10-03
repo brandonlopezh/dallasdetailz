@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -5,6 +6,8 @@ import { getAdminUser } from "@/lib/auth";
 import { countRequests } from "@/lib/admin-bookings";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import ThemeToggle from "@/components/ThemeToggle";
+import AdminThemePicker from "@/components/admin/AdminThemePicker";
+import { THEME_COOKIE, parseTheme, themeVars } from "@/lib/admin-theme";
 import SignOutButton from "@/components/admin/SignOutButton";
 import SessionRefresher from "@/components/admin/SessionRefresher";
 
@@ -12,8 +15,8 @@ type Role = "master" | "manager" | "editor";
 const NAV: { href: string; label: string; badge?: boolean; roles: Role[] }[] = [
   { href: "/admin", label: "Today", roles: ["master", "manager"] },
   { href: "/admin/requests", label: "Requests", badge: true, roles: ["master", "manager"] },
-  { href: "/admin/website", label: "Website Edits", roles: ["master", "manager", "editor"] },
   { href: "/admin/users", label: "Users", roles: ["master"] },
+  { href: "/admin/website", label: "Settings", roles: ["master", "manager", "editor"] },
 ];
 
 export default async function DashLayout({
@@ -41,10 +44,15 @@ export default async function DashLayout({
   const user = await getAdminUser();
   if (!user) redirect("/admin/login");
 
+  const theme = parseTheme((await cookies()).get(THEME_COOKIE)?.value);
   const requests = user.role === "editor" ? 0 : await countRequests();
 
   return (
-    <div className="min-h-screen">
+    <div
+      id="admin-root"
+      className="min-h-screen bg-base text-ink"
+      style={themeVars(theme) as React.CSSProperties}
+    >
       <SessionRefresher />
       <header className="sticky top-0 z-40 border-b border-border bg-base/85 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4">
@@ -83,6 +91,7 @@ export default async function DashLayout({
             <span className="hidden text-xs text-muted sm:inline">
               {user.email}
             </span>
+            <AdminThemePicker initial={theme} />
             <ThemeToggle className="h-9 w-9 !min-h-0 !min-w-0" />
             <SignOutButton />
           </div>

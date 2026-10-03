@@ -61,7 +61,7 @@ export default async function TodayView({
           Here&apos;s what&apos;s on deck. Check today&apos;s jobs, look ahead on the
           calendar, approve any new requests, or jump into{" "}
           <Link href="/admin/website" className="text-accent-hi underline">
-            Website Edits
+            Settings
           </Link>{" "}
           to update prices, text, and photos.
           {requests > 0 && (

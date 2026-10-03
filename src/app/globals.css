@@ -207,3 +207,10 @@ body::after {
 .animate-bucket-glow {
   animation: bucket-glow 0.9s ease-in-out infinite;
 }
+
+/* Admin themes: filled accent buttons switch to dark text when a custom accent
+   color is too light for white (see onAccent in lib/admin-theme.ts). Scoped to
+   #admin-root, so the public site is unaffected. */
+#admin-root .bg-accent {
+  color: var(--admin-on-accent, #fff);
+}

@@ -22,7 +22,7 @@ export function isAdminEmail(email: string | null | undefined): boolean {
 /**
  * master  — an ADMIN_EMAILS account: everything, plus managing users.
  * manager — everything except managing users.
- * editor  — Website Edits only.
+ * editor  — Settings (website edits) only.
  * manager/editor live in the admin_users table (see 0008_admin_users.sql).
  */
 export type AdminRole = "master" | "manager" | "editor";
