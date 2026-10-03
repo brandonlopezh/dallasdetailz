@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { requireBookingsAccess } from "@/lib/admin-guard";
 import { getSettings } from "@/lib/catalog";
 import { countRequests, listBookings } from "@/lib/admin-bookings";
 import { TodayJob } from "@/components/admin/JobList";
@@ -20,6 +21,7 @@ export default async function TodayView({
 }: {
   searchParams: Promise<{ month?: string; day?: string }>;
 }) {
+  await requireBookingsAccess();
   const sp = await searchParams;
   const settings = await getSettings();
   const tz = settings.timezone;

@@ -8,10 +8,12 @@ import ThemeToggle from "@/components/ThemeToggle";
 import SignOutButton from "@/components/admin/SignOutButton";
 import SessionRefresher from "@/components/admin/SessionRefresher";
 
-const NAV = [
-  { href: "/admin", label: "Today" },
-  { href: "/admin/requests", label: "Requests", badge: true },
-  { href: "/admin/website", label: "Website Edits" },
+type Role = "master" | "manager" | "editor";
+const NAV: { href: string; label: string; badge?: boolean; roles: Role[] }[] = [
+  { href: "/admin", label: "Today", roles: ["master", "manager"] },
+  { href: "/admin/requests", label: "Requests", badge: true, roles: ["master", "manager"] },
+  { href: "/admin/website", label: "Website Edits", roles: ["master", "manager", "editor"] },
+  { href: "/admin/users", label: "Users", roles: ["master"] },
 ];
 
 export default async function DashLayout({
@@ -39,7 +41,7 @@ export default async function DashLayout({
   const user = await getAdminUser();
   if (!user) redirect("/admin/login");
 
-  const requests = await countRequests();
+  const requests = user.role === "editor" ? 0 : await countRequests();
 
   return (
     <div className="min-h-screen">
@@ -47,7 +49,10 @@ export default async function DashLayout({
       <header className="sticky top-0 z-40 border-b border-border bg-base/85 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4">
           <nav className="flex items-center gap-4 overflow-x-auto">
-            <Link href="/admin" className="flex shrink-0 items-center gap-2">
+            <Link
+              href={user.role === "editor" ? "/admin/website" : "/admin"}
+              className="flex shrink-0 items-center gap-2"
+            >
               <Image
                 src="/logo.jpg"
                 alt=""
@@ -59,7 +64,7 @@ export default async function DashLayout({
                 DallasDetailz
               </span>
             </Link>
-            {NAV.map((n) => (
+            {NAV.filter((n) => n.roles.includes(user.role)).map((n) => (
               <Link
                 key={n.href}
                 href={n.href}

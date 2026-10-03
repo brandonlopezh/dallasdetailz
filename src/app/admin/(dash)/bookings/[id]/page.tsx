@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { requireBookingsAccess } from "@/lib/admin-guard";
 import { getSettings } from "@/lib/catalog";
 import { getBooking } from "@/lib/admin-bookings";
 import { StatusBadge, money } from "@/components/admin/JobList";
@@ -20,6 +21,7 @@ export default async function BookingDetail({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireBookingsAccess();
   const { id } = await params;
   const [b, settings] = await Promise.all([getBooking(id), getSettings()]);
   if (!b) notFound();

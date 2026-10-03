@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getAdminUser } from "@/lib/auth";
+import { getBookingsUser } from "@/lib/auth";
 import { getServices } from "@/lib/catalog";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import type { VehicleTier } from "@/lib/types";
@@ -24,7 +24,7 @@ const createSchema = z.object({
 
 // POST /api/admin/bookings — manual booking (phone/walk-up/IG). PRD AD-7.
 export async function POST(req: NextRequest) {
-  if (!(await getAdminUser()))
+  if (!(await getBookingsUser()))
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const parsed = createSchema.safeParse(await req.json().catch(() => null));

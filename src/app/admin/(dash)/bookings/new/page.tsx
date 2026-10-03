@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { requireBookingsAccess } from "@/lib/admin-guard";
 import ManualBookingForm from "@/components/admin/ManualBookingForm";
 
 export const metadata = { title: "New booking" };
 
-export default function NewBookingPage() {
+export default async function NewBookingPage() {
+  await requireBookingsAccess();
   return (
     <div className="max-w-lg">
       <Link href="/admin" className="text-sm text-muted hover:text-ink">

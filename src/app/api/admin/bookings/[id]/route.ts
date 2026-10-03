@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getAdminUser } from "@/lib/auth";
+import { getBookingsUser } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 const patchSchema = z
@@ -23,7 +23,7 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  if (!(await getAdminUser()))
+  if (!(await getBookingsUser()))
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;

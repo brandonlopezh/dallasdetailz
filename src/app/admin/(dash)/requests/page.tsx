@@ -1,3 +1,4 @@
+import { requireBookingsAccess } from "@/lib/admin-guard";
 import { getSettings } from "@/lib/catalog";
 import { listBookings } from "@/lib/admin-bookings";
 import { BookingRow } from "@/components/admin/JobList";
@@ -6,6 +7,7 @@ export const metadata = { title: "Requests" };
 export const dynamic = "force-dynamic";
 
 export default async function RequestsPage() {
+  await requireBookingsAccess();
   const settings = await getSettings();
   const tz = settings.timezone;
 
