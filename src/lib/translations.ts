@@ -22,6 +22,9 @@ export interface Translations {
     seePricing: string;
     from: string;
     trust: string[];
+    blogText: string;
+    blogMore: string;
+    blogLink: string;
     reelLabel: string;
     reelWatch: string;
     soundOn: string;
@@ -55,17 +58,20 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
       title: "A showroom shine",
       titleAccent: "Right in your driveway",
       summary:
-        "Two brothers, a truckload of gear, and your driveway. Providing exterior, interior, and full details across Duncanville, Dallas, and Cedar Hill.",
+        "Providing exterior, interior, and full details across Duncanville, Dallas, and Cedar Hill.",
       seePricing: "See Pricing",
       from: "from",
-      trust: ["We come to you", "Final prices", "Hablamos Español"],
+      trust: ["We come to you", "Budget friendly", "Hablamos Español"],
+      blogText: "We got published in a blog!",
+      blogMore: "Read more about us",
+      blogLink: "here",
       reelLabel: "Dallas Detailz reel showing a truck interior detail",
       reelWatch: "Watch on Instagram",
       soundOn: "Turn sound on",
       soundOff: "Mute",
     },
     services: {
-      heading: "Pick your service",
+      heading: "Service you can trust",
       disclaimer: "Prices shown are final, we accept Zelle and Cash only.",
       swipeHint: "Swipe to compare →",
       bookThis: "Book this",
@@ -143,17 +149,20 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
       title: "Brillo de agencia",
       titleAccent: "En la entrada de tu casa",
       summary:
-        "Dos hermanos, una camioneta llena de equipo y tu entrada. Ofrecemos limpieza exterior, interior y detallado completo en Duncanville, Dallas y Cedar Hill.",
+        "Dos hermanos, una camioneta llena de equipo y tu entrada.\nOfrecemos limpieza exterior, interior y detallado completo en Duncanville, Dallas y Cedar Hill.",
       seePricing: "Ver precios",
       from: "desde",
-      trust: ["Vamos a ti", "Precios finales", "Hablamos inglés y español"],
+      trust: ["Vamos a ti", "Precios accesibles", "Hablamos inglés y español"],
+      blogText: "¡Nos publicaron en un blog!",
+      blogMore: "Lee más sobre nosotros",
+      blogLink: "aquí",
       reelLabel: "Reel de Dallas Detailz mostrando el detallado interior de una camioneta",
       reelWatch: "Ver en Instagram",
       soundOn: "Activar sonido",
       soundOff: "Silenciar",
     },
     services: {
-      heading: "Elige tu servicio",
+      heading: "Servicio en el que puedes confiar",
       disclaimer: "Los precios mostrados son finales, aceptamos solo Zelle y efectivo.",
       swipeHint: "Desliza para comparar →",
       bookThis: "Reservar esto",

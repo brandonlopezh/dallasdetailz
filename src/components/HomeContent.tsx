@@ -20,6 +20,9 @@ interface HomeContentProps {
   services: Service[];
 }
 
+const BLOG_URL =
+  "https://brandonjlopezh.blog/2026/09/02/the-next-generation-isnt-waiting-around-they-are-taking-action/";
+
 export default function HomeContent({ services }: HomeContentProps) {
   const { lang, t, contact, serviceTranslations, parts } = useLanguage();
   const priceFrom = (s: Service) => Math.min(...s.pricing.map((p) => p.price));
@@ -199,16 +202,29 @@ export default function HomeContent({ services }: HomeContentProps) {
               <ul className="animate-fade-up mt-6 flex flex-col gap-2.5 text-sm font-semibold uppercase tracking-wide text-ink sm:flex-row sm:flex-wrap sm:gap-x-5 [animation-delay:80ms]">
                 {t.hero.trust.map((item) => (
                   <li key={item} className="flex items-center gap-2">
-                    <span aria-hidden="true" className="shrink-0 text-lg leading-none">
-                      ✅
-                    </span>
+                    <svg
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                      className="h-5 w-5 shrink-0 text-accent-hi"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={3.5}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M4 12.5 9.5 18 20 6.5" />
+                    </svg>
                     {item}
                   </li>
                 ))}
               </ul>
 
-              <h2 className="animate-fade-up mt-6 max-w-xl text-pretty text-base leading-relaxed text-ink sm:text-lg [animation-delay:160ms]">
-                {t.hero.summary}
+              <h2 className="animate-fade-up mt-6 max-w-xl text-pretty text-base italic leading-relaxed text-ink sm:text-lg [animation-delay:160ms]">
+                {t.hero.summary.split("\n").map((line, i) => (
+                  <span key={i} className={i > 0 ? "mt-1 block" : undefined}>
+                    {line}
+                  </span>
+                ))}
               </h2>
 
               <div className="animate-fade-up mt-9 flex w-full flex-col gap-3 sm:w-auto sm:flex-row [animation-delay:240ms]">
@@ -254,6 +270,22 @@ export default function HomeContent({ services }: HomeContentProps) {
                   {t.footer.call}
                 </a>
               </div>
+
+              <p className="animate-fade-up mt-6 text-sm text-muted [animation-delay:300ms]">
+                <span className="font-semibold text-ink">{t.hero.blogText}</span>{" "}
+                <span>
+                {t.hero.blogMore}{" "}
+                <a
+                  href={BLOG_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-accent-hi underline underline-offset-2 hover:text-ink"
+                >
+                  {t.hero.blogLink}
+                </a>
+                .
+                </span>
+              </p>
             </div>
 
             {/* Art column — a real reel in a phone frame shows the work where

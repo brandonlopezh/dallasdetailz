@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Racing_Sans_One, Inter } from "next/font/google";
+import { Racing_Sans_One, Inter, Dancing_Script } from "next/font/google";
 import Script from "next/script";
 import { LanguageProvider } from "@/components/LanguageProvider";
 import "./globals.css";
@@ -8,6 +8,12 @@ const display = Racing_Sans_One({
   variable: "--font-display",
   subsets: ["latin"],
   weight: "400",
+});
+
+const script = Dancing_Script({
+  variable: "--font-script",
+  subsets: ["latin"],
+  weight: ["700"],
 });
 
 const body = Inter({
@@ -51,7 +57,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${display.variable} ${body.variable} h-full antialiased`}
+      className={`${display.variable} ${body.variable} ${script.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-base text-ink">
         <Script id="theme-init" strategy="beforeInteractive">
