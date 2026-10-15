@@ -41,7 +41,9 @@ export default function HomeContent({ services }: HomeContentProps) {
           <p className="mt-2 max-w-xl text-muted">{t.services.disclaimer}</p>
           <p className="mt-1 text-xs text-muted sm:hidden">{t.services.swipeHint}</p>
           <div className="no-scrollbar mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2 sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0">
-            {services.map((s) => {
+            {[...services]
+              .sort((a, b) => Number(b.category === "full") - Number(a.category === "full"))
+              .map((s) => {
               const es = lang === "es" ? serviceTranslations[s.id] : undefined;
               const name = es?.name ?? s.name;
               const description = es?.description ?? s.description;
@@ -205,9 +207,9 @@ export default function HomeContent({ services }: HomeContentProps) {
                 ))}
               </ul>
 
-              <p className="animate-fade-up mt-6 max-w-xl text-pretty text-base leading-relaxed text-muted sm:text-lg [animation-delay:160ms]">
+              <h2 className="animate-fade-up mt-6 max-w-xl text-pretty text-base leading-relaxed text-ink sm:text-lg [animation-delay:160ms]">
                 {t.hero.summary}
-              </p>
+              </h2>
 
               <div className="animate-fade-up mt-9 flex w-full flex-col gap-3 sm:w-auto sm:flex-row [animation-delay:240ms]">
                 <div className="flex gap-3">

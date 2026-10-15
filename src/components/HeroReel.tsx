@@ -36,6 +36,8 @@ export default function HeroReel({ reelUrl, label, watchLabel, soundOnLabel, sou
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
+    // React sets `muted` as a property only; make sure autoplay policies see it.
+    if (videoRef.current) videoRef.current.defaultMuted = videoRef.current.muted = true;
     const io = new IntersectionObserver(([entry]) => {
       const v = videoRef.current;
       if (!v) return;
@@ -81,7 +83,7 @@ export default function HeroReel({ reelUrl, label, watchLabel, soundOnLabel, sou
           muted
           loop
           playsInline
-          preload="none"
+          preload="auto"
           onCanPlay={(e) => {
             if (shouldAutoplay()) e.currentTarget.play().catch(() => {});
           }}

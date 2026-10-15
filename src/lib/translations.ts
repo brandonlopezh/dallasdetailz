@@ -58,7 +58,7 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
         "Two brothers, a truckload of gear, and your driveway. Providing exterior, interior, and full details across Duncanville, Dallas, and Cedar Hill.",
       seePricing: "See Pricing",
       from: "from",
-      trust: ["We come to you", "Final prices, no surprises", "Hablamos Español"],
+      trust: ["We come to you", "Final prices", "Hablamos Español"],
       reelLabel: "Dallas Detailz reel showing a truck interior detail",
       reelWatch: "Watch on Instagram",
       soundOn: "Turn sound on",
