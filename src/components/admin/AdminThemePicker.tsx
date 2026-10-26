@@ -64,7 +64,7 @@ export default function AdminThemePicker({ initial }: { initial: ThemeChoice | n
         aria-expanded={open}
         aria-label="Admin theme"
         title="Admin theme"
-        className="grid h-9 w-9 place-items-center rounded-full border border-border bg-surface/60 text-lg transition-colors hover:border-accent"
+        className="grid h-11 w-11 place-items-center rounded-full border border-border bg-surface/60 text-lg transition-colors hover:border-accent"
       >
         🎨
       </button>

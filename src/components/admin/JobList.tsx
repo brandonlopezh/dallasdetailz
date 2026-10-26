@@ -1,4 +1,5 @@
 import Link from "next/link";
+import CancelAppointment from "./CancelAppointment";
 import type { AdminBooking } from "@/lib/admin-bookings";
 import { STATUS_COLOR, STATUS_LABEL } from "@/lib/admin-bookings";
 import { formatInTz, TIME_OPTS } from "@/lib/tz";
@@ -100,8 +101,14 @@ export function TodayJob({ b, tz }: { b: AdminBooking; tz: string }) {
         </Link>
       </div>
 
+      {(b.status === "confirmed" || b.status === "in_progress") && (
+        <div className="mt-2">
+          <CancelAppointment b={b} tz={tz} />
+        </div>
+      )}
+
       {(b.water_access === false || b.outlet_access === false) && (
-        <p className="mt-3 rounded-[var(--radius-sm)] border border-warning/40 bg-warning/10 px-3 py-1.5 text-xs text-warning">
+        <p className="mt-3 rounded-[var(--radius-sm)] border border-warning/40 bg-warning/10 px-3 py-1.5 text-xs text-warning-text">
           Heads up:{" "}
           {b.water_access === false && "no water access"}
           {b.water_access === false && b.outlet_access === false && " · "}

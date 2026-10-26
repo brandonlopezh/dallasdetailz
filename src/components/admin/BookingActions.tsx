@@ -1,27 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { BookingStatus } from "@/lib/types";
 import type { AdminBooking } from "@/lib/admin-bookings";
 import BookingDecision from "./BookingDecision";
 import CalendarButtons from "./CalendarButtons";
+import CancelAppointment from "./CancelAppointment";
+import { DATETIME_INPUT, patchBooking, toLocalInput } from "./patchBooking";
 
-const STATUS_ACTIONS: Record<BookingStatus, BookingStatus[]> = {
-  requested: ["confirmed", "cancelled"],
-  confirmed: ["in_progress", "completed", "cancelled", "no_show"],
-  in_progress: ["completed", "cancelled"],
+// Status moves offered besides Cancel (which has its own confirm + contact flow).
+const NEXT: Record<BookingStatus, BookingStatus[]> = {
+  requested: [],
+  confirmed: ["in_progress", "completed", "no_show"],
+  in_progress: ["completed"],
   completed: [],
   cancelled: ["confirmed"],
   no_show: ["confirmed"],
 };
 
-const ACTION_LABEL: Record<BookingStatus, string> = {
-  requested: "Move to requested",
-  confirmed: "Confirm",
+const ACTION_LABEL: Partial<Record<BookingStatus, string>> = {
+  confirmed: "Re-book this appointment",
   in_progress: "Start job",
   completed: "Mark complete",
-  cancelled: "Cancel",
   no_show: "No-show",
 };
 
@@ -29,24 +30,20 @@ const ACTION_STYLE: Partial<Record<BookingStatus, string>> = {
   confirmed: "bg-accent text-white",
   in_progress: "bg-accent text-white",
   completed: "bg-success text-black",
-  cancelled: "border border-danger/50 text-danger",
-  no_show: "border border-danger/50 text-danger",
+  no_show: "border border-danger/60 bg-surface text-danger-text",
 };
+
+const CANCELLABLE: BookingStatus[] = ["confirmed", "in_progress"];
 
 export default function BookingActions({ b, tz }: { b: AdminBooking; tz: string }) {
   const { id, status, scheduled_start: start, scheduled_end: end, internal_notes: internalNotes } = b;
   const router = useRouter();
+  const startId = useId();
+  const notesId = useId();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notes, setNotes] = useState(internalNotes ?? "");
   const [rescheduling, setRescheduling] = useState(false);
-
-  // datetime-local value derived from the stored UTC start (local browser tz).
-  const toLocalInput = (iso: string) => {
-    const d = new Date(iso);
-    const off = d.getTimezoneOffset();
-    return new Date(d.getTime() - off * 60000).toISOString().slice(0, 16);
-  };
   const [newStart, setNewStart] = useState(toLocalInput(start));
 
   const durationMs = new Date(end).getTime() - new Date(start).getTime();
@@ -54,33 +51,28 @@ export default function BookingActions({ b, tz }: { b: AdminBooking; tz: string 
   const patch = async (body: Record<string, unknown>) => {
     setBusy(true);
     setError(null);
-    try {
-      const res = await fetch(`/api/admin/bookings/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Failed");
-      router.refresh();
-      return true;
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed");
+    const err = await patchBooking(id, body);
+    setBusy(false);
+    if (err) {
+      setError(err);
       return false;
-    } finally {
-      setBusy(false);
     }
+    router.refresh();
+    return true;
   };
 
   const doReschedule = async () => {
     const startDate = new Date(newStart);
-    const endDate = new Date(startDate.getTime() + durationMs);
+    if (Number.isNaN(startDate.getTime())) return;
     const ok = await patch({
       scheduled_start: startDate.toISOString(),
-      scheduled_end: endDate.toISOString(),
+      scheduled_end: new Date(startDate.getTime() + durationMs).toISOString(),
     });
     if (ok) setRescheduling(false);
   };
+
+  const buttonCls =
+    "tap rounded-[var(--radius-md)] px-4 py-3 text-base font-bold disabled:opacity-50";
 
   return (
     <div className="rounded-[var(--radius-md)] border border-border bg-surface p-4">
@@ -99,42 +91,60 @@ export default function BookingActions({ b, tz }: { b: AdminBooking; tz: string 
         </div>
       )}
 
+      {error && (
+        <p role="alert" className="mt-3 rounded-[var(--radius-sm)] border border-danger/50 bg-danger/10 p-3 text-sm font-semibold text-danger-text">
+          {error}
+        </p>
+      )}
+
       <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-        {(status === "requested" ? [] : STATUS_ACTIONS[status]).map((next) => (
+        {NEXT[status].map((next) => (
           <button
             key={next}
+            type="button"
             disabled={busy}
             onClick={() => patch({ status: next })}
-            className={`tap rounded-[var(--radius-sm)] px-4 py-3 text-sm font-bold disabled:opacity-50 ${
-              ACTION_STYLE[next] ?? "border border-border"
-            }`}
+            className={`${buttonCls} ${ACTION_STYLE[next] ?? "border border-border"}`}
           >
             {ACTION_LABEL[next]}
           </button>
         ))}
-        {status !== "requested" && (
+        {status !== "requested" && status !== "cancelled" && (
           <button
+            type="button"
             disabled={busy}
             onClick={() => setRescheduling((v) => !v)}
-            className="tap rounded-[var(--radius-sm)] border border-border px-4 py-3 text-sm font-bold disabled:opacity-50"
+            aria-expanded={rescheduling}
+            className={`${buttonCls} border border-border bg-surface text-ink`}
           >
             Reschedule
           </button>
         )}
       </div>
 
+      {CANCELLABLE.includes(status) && (
+        <div className="mt-2">
+          <CancelAppointment b={b} tz={tz} />
+        </div>
+      )}
+
       {rescheduling && (
-        <div className="mt-3 flex flex-wrap items-center gap-2">
+        <div className="mt-3 grid gap-2 rounded-[var(--radius-md)] border border-border bg-base p-3">
+          <label htmlFor={startId} className="text-sm font-semibold">
+            New start time
+          </label>
           <input
+            id={startId}
             type="datetime-local"
             value={newStart}
             onChange={(e) => setNewStart(e.target.value)}
-            className="rounded-[var(--radius-sm)] border border-border bg-base px-3 py-2 text-sm"
+            className={DATETIME_INPUT}
           />
           <button
+            type="button"
             disabled={busy}
             onClick={doReschedule}
-            className="tap rounded-[var(--radius-sm)] bg-accent px-4 text-sm font-bold text-white disabled:opacity-50"
+            className={`${buttonCls} bg-accent text-white`}
           >
             Save new time
           </button>
@@ -142,22 +152,24 @@ export default function BookingActions({ b, tz }: { b: AdminBooking; tz: string 
       )}
 
       <div className="mt-4">
-        <label className="text-sm text-muted">Internal notes</label>
+        <label htmlFor={notesId} className="text-sm text-muted">
+          Internal notes
+        </label>
         <textarea
+          id={notesId}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          className="mt-1 min-h-20 w-full rounded-[var(--radius-sm)] border border-border bg-base px-3 py-2 text-sm"
+          className="mt-1 block min-h-24 w-full rounded-[var(--radius-sm)] border border-border bg-base px-3 py-2 text-base"
         />
         <button
+          type="button"
           disabled={busy || notes === (internalNotes ?? "")}
           onClick={() => patch({ internal_notes: notes })}
-          className="tap mt-2 rounded-[var(--radius-sm)] border border-border px-4 text-sm font-semibold disabled:opacity-40"
+          className="tap mt-2 rounded-[var(--radius-md)] border border-border bg-surface px-4 text-base font-semibold text-ink disabled:opacity-40"
         >
           Save notes
         </button>
       </div>
-
-      {error && <p className="mt-3 text-sm text-danger">{error}</p>}
     </div>
   );
 }

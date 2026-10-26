@@ -96,10 +96,10 @@ export const STATUS_LABEL: Record<BookingStatus, string> = {
 };
 
 export const STATUS_COLOR: Record<BookingStatus, string> = {
-  requested: "text-warning border-warning/40 bg-warning/10",
-  confirmed: "text-accent-hi border-accent/40 bg-accent/10",
-  in_progress: "text-accent-hi border-accent/50 bg-accent/20",
-  completed: "text-success border-success/40 bg-success/10",
+  requested: "text-warning-text border-warning/40 bg-warning/10",
+  confirmed: "text-link border-accent/40 bg-accent/10",
+  in_progress: "text-link border-accent/50 bg-accent/20",
+  completed: "text-success-text border-success/40 bg-success/10",
   cancelled: "text-muted border-border bg-surface-alt",
-  no_show: "text-danger border-danger/40 bg-danger/10",
+  no_show: "text-danger-text border-danger/40 bg-danger/10",
 };

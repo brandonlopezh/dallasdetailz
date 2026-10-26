@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Script from "next/script";
 
 declare global {
@@ -17,6 +17,20 @@ declare global {
  * managed in /admin/website.
  */
 export default function InstagramEmbedGrid({ urls }: { urls: string[] }) {
+  const grid = useRef<HTMLDivElement>(null);
+
+  // Instagram's script injects untitled iframes; give each a name for screen readers.
+  useEffect(() => {
+    const el = grid.current;
+    if (!el) return;
+    const label = () =>
+      el.querySelectorAll("iframe:not([title])").forEach((f, i) => f.setAttribute("title", `Instagram post ${i + 1}`));
+    label();
+    const mo = new MutationObserver(label);
+    mo.observe(el, { childList: true, subtree: true });
+    return () => mo.disconnect();
+  }, []);
+
   useEffect(() => {
     // embed.js only auto-processes blockquotes present when IT loads. If
     // it's already cached from an earlier page (client-side nav back here),
@@ -26,7 +40,7 @@ export default function InstagramEmbedGrid({ urls }: { urls: string[] }) {
 
   return (
     <>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div ref={grid} className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {urls.map((url) => (
           <div
             key={url}

@@ -53,7 +53,7 @@ export default function HomeContent({ services }: HomeContentProps) {
                   className={`relative flex w-[82%] shrink-0 snap-start flex-col pt-3 sm:w-auto sm:shrink ${isBestDeal ? "sm:z-10" : ""}`}
                 >
                   {isBestDeal && (
-                    <span className="absolute left-1/2 top-0 z-10 -translate-x-1/2 rounded-full bg-blue-500 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white shadow">
+                    <span className="absolute left-1/2 top-0 z-10 -translate-x-1/2 rounded-full bg-blue-700 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white shadow">
                       {t.services.bestDeal}
                     </span>
                   )}
@@ -98,7 +98,7 @@ export default function HomeContent({ services }: HomeContentProps) {
               href={INSTAGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="link-sweep text-sm font-semibold text-accent-hi"
+              className="link-sweep text-sm font-semibold text-link"
             >
               {t.instagram.visit}
             </a>
@@ -191,7 +191,7 @@ export default function HomeContent({ services }: HomeContentProps) {
               {/* Two-line title: white line on top, blue accent line below. */}
               <h1 className="animate-fade-up flex flex-col font-[family-name:var(--font-display)] text-[clamp(2rem,9vw,3.75rem)] uppercase leading-[0.95] tracking-[-0.02em] sm:text-6xl lg:text-7xl">
                 <span className="whitespace-nowrap text-ink">{t.hero.title}</span>
-                <span className="mt-1 text-accent-hi">{t.hero.titleAccent}</span>
+                <span className="mt-1 text-link">{t.hero.titleAccent}</span>
               </h1>
 
               {/* Trust points — filled checkboxes read as "already ticked off". */}
@@ -201,7 +201,7 @@ export default function HomeContent({ services }: HomeContentProps) {
                     <svg
                       viewBox="0 0 24 24"
                       aria-hidden="true"
-                      className="h-5 w-5 shrink-0 text-accent-hi"
+                      className="h-5 w-5 shrink-0 text-link"
                       fill="none"
                       stroke="currentColor"
                       strokeWidth={3.5}
@@ -242,7 +242,7 @@ export default function HomeContent({ services }: HomeContentProps) {
                     rel="noopener noreferrer"
                     aria-label={t.mobileBar.instagramTooltip}
                     title={t.mobileBar.instagramTooltip}
-                    className="tap grid aspect-square place-items-center rounded-[var(--radius-md)] border border-border bg-surface/60 text-ink backdrop-blur transition-colors hover:border-accent hover:text-accent-hi"
+                    className="tap grid aspect-square place-items-center rounded-[var(--radius-md)] border border-border bg-surface/60 text-ink backdrop-blur transition-colors hover:border-accent hover:text-link"
                   >
                     <InstagramIcon className="h-6 w-6" />
                   </a>
@@ -250,7 +250,7 @@ export default function HomeContent({ services }: HomeContentProps) {
                     href={contact.sms}
                     aria-label={textLabel}
                     title={textLabel}
-                    className="tap grid aspect-square place-items-center rounded-[var(--radius-md)] border border-border bg-surface/60 text-ink backdrop-blur transition-colors hover:border-accent hover:text-accent-hi"
+                    className="tap grid aspect-square place-items-center rounded-[var(--radius-md)] border border-border bg-surface/60 text-ink backdrop-blur transition-colors hover:border-accent hover:text-link"
                   >
                     <MessageIcon className="h-6 w-6" />
                   </a>
@@ -268,7 +268,7 @@ export default function HomeContent({ services }: HomeContentProps) {
                   href={BLOG_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-semibold text-accent-hi underline underline-offset-2 hover:text-ink"
+                  className="font-semibold text-link underline underline-offset-2 hover:text-ink"
                 >
                   {t.hero.blogLink}
                 </a>

@@ -173,7 +173,7 @@ export default function MediaManager() {
         >
           {uploading ? "Uploading…" : "Upload"}
         </button>
-        {error && <p className="mt-2 text-sm text-danger">{error}</p>}
+        {error && <p className="mt-2 text-sm text-danger-text">{error}</p>}
       </form>
 
       {/* Existing media grouped by slot */}
@@ -212,13 +212,13 @@ export default function MediaManager() {
                       <div className="mt-1 flex items-center justify-between">
                         <button
                           onClick={() => patch(m.id, { active: !m.active })}
-                          className="text-accent-hi hover:underline"
+                          className="text-link hover:underline"
                         >
                           {m.active ? "Hide" : "Show"}
                         </button>
                         <button
                           onClick={() => remove(m.id)}
-                          className="text-danger hover:underline"
+                          className="text-danger-text hover:underline"
                         >
                           Delete
                         </button>

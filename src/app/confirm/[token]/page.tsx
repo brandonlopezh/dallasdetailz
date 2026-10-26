@@ -60,7 +60,7 @@ export default async function ConfirmPage({
           </div>
 
           {error === "conflict" && (
-            <p className="mt-4 rounded-[var(--radius-sm)] border border-danger/40 bg-danger/10 p-3 text-sm text-danger">
+            <p className="mt-4 rounded-[var(--radius-sm)] border border-danger/40 bg-danger/10 p-3 text-sm text-danger-text">
               That time overlaps a job that&apos;s already confirmed. Decline
               this request, or text the customer directly to sort out a new
               time.

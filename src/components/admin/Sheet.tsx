@@ -1,24 +1,43 @@
 "use client";
 
+import { useId, useRef } from "react";
+import { useDialog } from "@/lib/useDialog";
+
 /**
- * Popup used for admin outcomes ("Request officially booked", customer
- * contact). A bottom sheet on phones, centered card on larger screens.
- * Backdrop tap does nothing on purpose — the person should read it and
- * press the button, since closing it also refreshes the list behind it.
+ * Popup used for admin outcomes ("Request officially booked", confirmations,
+ * customer contact). Centered with a margin on every screen size. Backdrop
+ * taps don't dismiss it — closing also refreshes the list behind it, so the
+ * person should answer with a button (Escape works when `onClose` is given).
  */
 export default function Sheet({
+  title,
+  onClose,
   children,
 }: {
+  title: string;
+  onClose?: () => void;
   children: React.ReactNode;
 }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  useDialog(ref, onClose);
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center"
-      role="dialog"
-      aria-modal="true"
-    >
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-      <div className="relative w-full max-w-md rounded-t-[1.25rem] border border-border bg-base p-6 pb-8 shadow-2xl sm:rounded-[1.25rem]">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" aria-hidden="true" />
+      <div
+        ref={ref}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        className="relative max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-[var(--radius-lg)] border border-border bg-base p-6 shadow-2xl"
+      >
+        <h2
+          id={titleId}
+          className="text-center font-[family-name:var(--font-display)] text-2xl font-extrabold"
+        >
+          {title}
+        </h2>
         {children}
       </div>
     </div>
@@ -42,10 +61,10 @@ export function BigButton({
 }) {
   const cls = `tap flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] px-5 text-base font-bold disabled:opacity-50 ${
     {
-      default: "border border-border bg-surface",
+      default: "border border-border bg-surface text-ink",
       primary: "bg-accent text-white",
       success: "bg-success text-black",
-      danger: "border border-danger/50 text-danger",
+      danger: "border border-danger/60 bg-surface text-danger-text",
     }[tone]
   }`;
   const style = { minHeight: 56 };
@@ -58,6 +77,7 @@ export function BigButton({
         {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
       >
         {children}
+        {external && <span className="sr-only"> (opens in a new tab)</span>}
       </a>
     );
   }

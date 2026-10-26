@@ -134,7 +134,7 @@ export default function ManualBookingForm() {
 
       <textarea className={`${input} min-h-16`} placeholder="Internal notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} />
 
-      {error && <p className="text-sm text-danger">{error}</p>}
+      {error && <p className="text-sm text-danger-text">{error}</p>}
 
       <button
         type="submit"

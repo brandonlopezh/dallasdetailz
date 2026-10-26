@@ -58,7 +58,7 @@ export default async function TodayView({
       {/* Pending requests — first thing seen, with one-tap answers */}
       {pending.length > 0 && (
         <section className="-mt-4">
-          <h2 className="font-[family-name:var(--font-display)] text-xl font-extrabold text-warning">
+          <h2 className="font-[family-name:var(--font-display)] text-xl font-extrabold text-warning-text">
             {pending.length} request{pending.length === 1 ? "" : "s"} waiting
           </h2>
           <div className="mt-3 grid gap-4">
@@ -128,7 +128,7 @@ function Stat({
 }) {
   return (
     <div
-      className={`rounded-[var(--radius-md)] border p-3 ${
+      className={`min-w-0 rounded-[var(--radius-md)] border p-3 ${
         highlight ? "border-warning/50 bg-warning/10" : "border-border bg-surface"
       }`}
     >

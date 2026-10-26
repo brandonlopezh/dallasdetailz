@@ -14,7 +14,7 @@ export default function SignOutButton() {
         router.push("/admin/login");
         router.refresh();
       }}
-      className="text-sm text-muted hover:text-ink"
+      className="inline-flex min-h-11 items-center rounded-[var(--radius-sm)] px-2 text-sm text-muted hover:text-ink"
     >
       Sign out
     </button>

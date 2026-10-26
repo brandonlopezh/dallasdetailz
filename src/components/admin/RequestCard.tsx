@@ -22,7 +22,7 @@ export default function RequestCard({ b, tz }: { b: AdminBooking; tz: string }) 
         <span className="rounded-full bg-warning px-2.5 py-0.5 text-xs font-extrabold uppercase tracking-wide text-black">
           Needs your answer
         </span>
-        <Link href={`/admin/bookings/${b.id}`} className="text-sm font-semibold text-accent-hi">
+        <Link href={`/admin/bookings/${b.id}`} className="text-sm font-semibold text-link">
           Details →
         </Link>
       </div>
@@ -37,7 +37,7 @@ export default function RequestCard({ b, tz }: { b: AdminBooking; tz: string }) 
       <div className="mt-3 text-sm">
         <p className="font-semibold">{b.customers?.name ?? "Customer"}</p>
         {phone && (
-          <a href={`tel:${phone}`} className="text-accent-hi">
+          <a href={`tel:${phone}`} className="text-link">
             {phone}
           </a>
         )}

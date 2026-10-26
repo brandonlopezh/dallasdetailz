@@ -31,6 +31,8 @@ export default function LoginForm() {
           setMessage(error.message);
           return;
         }
+        // Full page load on purpose: the server must see the new session cookie.
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
         window.location.href = "/admin";
         return;
       }
@@ -99,7 +101,7 @@ export default function LoginForm() {
             ? "Sign in"
             : "Email me a login link"}
       </button>
-      {status === "error" && <p className="text-sm text-danger">{message}</p>}
+      {status === "error" && <p className="text-sm text-danger-text">{message}</p>}
       <button
         type="button"
         onClick={() => {

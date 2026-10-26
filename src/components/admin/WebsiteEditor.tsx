@@ -427,7 +427,7 @@ export default function WebsiteEditor({ live, defaults, parts: initialParts, ser
                 <button
                   type="button"
                   aria-pressed={s.visible}
-                  className={`${iconBtn} w-20 ${s.visible ? "!border-accent text-accent-hi" : "text-muted"}`}
+                  className={`${iconBtn} w-20 ${s.visible ? "!border-accent text-link" : "text-muted"}`}
                   onClick={() =>
                     updateParts({
                       sections: parts.sections.map((x) => (x.id === s.id ? { ...x, visible: !x.visible } : x)),
@@ -457,7 +457,7 @@ export default function WebsiteEditor({ live, defaults, parts: initialParts, ser
                   href={url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="min-w-0 flex-1 truncate text-sm text-accent-hi underline"
+                  className="min-w-0 flex-1 truncate text-sm text-link underline"
                 >
                   {url.replace("https://www.instagram.com", "instagram.com")}
                 </a>
@@ -482,7 +482,7 @@ export default function WebsiteEditor({ live, defaults, parts: initialParts, ser
                 <button
                   type="button"
                   aria-label="Remove post"
-                  className={iconBtn + " text-danger"}
+                  className={iconBtn + " text-danger-text"}
                   onClick={() => updateParts({ instagramPosts: parts.instagramPosts.filter((u) => u !== url) })}
                 >
                   ✕
@@ -513,7 +513,7 @@ export default function WebsiteEditor({ live, defaults, parts: initialParts, ser
               Add
             </button>
           </div>
-          {postError && <p className="mt-2 text-sm text-danger">{postError}</p>}
+          {postError && <p className="mt-2 text-sm text-danger-text">{postError}</p>}
         </div>
       );
 
@@ -593,9 +593,9 @@ export default function WebsiteEditor({ live, defaults, parts: initialParts, ser
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-1">
           <p className="min-w-0 text-sm" role="status">
             {error ? (
-              <span className="text-danger">{error}</span>
+              <span className="text-danger-text">{error}</span>
             ) : state === "saved" ? (
-              <span className="text-success">
+              <span className="text-success-text">
                 Saved — live now.{" "}
                 <a href="/" target="_blank" rel="noopener noreferrer" className="underline">
                   View site

@@ -133,7 +133,7 @@ export default function UsersManager({
           That&apos;s all it takes — they can sign in at /admin/login with their email and this password right away, and
           stay signed in on their device. Leave the password blank to have them use the emailed link instead.
         </p>
-        {error && <p className="mt-2 text-sm text-danger">{error}</p>}
+        {error && <p className="mt-2 text-sm text-danger-text">{error}</p>}
       </section>
 
       <section>
@@ -147,11 +147,11 @@ export default function UsersManager({
               </span>
               <span className="flex shrink-0 items-center gap-3">
                 {m === me.toLowerCase() && (
-                  <button type="button" onClick={() => resetPassword(m)} className="text-xs text-accent-hi underline">
+                  <button type="button" onClick={() => resetPassword(m)} className="text-xs text-link underline">
                     Set password
                   </button>
                 )}
-                <span className="rounded-full border border-accent px-2 py-0.5 text-xs text-accent-hi">Master</span>
+                <span className="rounded-full border border-accent px-2 py-0.5 text-xs text-link">Master</span>
               </span>
             </li>
           ))}
@@ -162,10 +162,10 @@ export default function UsersManager({
                 <span className="rounded-full border border-border px-2 py-0.5 text-xs text-muted">
                   {u.role === "master" ? "Master" : u.role === "manager" ? "Manager" : "Editor"}
                 </span>
-                <button type="button" onClick={() => resetPassword(u.email)} className="text-xs text-accent-hi underline">
+                <button type="button" onClick={() => resetPassword(u.email)} className="text-xs text-link underline">
                   Set password
                 </button>
-                <button type="button" onClick={() => remove(u.email)} className="text-xs text-danger underline">
+                <button type="button" onClick={() => remove(u.email)} className="text-xs text-danger-text underline">
                   Remove
                 </button>
               </span>

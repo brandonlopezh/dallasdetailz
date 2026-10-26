@@ -72,7 +72,7 @@ export default function MonthCalendar({
         </div>
         <div className="flex items-center gap-2">
           {monthKey !== currentMonth && (
-            <Link href={href(currentMonth)} className="text-sm text-accent-hi underline">
+            <Link href={href(currentMonth)} className="text-sm text-link underline">
               This month
             </Link>
           )}

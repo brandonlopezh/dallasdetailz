@@ -35,6 +35,13 @@
   --color-warning: #d19a3c;
   --color-danger: #c2553f;
 
+  /* Text-safe variants (WCAG AA 4.5:1 on base/surface). The plain tokens
+     above stay for fills, borders and hover backgrounds. */
+  --color-link: #7a9cc4;
+  --color-success-text: #6f9e58;
+  --color-warning-text: #d19a3c;
+  --color-danger-text: #e0765f;
+
   --font-display: "Archivo", "Barlow Condensed", sans-serif;
   --font-body: "Inter", system-ui, sans-serif;
 
@@ -62,9 +69,13 @@
   --color-accent-hi: #2f4a6a; /* text-on-light needs to be darker, not lighter */
   --color-ink: #1d1a15;
   --color-muted: #6b6155;
-  --color-success: #4d7a38;
+  --color-success: #62994a;
   --color-warning: #a8741a;
   --color-danger: #a8402d;
+  --color-link: #2f4a6a;
+  --color-success-text: #3f6a2d;
+  --color-warning-text: #7f5410;
+  --color-danger-text: #a8402d;
   color-scheme: light;
 }
 :root:not([data-theme="light"]) {
@@ -118,13 +129,21 @@ body::after {
   min-width: 48px;
   transition: transform 0.15s ease;
 }
-.tap:active {
-  transform: scale(0.96);
+@media (prefers-reduced-motion: no-preference) {
+  .tap:active {
+    transform: scale(0.96);
+  }
 }
-@media (hover: hover) {
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
   .tap:hover {
     transform: translateY(-1px);
   }
+}
+
+/* Keyboard focus ring on everything interactive (WCAG 2.4.7). */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-link);
+  outline-offset: 2px;
 }
 
 /* Card hover — lift + shadow, only on pointer devices that can actually

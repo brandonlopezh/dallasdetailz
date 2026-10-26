@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useId, useRef, useState } from "react";
+import { useDialog } from "@/lib/useDialog";
 import BookingFlow from "./BookingFlow";
 
 interface BookingModalCtx {
@@ -24,56 +25,56 @@ export function BookingModalProvider({ children }: { children: React.ReactNode }
     [],
   );
   const dismiss = useCallback(() => setState(null), []);
-  const isOpen = state !== null;
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && dismiss();
-    window.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
-    };
-  }, [isOpen, dismiss]);
 
   return (
     <Ctx.Provider value={{ open }}>
       {children}
-      {state && (
-        <div
-          className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Request a booking"
-        >
+      {state && <BookingDialog key={state.n} serviceId={state.serviceId} onClose={dismiss} />}
+    </Ctx.Provider>
+  );
+}
+
+function BookingDialog({ serviceId, onClose }: { serviceId?: string; onClose: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  useDialog(ref, onClose);
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-label="Close"
+        onClick={onClose}
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+      />
+      <div
+        ref={ref}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        className="relative flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col overflow-hidden rounded-[var(--radius-lg)] border border-border bg-base shadow-2xl"
+      >
+        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+          <h2
+            id={titleId}
+            className="font-[family-name:var(--font-display)] text-lg font-extrabold uppercase"
+          >
+            Book a detail
+          </h2>
           <button
             type="button"
-            aria-label="Close"
-            onClick={dismiss}
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-          />
-          <div className="relative flex max-h-[94dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-[var(--radius-lg)] border border-border bg-base shadow-2xl sm:rounded-[var(--radius-lg)]">
-            <div className="flex items-center justify-between border-b border-border px-4 py-3">
-              <p className="font-[family-name:var(--font-display)] text-lg font-extrabold uppercase">
-                Book a detail
-              </p>
-              <button
-                type="button"
-                onClick={dismiss}
-                aria-label="Close"
-                className="tap grid place-items-center rounded-full border border-border text-lg text-muted hover:text-ink"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="overflow-y-auto px-4 py-5">
-              <BookingFlow key={state.n} initialServiceId={state.serviceId} onDone={dismiss} />
-            </div>
-          </div>
+            onClick={onClose}
+            aria-label="Close booking form"
+            className="tap grid place-items-center rounded-full border border-border text-lg text-muted hover:text-ink"
+          >
+            <span aria-hidden="true">✕</span>
+          </button>
         </div>
-      )}
-    </Ctx.Provider>
+        <div className="overflow-y-auto px-4 py-5">
+          <BookingFlow initialServiceId={serviceId} onDone={onClose} />
+        </div>
+      </div>
+    </div>
   );
 }

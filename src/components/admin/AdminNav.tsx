@@ -39,7 +39,7 @@ export function BottomNav({ items, pending }: { items: NavItem[]; pending: numbe
                 href={n.href}
                 aria-current={active ? "page" : undefined}
                 className={`relative flex flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-semibold ${
-                  active ? "text-accent-hi" : "text-muted"
+                  active ? "text-link" : "text-muted"
                 }`}
                 style={{ minHeight: 60 }}
               >

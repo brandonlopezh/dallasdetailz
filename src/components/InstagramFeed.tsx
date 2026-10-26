@@ -42,7 +42,7 @@ export default function InstagramFeed() {
       rel="noopener noreferrer"
       className="hover-lift flex flex-col items-center gap-3 rounded-[var(--radius-lg)] border border-border bg-surface px-6 py-16 text-center transition-colors hover:border-accent"
     >
-      <InstagramIcon className="h-9 w-9 text-accent-hi" />
+      <InstagramIcon className="h-9 w-9 text-link" />
       <p className="font-[family-name:var(--font-display)] text-xl font-bold">
         {INSTAGRAM_HANDLE}
       </p>

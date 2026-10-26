@@ -124,9 +124,13 @@ export default function BookingFlow({
 function Stepper({ step }: { step: number }) {
   const labels = ["Service", "When", "Your info"];
   return (
-    <div className="mb-6 flex items-center gap-2">
+    <ol className="mb-6 flex items-center gap-2" aria-label="Booking steps">
       {labels.map((l, i) => (
-        <div key={l} className="flex flex-1 flex-col gap-1">
+        <li
+          key={l}
+          className="flex flex-1 flex-col gap-1"
+          aria-current={i + 1 === step ? "step" : undefined}
+        >
           <div
             className={`h-1.5 rounded-full ${i + 1 <= step ? "bg-accent" : "bg-border"}`}
           />
@@ -135,9 +139,9 @@ function Stepper({ step }: { step: number }) {
           >
             {l}
           </span>
-        </div>
+        </li>
       ))}
-    </div>
+    </ol>
   );
 }
 
@@ -200,6 +204,7 @@ function StepService({
             <button
               key={s.id}
               onClick={() => set({ serviceId: s.id })}
+              aria-pressed={selected}
               className={`rounded-[var(--radius-md)] border p-4 text-left transition-colors ${
                 selected ? "border-accent bg-accent/10" : "border-border bg-surface hover:border-accent/50"
               }`}
@@ -216,10 +221,11 @@ function StepService({
         })}
       </div>
 
-      <label className="mt-6 block text-sm font-semibold">
+      <label htmlFor="bf-custom" className="mt-6 block text-sm font-semibold">
         Need something custom?
       </label>
       <textarea
+        id="bf-custom"
         className="input mt-2 min-h-24"
         placeholder="Tell us what you're looking for and we'll follow up (optional)"
         value={draft.customRequest}
@@ -273,8 +279,12 @@ function StepWhereWhen({
       </h1>
       <p className="mt-1 text-sm text-muted">{serviceName}</p>
 
-      <label className="mt-5 block text-sm font-semibold">Service address</label>
+      <label htmlFor="bf-address" className="mt-5 block text-sm font-semibold">
+        Service address
+      </label>
       <input
+        id="bf-address"
+        autoComplete="street-address"
         className="input mt-1 w-full"
         placeholder="Street, city, ZIP"
         value={draft.address}
@@ -290,12 +300,16 @@ function StepWhereWhen({
       <button
         onClick={loadSlots}
         disabled={draft.address.length < 4}
-        className="tap mt-5 w-full rounded-[var(--radius-md)] border border-accent px-5 font-semibold text-accent-hi disabled:opacity-40"
+        className="tap mt-5 w-full rounded-[var(--radius-md)] border border-accent px-5 font-semibold text-link disabled:opacity-40"
       >
         {days ? "Refresh times" : "Show open times"}
       </button>
 
-      {loading && <p className="mt-4 text-muted">Finding open slots…</p>}
+      {loading && (
+        <p role="status" className="mt-4 text-muted">
+          Finding open slots…
+        </p>
+      )}
 
       {days && !loading && (
         <div className="mt-5">
@@ -311,6 +325,7 @@ function StepWhereWhen({
                   <button
                     key={d.date}
                     onClick={() => setActiveDay(i)}
+                    aria-pressed={activeDay === i}
                     className={`shrink-0 rounded-[var(--radius-sm)] border px-3 py-2 text-sm ${
                       activeDay === i ? "border-accent bg-accent/10" : "border-border"
                     }`}
@@ -328,6 +343,7 @@ function StepWhereWhen({
                   <button
                     key={s.start}
                     onClick={() => set({ slotStart: s.start })}
+                    aria-pressed={draft.slotStart === s.start}
                     className={`rounded-[var(--radius-sm)] border py-2 text-sm ${
                       draft.slotStart === s.start
                         ? "border-accent bg-accent text-white"
@@ -449,10 +465,25 @@ function StepConfirm({
       <h1 className="font-[family-name:var(--font-display)] text-2xl font-extrabold">
         Your info
       </h1>
-      <div className="mt-4 grid gap-2">
-        <input className="input" placeholder="Full name" value={draft.name} onChange={(e) => set({ name: e.target.value })} />
-        <input className="input" placeholder="Mobile number" inputMode="tel" value={draft.phone} onChange={(e) => set({ phone: e.target.value })} />
-        <input className="input" placeholder="Email (optional)" inputMode="email" value={draft.email} onChange={(e) => set({ email: e.target.value })} />
+      <div className="mt-4 grid gap-3">
+        <div>
+          <label htmlFor="bf-name" className="text-sm font-semibold">
+            Full name
+          </label>
+          <input id="bf-name" className="input mt-1" autoComplete="name" required value={draft.name} onChange={(e) => set({ name: e.target.value })} />
+        </div>
+        <div>
+          <label htmlFor="bf-phone" className="text-sm font-semibold">
+            Mobile number
+          </label>
+          <input id="bf-phone" className="input mt-1" type="tel" inputMode="tel" autoComplete="tel" required value={draft.phone} onChange={(e) => set({ phone: e.target.value })} />
+        </div>
+        <div>
+          <label htmlFor="bf-email" className="text-sm font-semibold">
+            Email <span className="font-normal text-muted">(optional)</span>
+          </label>
+          <input id="bf-email" className="input mt-1" type="email" inputMode="email" autoComplete="email" value={draft.email} onChange={(e) => set({ email: e.target.value })} />
+        </div>
       </div>
 
       {/* Summary card */}
@@ -483,7 +514,7 @@ function StepConfirm({
       </div>
 
       {error && (
-        <p className="mt-3 rounded-[var(--radius-sm)] border border-danger/40 bg-danger/10 p-3 text-sm text-danger">
+        <p role="alert" className="mt-3 rounded-[var(--radius-sm)] border border-danger/40 bg-danger/10 p-3 text-sm text-danger-text">
           {error}
         </p>
       )}

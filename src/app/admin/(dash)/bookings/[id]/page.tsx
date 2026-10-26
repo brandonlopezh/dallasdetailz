@@ -74,7 +74,7 @@ export default async function BookingDetail({
               label="Phone"
               value={
                 b.customers?.phone ? (
-                  <a className="text-accent-hi" href={`tel:${b.customers.phone}`}>
+                  <a className="text-link" href={`tel:${b.customers.phone}`}>
                     {b.customers.phone}
                   </a>
                 ) : (
