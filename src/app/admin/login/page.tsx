@@ -13,7 +13,7 @@ export default function AdminLoginPage() {
         Operator sign in
       </h1>
       <p className="mb-6 mt-1 text-sm text-muted">
-        Enter your email and we&apos;ll send a magic link. Only allowlisted
+        Sign in once and this device stays signed in. Only allowlisted
         operators can access the admin.
       </p>
       <LoginForm />

@@ -20,10 +20,11 @@ export function isAdminEmail(email: string | null | undefined): boolean {
 }
 
 /**
- * master  — an ADMIN_EMAILS account: everything, plus managing users.
+ * master  — an ADMIN_EMAILS account (the owner, can't be removed) or a user
+ *           promoted to master on the Users page: everything, plus managing users.
  * manager — everything except managing users.
  * editor  — Settings (website edits) only.
- * manager/editor live in the admin_users table (see 0008_admin_users.sql).
+ * Promoted masters, managers and editors live in the admin_users table (see 0008_admin_users.sql).
  */
 export type AdminRole = "master" | "manager" | "editor";
 
@@ -41,7 +42,9 @@ async function roleForEmail(email: string): Promise<AdminRole | null> {
     .select("role")
     .eq("email", e)
     .maybeSingle();
-  return data?.role === "manager" || data?.role === "editor" ? data.role : null;
+  return data?.role === "master" || data?.role === "manager" || data?.role === "editor"
+    ? data.role
+    : null;
 }
 
 /** Returns the signed-in admin (any role), or null if not authenticated / not allowed. */

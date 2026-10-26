@@ -4,11 +4,12 @@ import { useState } from "react";
 
 export interface UserRow {
   email: string;
-  role: "manager" | "editor";
+  role: "master" | "manager" | "editor";
   created_at: string;
 }
 
 const ROLE_LABEL = {
+  master: "Master — everything, including managing users",
   manager: "Manager — everything except Users",
   editor: "Editor — Settings only",
 } as const;
@@ -28,11 +29,12 @@ export default function UsersManager({
 }) {
   const [users, setUsers] = useState(initial);
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<UserRow["role"]>("editor");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState<UserRow["role"]>("manager");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const call = async (method: "POST" | "DELETE", body: object) => {
+  const call = async (method: "POST" | "PUT" | "DELETE", body: object) => {
     const res = await fetch("/api/admin/users", {
       method,
       headers: { "Content-Type": "application/json" },
@@ -48,16 +50,29 @@ export default function UsersManager({
     setError(null);
     try {
       const clean = email.trim().toLowerCase();
-      await call("POST", { email: clean, role });
+      await call("POST", { email: clean, role, password: password || undefined });
       setUsers((u) => [
         ...u.filter((x) => x.email !== clean),
         { email: clean, role, created_at: new Date().toISOString() },
       ]);
       setEmail("");
+      setPassword("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed");
     } finally {
       setBusy(false);
+    }
+  };
+
+  const resetPassword = async (target: string) => {
+    const next = prompt(`New password for ${target} (at least 8 characters):`);
+    if (!next) return;
+    setError(null);
+    try {
+      await call("PUT", { email: target, password: next });
+      alert(`Password updated. ${target} can sign in with it now.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed");
     }
   };
 
@@ -98,6 +113,14 @@ export default function UsersManager({
           >
             {busy ? "Adding…" : "Add"}
           </button>
+          <input
+            type="text"
+            autoComplete="off"
+            className={input + " sm:col-span-2"}
+            placeholder="Password for them (8+ characters)"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
           <select className={input + " sm:col-span-2"} value={role} onChange={(e) => setRole(e.target.value as UserRow["role"])}>
             {(Object.keys(ROLE_LABEL) as UserRow["role"][]).map((r) => (
               <option key={r} value={r}>
@@ -107,7 +130,8 @@ export default function UsersManager({
           </select>
         </form>
         <p className="mt-2 text-xs text-muted">
-          After you add them, tell them to go to /admin/login and enter that email to get their sign-in link.
+          That&apos;s all it takes — they can sign in at /admin/login with their email and this password right away, and
+          stay signed in on their device. Leave the password blank to have them use the emailed link instead.
         </p>
         {error && <p className="mt-2 text-sm text-danger">{error}</p>}
       </section>
@@ -121,7 +145,14 @@ export default function UsersManager({
                 {m}
                 {m === me.toLowerCase() && <span className="ml-2 text-xs font-normal text-muted">(you)</span>}
               </span>
-              <span className="shrink-0 rounded-full border border-accent px-2 py-0.5 text-xs text-accent-hi">Master</span>
+              <span className="flex shrink-0 items-center gap-3">
+                {m === me.toLowerCase() && (
+                  <button type="button" onClick={() => resetPassword(m)} className="text-xs text-accent-hi underline">
+                    Set password
+                  </button>
+                )}
+                <span className="rounded-full border border-accent px-2 py-0.5 text-xs text-accent-hi">Master</span>
+              </span>
             </li>
           ))}
           {users.map((u) => (
@@ -129,8 +160,11 @@ export default function UsersManager({
               <span className="min-w-0 truncate text-sm">{u.email}</span>
               <span className="flex shrink-0 items-center gap-3">
                 <span className="rounded-full border border-border px-2 py-0.5 text-xs text-muted">
-                  {u.role === "manager" ? "Manager" : "Editor"}
+                  {u.role === "master" ? "Master" : u.role === "manager" ? "Manager" : "Editor"}
                 </span>
+                <button type="button" onClick={() => resetPassword(u.email)} className="text-xs text-accent-hi underline">
+                  Set password
+                </button>
                 <button type="button" onClick={() => remove(u.email)} className="text-xs text-danger underline">
                   Remove
                 </button>
