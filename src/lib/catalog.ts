@@ -66,13 +66,13 @@ export const FALLBACK_ADDONS: Addon[] = [
 
 export const DEFAULT_SETTINGS: BusinessSettings = {
   working_hours: {
-    mon: [["09:00", "18:00"]],
-    tue: [["09:00", "18:00"]],
-    wed: [["09:00", "18:00"]],
-    thu: [["09:00", "18:00"]],
-    fri: [["09:00", "18:00"]],
-    sat: [["08:00", "17:00"]],
-    sun: [],
+    mon: [["17:00", "21:00"]],
+    tue: [["17:00", "21:00"]],
+    wed: [["17:00", "21:00"]],
+    thu: [["17:00", "21:00"]],
+    fri: [["17:00", "21:00"]],
+    sat: [["09:00", "21:00"]],
+    sun: [["17:00", "21:00"]],
   },
   daily_job_cap: 3,
   job_buffer_min: 45,

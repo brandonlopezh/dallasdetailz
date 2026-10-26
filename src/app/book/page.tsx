@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Suspense } from "react";
 import BookingFlow from "@/components/BookingFlow";
 
 export const metadata = {
@@ -7,7 +6,12 @@ export const metadata = {
   description: "Book mobile detailing across DFW in under 90 seconds.",
 };
 
-export default function BookPage() {
+export default async function BookPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ service?: string }>;
+}) {
+  const { service } = await searchParams;
   return (
     <main className="mx-auto flex min-h-screen max-w-lg flex-col px-4 py-6">
       <Link
@@ -16,9 +20,7 @@ export default function BookPage() {
       >
         ← Dallas Detailz
       </Link>
-      <Suspense fallback={<p className="text-muted">Loading…</p>}>
-        <BookingFlow />
-      </Suspense>
+      <BookingFlow initialServiceId={service} />
     </main>
   );
 }

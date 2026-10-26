@@ -10,13 +10,14 @@ import AdminThemePicker from "@/components/admin/AdminThemePicker";
 import { THEME_COOKIE, parseTheme, themeVars } from "@/lib/admin-theme";
 import SignOutButton from "@/components/admin/SignOutButton";
 import SessionRefresher from "@/components/admin/SessionRefresher";
+import { BottomNav, PendingBanner, type NavItem } from "@/components/admin/AdminNav";
 
 type Role = "master" | "manager" | "editor";
-const NAV: { href: string; label: string; badge?: boolean; roles: Role[] }[] = [
-  { href: "/admin", label: "Today", roles: ["master", "manager"] },
-  { href: "/admin/requests", label: "Requests", badge: true, roles: ["master", "manager"] },
-  { href: "/admin/users", label: "Users", roles: ["master"] },
-  { href: "/admin/website", label: "Settings", roles: ["master", "manager", "editor"] },
+const NAV: (NavItem & { roles: Role[] })[] = [
+  { href: "/admin", label: "Today", icon: "today", roles: ["master", "manager"] },
+  { href: "/admin/requests", label: "Requests", icon: "requests", badge: true, roles: ["master", "manager"] },
+  { href: "/admin/users", label: "Users", icon: "users", roles: ["master"] },
+  { href: "/admin/website", label: "Settings", icon: "settings", roles: ["master", "manager", "editor"] },
 ];
 
 export default async function DashLayout({
@@ -46,6 +47,7 @@ export default async function DashLayout({
 
   const theme = parseTheme((await cookies()).get(THEME_COOKIE)?.value);
   const requests = user.role === "editor" ? 0 : await countRequests();
+  const nav = NAV.filter((n) => n.roles.includes(user.role));
 
   return (
     <div
@@ -56,7 +58,7 @@ export default async function DashLayout({
       <SessionRefresher />
       <header className="sticky top-0 z-40 border-b border-border bg-base/85 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4">
-          <nav className="flex items-center gap-4 overflow-x-auto">
+          <nav className="flex items-center gap-4 md:overflow-x-auto">
             <Link
               href={user.role === "editor" ? "/admin/website" : "/admin"}
               className="flex shrink-0 items-center gap-2"
@@ -72,11 +74,11 @@ export default async function DashLayout({
                 DallasDetailz
               </span>
             </Link>
-            {NAV.filter((n) => n.roles.includes(user.role)).map((n) => (
+            {nav.map((n) => (
               <Link
                 key={n.href}
                 href={n.href}
-                className="relative shrink-0 text-sm text-muted hover:text-ink"
+                className="relative hidden shrink-0 text-sm text-muted hover:text-ink md:block"
               >
                 {n.label}
                 {n.badge && requests > 0 && (
@@ -97,7 +99,9 @@ export default async function DashLayout({
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-5xl px-4 py-6">{children}</main>
+      <PendingBanner count={requests} />
+      <main className="mx-auto max-w-5xl px-4 py-6 pb-28 md:pb-6">{children}</main>
+      <BottomNav items={nav} pending={requests} />
     </div>
   );
 }

@@ -49,8 +49,9 @@ export const metadata: Metadata = {
   },
 };
 
-// Runs before first paint so a saved "light" choice never flashes dark.
-const THEME_SCRIPT = `try{if(localStorage.getItem("dd-theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}`;
+// Runs before first paint so a saved "light" choice never flashes dark. With
+// no saved choice, the public site is dark and /admin starts light.
+const THEME_SCRIPT = `try{var t=localStorage.getItem("dd-theme");if(t==="light"||(!t&&location.pathname.indexOf("/admin")===0))document.documentElement.dataset.theme="light"}catch(e){}`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

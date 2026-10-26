@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getAddons, getServices, getSettings } from "@/lib/catalog";
 import { isSupabaseConfigured, supabaseAdmin } from "@/lib/supabase/server";
 import { sendSms } from "@/lib/sms";
+import { NOTIFY_EMAIL, escapeHtml, sendEmail } from "@/lib/email";
 import type { VehicleTier } from "@/lib/types";
 
 const bodySchema = z.object({
@@ -43,6 +44,38 @@ function travelFeeFor(
   const sorted = [...rules].sort((a, b) => a.up_to_mi - b.up_to_mi);
   for (const r of sorted) if (distanceMi <= r.up_to_mi) return r.fee;
   return sorted.at(-1)?.fee ?? 0;
+}
+
+function requestEmailHtml(r: {
+  ref: string;
+  service: string;
+  total: number;
+  name: string;
+  phone: string;
+  email: string | null;
+  when: string;
+  address: string;
+  notes: string | null;
+  dashboardUrl: string;
+}): string {
+  const row = (label: string, value: string) =>
+    `<tr><td style="padding:6px 12px 6px 0;color:#666;vertical-align:top">${label}</td><td style="padding:6px 0;font-weight:600">${escapeHtml(value)}</td></tr>`;
+  return `<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:520px;margin:0 auto;padding:16px;color:#111">
+  <h2 style="margin:0 0 4px">New booking request</h2>
+  <p style="margin:0 0 16px;color:#555">Accept it, or offer a different time, right from the dashboard.</p>
+  <table style="border-collapse:collapse;font-size:15px">
+    ${row("Service", `${r.service} ($${r.total})`)}
+    ${row("When", r.when)}
+    ${row("Where", r.address)}
+    ${row("Customer", r.name)}
+    ${row("Phone", r.phone)}
+    ${r.email ? row("Email", r.email) : ""}
+    ${r.notes ? row("Notes", r.notes) : ""}
+    ${row("Ref", r.ref)}
+  </table>
+  <p style="margin:24px 0"><a href="${escapeHtml(r.dashboardUrl)}" style="background:#2563eb;color:#fff;text-decoration:none;padding:14px 22px;border-radius:8px;font-weight:700;display:inline-block">Review request in dashboard</a></p>
+  <p style="color:#888;font-size:12px">Sign in to the dashboard if prompted.</p>
+</div>`;
 }
 
 /**
@@ -210,20 +243,51 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Text the operator (brother) a summary + a secure approve/decline link.
-  // He taps a button on /confirm/[approval_token] (no reply-parsing, no
-  // login) — see src/app/api/confirm/[token]/route.ts for what happens next.
-  // No-ops quietly if TEXTBEE_API_KEY / OPERATOR_PHONE aren't set yet.
+  // Notify the operator. The email (and the text, if SMS is set up) both
+  // link into the dashboard, where the request is accepted, declined, or
+  // given a new time. Each no-ops quietly when its env vars aren't set.
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dallasdetailz.com";
+  const dashboardUrl = `${siteUrl}/admin/bookings/${booking.id}`;
+  const when = new Intl.DateTimeFormat("en-US", {
+    timeZone: settings.timezone,
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(start);
+
+  await sendEmail({
+    to: NOTIFY_EMAIL,
+    subject: `New booking request: ${b.customer.name}, ${when}`,
+    html: requestEmailHtml({
+      ref: booking.ref,
+      service: service.name,
+      total: Math.round(total),
+      name: b.customer.name,
+      phone: b.customer.phone,
+      email: b.customer.email || null,
+      when,
+      address: b.address,
+      notes: b.notes ?? null,
+      dashboardUrl,
+    }),
+    text: [
+      "New booking request",
+      `${service.name} - $${Math.round(total)}`,
+      `${b.customer.name}, ${b.customer.phone}`,
+      when,
+      b.address,
+      b.notes ? `Note: ${b.notes}` : "",
+      "",
+      `Accept it or offer a new time: ${dashboardUrl}`,
+    ]
+      .filter((l) => l !== "")
+      .join("\n"),
+  });
+
   const operatorPhone = process.env.OPERATOR_PHONE;
   if (operatorPhone) {
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dallasdetailz.com";
-    const when = start.toLocaleString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    });
     const lines = [
       `New booking request (${booking.ref})`,
       `${service.name} — $${Math.round(total)}`,
@@ -232,7 +296,7 @@ export async function POST(req: NextRequest) {
       b.address,
     ];
     if (b.notes) lines.push(`Note: ${b.notes}`);
-    lines.push(`${siteUrl}/confirm/${booking.approval_token}`);
+    lines.push(dashboardUrl);
     await sendSms(operatorPhone, lines.join("\n"));
   }
 

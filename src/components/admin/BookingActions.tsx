@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { BookingStatus } from "@/lib/types";
+import type { AdminBooking } from "@/lib/admin-bookings";
+import BookingDecision from "./BookingDecision";
+import CalendarButtons from "./CalendarButtons";
 
 const STATUS_ACTIONS: Record<BookingStatus, BookingStatus[]> = {
   requested: ["confirmed", "cancelled"],
@@ -30,19 +33,8 @@ const ACTION_STYLE: Partial<Record<BookingStatus, string>> = {
   no_show: "border border-danger/50 text-danger",
 };
 
-export default function BookingActions({
-  id,
-  status,
-  start,
-  end,
-  internalNotes,
-}: {
-  id: string;
-  status: BookingStatus;
-  start: string;
-  end: string;
-  internalNotes: string | null;
-}) {
+export default function BookingActions({ b, tz }: { b: AdminBooking; tz: string }) {
+  const { id, status, scheduled_start: start, scheduled_end: end, internal_notes: internalNotes } = b;
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -94,26 +86,41 @@ export default function BookingActions({
     <div className="rounded-[var(--radius-md)] border border-border bg-surface p-4">
       <h2 className="font-bold">Actions</h2>
 
-      <div className="mt-3 flex flex-wrap gap-2">
-        {STATUS_ACTIONS[status].map((next) => (
+      {status === "requested" && (
+        <div className="mt-3">
+          <BookingDecision b={b} tz={tz} />
+        </div>
+      )}
+
+      {status === "confirmed" && (
+        <div className="mt-3">
+          <p className="mb-2 text-sm font-semibold">Add to my calendar</p>
+          <CalendarButtons b={b} />
+        </div>
+      )}
+
+      <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+        {(status === "requested" ? [] : STATUS_ACTIONS[status]).map((next) => (
           <button
             key={next}
             disabled={busy}
             onClick={() => patch({ status: next })}
-            className={`tap rounded-[var(--radius-sm)] px-4 text-sm font-bold disabled:opacity-50 ${
+            className={`tap rounded-[var(--radius-sm)] px-4 py-3 text-sm font-bold disabled:opacity-50 ${
               ACTION_STYLE[next] ?? "border border-border"
             }`}
           >
             {ACTION_LABEL[next]}
           </button>
         ))}
-        <button
-          disabled={busy}
-          onClick={() => setRescheduling((v) => !v)}
-          className="tap rounded-[var(--radius-sm)] border border-border px-4 text-sm font-bold disabled:opacity-50"
-        >
-          Reschedule
-        </button>
+        {status !== "requested" && (
+          <button
+            disabled={busy}
+            onClick={() => setRescheduling((v) => !v)}
+            className="tap rounded-[var(--radius-sm)] border border-border px-4 py-3 text-sm font-bold disabled:opacity-50"
+          >
+            Reschedule
+          </button>
+        )}
       </div>
 
       {rescheduling && (

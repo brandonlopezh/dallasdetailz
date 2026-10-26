@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import type { Service } from "@/lib/types";
 import type { DaySlots } from "@/lib/availability";
 
@@ -44,9 +43,16 @@ function money(n: number) {
   return `$${Math.round(n)}`;
 }
 
-export default function BookingFlow() {
-  const params = useSearchParams();
-  const [step, setStep] = useState(1);
+export default function BookingFlow({
+  initialServiceId,
+  onDone,
+}: {
+  /** Preselects a service (and skips straight to "Where & when"). */
+  initialServiceId?: string;
+  /** Called by the confirmation screen's Done button (closes the popup). */
+  onDone?: () => void;
+}) {
+  const [step, setStep] = useState(initialServiceId ? 2 : 1);
   // Lazy init (not an effect) so restoring from localStorage doesn't cause an
   // extra render; window is undefined during SSR, so this only ever reads on
   // the client.
@@ -58,8 +64,7 @@ export default function BookingFlow() {
         if (raw) restored = { ...EMPTY, ...JSON.parse(raw) };
       } catch {}
     }
-    const svc = params.get("service");
-    return svc ? { ...restored, serviceId: svc } : restored;
+    return initialServiceId ? { ...restored, serviceId: initialServiceId } : restored;
   });
   const [services, setServices] = useState<Service[]>([]);
 
@@ -109,6 +114,7 @@ export default function BookingFlow() {
           service={service}
           price={pricing.price}
           onBack={() => setStep(2)}
+          onDone={onDone}
         />
       )}
     </div>
@@ -358,12 +364,14 @@ function StepConfirm({
   service,
   price,
   onBack,
+  onDone,
 }: {
   draft: Draft;
   set: (p: Partial<Draft>) => void;
   service: Service;
   price: number;
   onBack: () => void;
+  onDone?: () => void;
 }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -417,9 +425,19 @@ function StepConfirm({
           We will confirm your appointment shortly. Reference{" "}
           <span className="font-mono text-ink">{done.ref}</span>.
         </p>
-        <Link href="/" className="tap mt-6 inline-flex rounded-[var(--radius-md)] bg-accent px-6 font-bold text-white">
-          Done
-        </Link>
+        {onDone ? (
+          <button
+            type="button"
+            onClick={onDone}
+            className="tap mt-6 inline-flex items-center rounded-[var(--radius-md)] bg-accent px-6 font-bold text-white"
+          >
+            Done
+          </button>
+        ) : (
+          <Link href="/" className="tap mt-6 inline-flex items-center rounded-[var(--radius-md)] bg-accent px-6 font-bold text-white">
+            Done
+          </Link>
+        )}
       </section>
     );
   }

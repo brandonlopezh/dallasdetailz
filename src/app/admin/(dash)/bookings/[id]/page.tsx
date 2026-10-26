@@ -93,13 +93,7 @@ export default async function BookingDetail({
       </div>
 
       <div className="mt-4">
-        <BookingActions
-          id={b.id}
-          status={b.status}
-          start={b.scheduled_start}
-          end={b.scheduled_end}
-          internalNotes={b.internal_notes}
-        />
+        <BookingActions b={b} tz={tz} />
       </div>
     </div>
   );

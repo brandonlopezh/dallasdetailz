@@ -1,7 +1,7 @@
 import { requireBookingsAccess } from "@/lib/admin-guard";
 import { getSettings } from "@/lib/catalog";
 import { listBookings } from "@/lib/admin-bookings";
-import { BookingRow } from "@/components/admin/JobList";
+import RequestCard from "@/components/admin/RequestCard";
 
 export const metadata = { title: "Requests" };
 export const dynamic = "force-dynamic";
@@ -23,7 +23,7 @@ export default async function RequestsPage() {
         Requests
       </h1>
       <p className="text-sm text-muted">
-        {requests.length} waiting · open one to confirm a time or cancel
+        {requests.length} waiting for your answer
       </p>
 
       {requests.length === 0 ? (
@@ -31,9 +31,9 @@ export default async function RequestsPage() {
           Nothing waiting. 🎉
         </div>
       ) : (
-        <div className="mt-6 grid gap-2">
+        <div className="mt-6 grid gap-4">
           {requests.map((b) => (
-            <BookingRow key={b.id} b={b} tz={tz} />
+            <RequestCard key={b.id} b={b} tz={tz} />
           ))}
         </div>
       )}

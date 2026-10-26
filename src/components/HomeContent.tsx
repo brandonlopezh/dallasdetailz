@@ -6,6 +6,7 @@ import InstagramFeed from "./InstagramFeed";
 import Faq from "./Faq";
 import HeroReel from "./HeroReel";
 import InstagramIcon from "./icons/InstagramIcon";
+import MessageIcon from "./icons/MessageIcon";
 import { useLanguage } from "./LanguageProvider";
 import { Fragment, type ReactNode } from "react";
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from "@/lib/site-config";
@@ -27,12 +28,7 @@ export default function HomeContent({ services }: HomeContentProps) {
   const { lang, t, contact, serviceTranslations, parts } = useLanguage();
   const priceFrom = (s: Service) => Math.min(...s.pricing.map((p) => p.price));
   const lowestPrice = Math.min(...services.map(priceFrom));
-  const bookSmsHref = (s: Service) => {
-    const label = t.services.smsLabels[s.category] ?? s.name;
-    const template = s.category === "full" ? t.services.smsBodyFull : t.services.smsBody;
-    const body = template.replace("{service}", label);
-    return `${contact.sms}?&body=${encodeURIComponent(body)}`;
-  };
+  const textLabel = lang === "es" ? "Envíanos un mensaje" : "Text us";
 
   const sections: Record<SectionId, ReactNode> = {
     services: (
@@ -77,12 +73,12 @@ export default function HomeContent({ services }: HomeContentProps) {
                         {money(priceFrom(s))}
                       </span>
                     </div>
-                    <a
-                      href={bookSmsHref(s)}
+                    <BookNowLink
+                      serviceId={s.id}
                       className="tap mt-5 inline-flex items-center justify-center rounded-[var(--radius-sm)] bg-accent px-5 font-bold text-white transition-colors hover:bg-accent-hi sm:hidden"
                     >
                       {t.services.bookThis}
-                    </a>
+                    </BookNowLink>
                   </div>
                 </div>
               );
@@ -250,25 +246,18 @@ export default function HomeContent({ services }: HomeContentProps) {
                   >
                     <InstagramIcon className="h-6 w-6" />
                   </a>
-                </div>
-                <a
-                  href={contact.tel}
-                  className="tap inline-flex items-center justify-center gap-2 rounded-[var(--radius-md)] bg-accent px-8 text-lg font-bold text-white shadow-lg shadow-accent/30 transition-colors hover:bg-accent-hi"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                    className="h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                  <a
+                    href={contact.sms}
+                    aria-label={textLabel}
+                    title={textLabel}
+                    className="tap grid aspect-square place-items-center rounded-[var(--radius-md)] border border-border bg-surface/60 text-ink backdrop-blur transition-colors hover:border-accent hover:text-accent-hi"
                   >
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.18 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.8a2 2 0 0 1-.45 2.11L8.1 9.9a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.84.57 2.8.7A2 2 0 0 1 22 16.92Z" />
-                  </svg>
-                  {t.footer.call}
-                </a>
+                    <MessageIcon className="h-6 w-6" />
+                  </a>
+                </div>
+                <BookNowLink className="tap inline-flex items-center justify-center gap-2 rounded-[var(--radius-md)] bg-accent px-8 text-lg font-bold text-white shadow-lg shadow-accent/30 transition-colors hover:bg-accent-hi">
+                  {t.common.bookNow}
+                </BookNowLink>
               </div>
 
               <p className="animate-fade-up mt-6 text-sm text-muted [animation-delay:300ms]">
@@ -329,8 +318,8 @@ export default function HomeContent({ services }: HomeContentProps) {
             </div>
           </div>
           <div className="flex gap-5 text-sm text-muted">
-            <a href={contact.tel} className="link-sweep hover:text-ink">
-              {t.footer.call}
+            <a href={contact.sms} className="link-sweep hover:text-ink">
+              {textLabel}
             </a>
             <a
               href={INSTAGRAM_URL}

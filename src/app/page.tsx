@@ -5,6 +5,7 @@ import { getServices } from "@/lib/catalog";
 import { INSTAGRAM_URL } from "@/lib/site-config";
 import { SiteContentProvider } from "@/components/LanguageProvider";
 import { getSiteContent } from "@/lib/content";
+import { BookingModalProvider } from "@/components/BookingModal";
 
 const CITIES = ["Duncanville", "Cedar Hill", "DeSoto", "Grand Prairie", "Dallas", "Greater DFW"];
 // Always render fresh so edits made in /admin/website show up on the next load
@@ -61,9 +62,11 @@ export default async function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
-      <SiteHeader />
-      <HomeContent services={services} />
-      <MobileBookBar />
+      <BookingModalProvider>
+        <SiteHeader />
+        <HomeContent services={services} />
+        <MobileBookBar />
+      </BookingModalProvider>
     </SiteContentProvider>
   );
 }

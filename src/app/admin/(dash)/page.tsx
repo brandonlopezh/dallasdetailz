@@ -1,20 +1,14 @@
 import Link from "next/link";
 import { requireBookingsAccess } from "@/lib/admin-guard";
 import { getSettings } from "@/lib/catalog";
-import { countRequests, listBookings } from "@/lib/admin-bookings";
+import { listBookings } from "@/lib/admin-bookings";
 import { TodayJob } from "@/components/admin/JobList";
+import RequestCard from "@/components/admin/RequestCard";
 import MonthCalendar, { shiftMonth } from "@/components/admin/MonthCalendar";
 import { dateKeyInTz, dayRangeUtc, formatInTz, DAY_OPTS } from "@/lib/tz";
 
 export const metadata = { title: "Today" };
 export const dynamic = "force-dynamic";
-
-function greeting(now: Date, tz: string) {
-  const hour = Number(formatInTz(now, tz, { hour: "numeric", hour12: false }));
-  if (hour < 12) return "Good morning";
-  if (hour < 18) return "Good afternoon";
-  return "Good evening";
-}
 
 export default async function TodayView({
   searchParams,
@@ -34,13 +28,16 @@ export default async function TodayView({
   const monthStart = dayRangeUtc(`${monthKey}-01`, tz).start;
   const monthEnd = dayRangeUtc(`${shiftMonth(monthKey, 1)}-01`, tz).start;
 
-  const [jobs, requests, monthJobs] = await Promise.all([
+  const [jobs, pending, monthJobs] = await Promise.all([
     listBookings({
       fromISO: start.toISOString(),
       toISO: end.toISOString(),
       statuses: ["confirmed", "in_progress", "completed"],
     }),
-    countRequests(),
+    listBookings({
+      statuses: ["requested"],
+      order: "created",
+    }),
     listBookings({
       fromISO: monthStart.toISOString(),
       toISO: monthEnd.toISOString(),
@@ -48,32 +45,29 @@ export default async function TodayView({
     }),
   ]);
 
+  const requests = pending.length;
   const revenue = jobs.reduce((s, j) => s + Number(j.total), 0);
 
   return (
     <div className="space-y-10">
       {/* Welcome */}
-      <div>
-        <h1 className="font-[family-name:var(--font-display)] text-3xl font-extrabold">
-          {greeting(now, tz)}, welcome back.
-        </h1>
-        <p className="mt-2 max-w-2xl text-muted">
-          Here&apos;s what&apos;s on deck. Check today&apos;s jobs, look ahead on the
-          calendar, approve any new requests, or jump into{" "}
-          <Link href="/admin/website" className="text-accent-hi underline">
-            Settings
-          </Link>{" "}
-          to update prices, text, and photos.
-          {requests > 0 && (
-            <>
-              {" "}
-              <Link href="/admin/requests" className="font-semibold text-warning underline">
-                {requests} request{requests === 1 ? " is" : "s are"} waiting for your approval.
-              </Link>
-            </>
-          )}
-        </p>
-      </div>
+      <h1 className="text-center font-[family-name:var(--font-script)] text-5xl font-bold leading-tight sm:text-6xl">
+        Aim for Greatness
+      </h1>
+
+      {/* Pending requests — first thing seen, with one-tap answers */}
+      {pending.length > 0 && (
+        <section className="-mt-4">
+          <h2 className="font-[family-name:var(--font-display)] text-xl font-extrabold text-warning">
+            {pending.length} request{pending.length === 1 ? "" : "s"} waiting
+          </h2>
+          <div className="mt-3 grid gap-4">
+            {pending.map((b) => (
+              <RequestCard key={b.id} b={b} tz={tz} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Today */}
       <section>
