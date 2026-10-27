@@ -42,6 +42,7 @@ export interface Translations {
   };
   instagram: { visit: string; followBody: string };
   area: { heading: string; description: string; cities: string[] };
+  fundraiser: { heading: string; body: string };
   faq: { heading: string; items: FaqItem[] };
   finalCta: { heading: string };
   footer: { tagline: string; call: string; instagram: string; book: string };
@@ -89,6 +90,10 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
       heading: "Where we bring the shine ✨",
       description: "Based in Dallas, serving DFW and areas near 75249.",
       cities: ["Duncanville", "Cedar Hill", "DeSoto", "Grand Prairie", "Dallas", "Greater DFW"],
+    },
+    fundraiser: {
+      heading: "We could use your help",
+      body: "Ramon is facing surgery and a long recovery. Any support, big or small, means the world to us. Sharing the link helps too.",
     },
     faq: {
       heading: "Questions",
@@ -180,6 +185,10 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
       heading: "Donde llevamos el brillo ✨",
       description: "Con base en Dallas, damos servicio en DFW y zonas cerca del 75249.",
       cities: ["Duncanville", "Cedar Hill", "DeSoto", "Grand Prairie", "Dallas", "DFW y alrededores"],
+    },
+    fundraiser: {
+      heading: "Necesitamos tu ayuda",
+      body: "Ramón se enfrenta a una cirugía y una larga recuperación. Cualquier apoyo, grande o pequeño, significa muchísimo para nosotros. Compartir el enlace también ayuda.",
     },
     faq: {
       heading: "Preguntas",

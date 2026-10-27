@@ -149,6 +149,12 @@ export default function HomeContent({ services }: HomeContentProps) {
             on phones, a narrow centered card on larger screens. */}
         <section className="border-t border-border bg-band-3/70">
           <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+            <div className="mx-auto mb-6 max-w-xl text-center">
+              <h2 className="font-[family-name:var(--font-display)] text-2xl font-extrabold uppercase tracking-tight sm:text-3xl">
+                {t.fundraiser.heading}
+              </h2>
+              <p className="mt-3 text-muted">{t.fundraiser.body}</p>
+            </div>
             <div className="mx-auto w-full overflow-hidden rounded-[var(--radius-lg)] border border-border bg-surface p-3 sm:max-w-xs">
               <GoFundMeEmbed url={GOFUNDME_EMBED_URL} title="Support Ramon through surgery and recovery" />
             </div>
