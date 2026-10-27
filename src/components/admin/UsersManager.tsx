@@ -82,7 +82,7 @@ export default function UsersManager({
 
       <section>
         <h2 className="font-bold">Add a user</h2>
-        <form onSubmit={add} className="mt-3 grid gap-3 rounded-[var(--radius-md)] border border-border bg-surface p-4 sm:grid-cols-[1fr_auto]">
+        <form onSubmit={add} className="mt-3 grid grid-cols-1 gap-3 rounded-[var(--radius-lg)] border border-border bg-surface p-4 shadow-sm shadow-black/5 sm:p-5 sm:grid-cols-[1fr_auto]">
           <input
             type="email"
             required
@@ -126,7 +126,7 @@ export default function UsersManager({
           ))}
           {users.map((u) => (
             <li key={u.email} className="flex items-center justify-between gap-3 rounded-[var(--radius-md)] border border-border bg-surface p-3">
-              <span className="min-w-0 truncate text-sm">{u.email}</span>
+              <span className="min-w-0 break-all text-sm">{u.email}</span>
               <span className="flex shrink-0 items-center gap-3">
                 <span className="rounded-full border border-border px-2 py-0.5 text-xs text-muted">
                   {u.role === "manager" ? "Manager" : "Editor"}

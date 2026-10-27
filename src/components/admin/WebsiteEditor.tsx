@@ -39,7 +39,7 @@ type Faq = { q: string; a: string }[];
 
 const input =
   "mt-1 w-full rounded-[var(--radius-sm)] border border-border bg-base px-3 py-2 text-sm";
-const card = "rounded-[var(--radius-md)] border border-border bg-surface p-4";
+const card = "rounded-[var(--radius-lg)] border border-border bg-surface p-4 shadow-sm shadow-black/5 sm:p-5";
 const iconBtn =
   "grid h-9 w-9 place-items-center rounded-[var(--radius-sm)] border border-border text-sm hover:border-accent disabled:opacity-30";
 const LANG_LABEL: Record<Lang, string> = { en: "English", es: "Español" };

@@ -31,7 +31,7 @@ export default async function RequestsPage() {
           Nothing waiting. 🎉
         </div>
       ) : (
-        <div className="mt-6 grid gap-2">
+        <div className="mt-6 grid grid-cols-1 gap-2">
           {requests.map((b) => (
             <BookingRow key={b.id} b={b} tz={tz} />
           ))}

@@ -104,7 +104,7 @@ export default function MediaManager() {
       {/* Upload form */}
       <form
         onSubmit={upload}
-        className="rounded-[var(--radius-md)] border border-border bg-surface p-4"
+        className="rounded-[var(--radius-lg)] border border-border bg-surface p-4 shadow-sm shadow-black/5 sm:p-5"
       >
         <h2 className="font-bold">Upload an image</h2>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">

@@ -55,28 +55,36 @@ export default async function DashLayout({
     >
       <SessionRefresher />
       <header className="sticky top-0 z-40 border-b border-border bg-base/85 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4">
-          <nav className="flex items-center gap-4 overflow-x-auto">
-            <Link
-              href={user.role === "editor" ? "/admin/website" : "/admin"}
-              className="flex shrink-0 items-center gap-2"
-            >
-              <Image
-                src="/logo.jpg"
-                alt=""
-                width={32}
-                height={32}
-                className="h-8 w-8 rounded-full ring-1 ring-border"
-              />
-              <span className="font-[family-name:var(--font-display)] text-lg font-extrabold uppercase">
-                DallasDetailz
-              </span>
-            </Link>
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-3 px-4 sm:flex-nowrap">
+          <Link
+            href={user.role === "editor" ? "/admin/website" : "/admin"}
+            className="order-1 flex h-14 shrink-0 items-center gap-2"
+          >
+            <Image
+              src="/logo.jpg"
+              alt=""
+              width={32}
+              height={32}
+              className="h-8 w-8 rounded-full ring-1 ring-border"
+            />
+            <span className="font-[family-name:var(--font-display)] text-base font-extrabold uppercase sm:text-lg">
+              DallasDetailz
+            </span>
+          </Link>
+          <div className="order-2 flex items-center gap-2 sm:order-3 sm:gap-4">
+            <span className="hidden text-xs text-muted md:inline">
+              {user.email}
+            </span>
+            <AdminThemePicker initial={theme} />
+            <ThemeToggle className="h-9 w-9 !min-h-0 !min-w-0" />
+            <SignOutButton />
+          </div>
+          <nav className="no-scrollbar order-3 -mx-4 flex w-[calc(100%+2rem)] items-center gap-1 overflow-x-auto border-t border-border/60 px-3 sm:order-2 sm:mx-0 sm:ml-4 sm:w-auto sm:flex-1 sm:border-t-0 sm:px-0">
             {NAV.filter((n) => n.roles.includes(user.role)).map((n) => (
               <Link
                 key={n.href}
                 href={n.href}
-                className="relative shrink-0 text-sm text-muted hover:text-ink"
+                className="relative flex h-11 shrink-0 items-center px-3 text-sm text-muted hover:text-ink sm:h-14"
               >
                 {n.label}
                 {n.badge && requests > 0 && (
@@ -87,17 +95,9 @@ export default async function DashLayout({
               </Link>
             ))}
           </nav>
-          <div className="flex items-center gap-4">
-            <span className="hidden text-xs text-muted sm:inline">
-              {user.email}
-            </span>
-            <AdminThemePicker initial={theme} />
-            <ThemeToggle className="h-9 w-9 !min-h-0 !min-w-0" />
-            <SignOutButton />
-          </div>
         </div>
       </header>
-      <main className="mx-auto max-w-5xl px-4 py-6">{children}</main>
+      <main className="mx-auto min-w-0 max-w-5xl px-4 py-5 sm:py-8">{children}</main>
     </div>
   );
 }

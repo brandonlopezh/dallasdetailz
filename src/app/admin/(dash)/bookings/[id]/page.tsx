@@ -36,13 +36,13 @@ export default async function BookingDetail({
   })} – ${formatInTz(b.scheduled_end, tz, { hour: "numeric", minute: "2-digit" })}`;
 
   return (
-    <div>
+    <div className="min-w-0">
       <Link href="/admin" className="text-sm text-muted hover:text-ink">
         ← Today
       </Link>
 
-      <div className="mt-2 flex items-center justify-between gap-3">
-        <h1 className="font-[family-name:var(--font-display)] text-2xl font-extrabold">
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+        <h1 className="font-[family-name:var(--font-display)] text-2xl font-extrabold sm:text-3xl">
           {b.services?.name}
         </h1>
         <StatusBadge status={b.status} />
@@ -51,10 +51,10 @@ export default async function BookingDetail({
         Ref {b.ref} · via {b.source}
       </p>
 
-      <div className="mt-5 grid gap-4 md:grid-cols-2">
-        <section className="rounded-[var(--radius-md)] border border-border bg-surface p-4">
-          <h2 className="font-bold">Booking</h2>
-          <dl className="mt-2 space-y-1 text-sm">
+      <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <section className="min-w-0 rounded-[var(--radius-lg)] border border-border bg-surface p-4 shadow-sm shadow-black/5 sm:p-5">
+          <h2 className="text-lg font-bold">Booking</h2>
+          <dl className="mt-2 divide-y divide-border/60 text-sm">
             <Field label="When" value={when} />
             <Field label="Vehicle" value={TIER_LABEL[b.vehicle_tier]} />
             <Field label="Address" value={b.service_address} />
@@ -66,9 +66,9 @@ export default async function BookingDetail({
           </dl>
         </section>
 
-        <section className="rounded-[var(--radius-md)] border border-border bg-surface p-4">
-          <h2 className="font-bold">Customer</h2>
-          <dl className="mt-2 space-y-1 text-sm">
+        <section className="min-w-0 rounded-[var(--radius-lg)] border border-border bg-surface p-4 shadow-sm shadow-black/5 sm:p-5">
+          <h2 className="text-lg font-bold">Customer</h2>
+          <dl className="mt-2 divide-y divide-border/60 text-sm">
             <Field label="Name" value={b.customers?.name ?? "—"} />
             <Field
               label="Phone"
@@ -117,9 +117,9 @@ function Field({
   value: React.ReactNode;
 }) {
   return (
-    <div className="flex justify-between gap-4">
-      <dt className="text-muted">{label}</dt>
-      <dd className="text-right">{value}</dd>
+    <div className="flex flex-col gap-0.5 py-2 first:pt-0 last:pb-0 sm:flex-row sm:justify-between sm:gap-4">
+      <dt className="shrink-0 text-muted">{label}</dt>
+      <dd className="min-w-0 break-words sm:text-right">{value}</dd>
     </div>
   );
 }

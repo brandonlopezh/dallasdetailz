@@ -51,10 +51,10 @@ export default async function TodayView({
   const revenue = jobs.reduce((s, j) => s + Number(j.total), 0);
 
   return (
-    <div className="space-y-10">
+    <div className="min-w-0 space-y-8 sm:space-y-10">
       {/* Welcome */}
       <div>
-        <h1 className="font-[family-name:var(--font-display)] text-3xl font-extrabold">
+        <h1 className="font-[family-name:var(--font-display)] text-2xl font-extrabold sm:text-3xl">
           {greeting(now, tz)}, welcome back.
         </h1>
         <p className="mt-2 max-w-2xl text-muted">
@@ -77,7 +77,7 @@ export default async function TodayView({
 
       {/* Today */}
       <section>
-        <div className="flex items-end justify-between gap-3">
+        <div className="flex flex-wrap items-end justify-between gap-x-3 gap-y-2">
           <div>
             <h2 className="font-[family-name:var(--font-display)] text-xl font-extrabold">
               Today
@@ -92,7 +92,7 @@ export default async function TodayView({
           </Link>
         </div>
 
-        <div className="mt-4 grid grid-cols-3 gap-3">
+        <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
           <Stat label="Jobs today" value={String(jobs.length)} />
           <Stat label="Booked revenue" value={`$${Math.round(revenue)}`} />
           <Link href="/admin/requests" className="block">
@@ -100,7 +100,7 @@ export default async function TodayView({
           </Link>
         </div>
 
-        <div className="mt-4 grid gap-3">
+        <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-2">
           {jobs.length === 0 ? (
             <div className="rounded-[var(--radius-md)] border border-dashed border-border p-8 text-center text-muted">
               No jobs scheduled today.
@@ -134,12 +134,12 @@ function Stat({
 }) {
   return (
     <div
-      className={`rounded-[var(--radius-md)] border p-3 ${
+      className={`h-full min-w-0 rounded-[var(--radius-md)] border p-2.5 sm:p-3 ${
         highlight ? "border-warning/50 bg-warning/10" : "border-border bg-surface"
       }`}
     >
-      <p className="text-xs text-muted">{label}</p>
-      <p className="font-[family-name:var(--font-display)] text-2xl font-extrabold">
+      <p className="truncate text-xs text-muted">{label}</p>
+      <p className="font-[family-name:var(--font-display)] text-xl sm:text-2xl font-extrabold">
         {value}
       </p>
     </div>

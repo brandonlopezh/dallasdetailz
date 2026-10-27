@@ -91,10 +91,10 @@ export default function BookingActions({
   };
 
   return (
-    <div className="rounded-[var(--radius-md)] border border-border bg-surface p-4">
-      <h2 className="font-bold">Actions</h2>
+    <div className="min-w-0 rounded-[var(--radius-lg)] border border-border bg-surface p-4 shadow-sm shadow-black/5 sm:p-5">
+      <h2 className="text-lg font-bold">Actions</h2>
 
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
         {STATUS_ACTIONS[status].map((next) => (
           <button
             key={next}
@@ -117,12 +117,12 @@ export default function BookingActions({
       </div>
 
       {rescheduling && (
-        <div className="mt-3 flex flex-wrap items-center gap-2">
+        <div className="mt-3 grid gap-2 sm:flex sm:flex-wrap sm:items-center">
           <input
             type="datetime-local"
             value={newStart}
             onChange={(e) => setNewStart(e.target.value)}
-            className="rounded-[var(--radius-sm)] border border-border bg-base px-3 py-2 text-sm"
+            className="w-full rounded-[var(--radius-sm)] border border-border bg-base px-3 py-2 text-sm sm:w-auto"
           />
           <button
             disabled={busy}
