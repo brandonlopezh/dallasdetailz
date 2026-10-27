@@ -62,9 +62,9 @@ export default function ManualBookingForm() {
     "w-full rounded-[var(--radius-sm)] border border-border bg-surface px-3 py-2 text-sm";
 
   return (
-    <form onSubmit={submit} className="grid gap-3">
-      <div className="grid grid-cols-2 gap-3">
-        <label className="text-sm">
+    <form onSubmit={submit} className="grid grid-cols-1 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <label className="min-w-0 text-sm">
           <span className="text-muted">Service</span>
           <select
             value={serviceId}
@@ -79,7 +79,7 @@ export default function ManualBookingForm() {
             ))}
           </select>
         </label>
-        <label className="text-sm">
+        <label className="min-w-0 text-sm">
           <span className="text-muted">Vehicle</span>
           <select
             value={tier}
@@ -95,7 +95,7 @@ export default function ManualBookingForm() {
         </label>
       </div>
 
-      <label className="text-sm">
+      <label className="min-w-0 text-sm">
         <span className="text-muted">Date & time</span>
         <input
           type="datetime-local"
@@ -106,22 +106,22 @@ export default function ManualBookingForm() {
         />
       </label>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <input className={input} placeholder="Customer name" value={name} onChange={(e) => setName(e.target.value)} required />
         <input className={input} placeholder="Mobile" value={phone} onChange={(e) => setPhone(e.target.value)} required />
       </div>
       <input className={input} placeholder="Email (optional)" value={email} onChange={(e) => setEmail(e.target.value)} />
       <input className={input} placeholder="Service address" value={address} onChange={(e) => setAddress(e.target.value)} required />
 
-      <div className="grid grid-cols-2 gap-3">
-        <label className="text-sm">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <label className="min-w-0 text-sm">
           <span className="text-muted">Status</span>
           <select value={status} onChange={(e) => setStatus(e.target.value)} className={`mt-1 ${input}`}>
             <option value="confirmed">Confirmed</option>
             <option value="requested">Requested</option>
           </select>
         </label>
-        <label className="text-sm">
+        <label className="min-w-0 text-sm">
           <span className="text-muted">Source</span>
           <select value={source} onChange={(e) => setSource(e.target.value)} className={`mt-1 ${input}`}>
             <option value="phone">Phone</option>

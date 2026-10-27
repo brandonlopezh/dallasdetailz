@@ -59,11 +59,11 @@ export default function MonthCalendar({
   });
   const selectedJobs = selectedDay ? (byDay.get(selectedDay) ?? []) : [];
   const navBtn =
-    "grid h-9 w-9 place-items-center rounded-[var(--radius-sm)] border border-border text-sm hover:border-accent";
+    "grid h-10 w-10 place-items-center rounded-[var(--radius-sm)] border border-border text-sm hover:border-accent";
 
   return (
     <section id="schedule" className="scroll-mt-20">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
         <div>
           <h2 className="font-[family-name:var(--font-display)] text-xl font-extrabold">
             Schedule
@@ -158,7 +158,7 @@ export default function MonthCalendar({
                 Nothing booked this day.
               </div>
             ) : (
-              <div className="grid gap-2">
+              <div className="grid grid-cols-1 gap-2">
                 {selectedJobs.map((b) => (
                   <BookingRow key={b.id} b={b} tz={tz} />
                 ))}

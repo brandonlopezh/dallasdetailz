@@ -57,7 +57,7 @@ export default function AdminThemePicker({ initial }: { initial: ThemeChoice | n
   const isCustom = choice !== null && "custom" in choice;
 
   return (
-    <div ref={wrap} className="relative">
+    <div ref={wrap} className="sm:relative">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -70,7 +70,7 @@ export default function AdminThemePicker({ initial }: { initial: ThemeChoice | n
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-72 rounded-[var(--radius-md)] border border-border bg-surface p-3 shadow-2xl shadow-black/40">
+        <div className="absolute inset-x-4 top-full z-50 mt-2 rounded-[var(--radius-md)] border border-border bg-surface p-3 shadow-2xl shadow-black/40 sm:inset-x-auto sm:right-0 sm:w-72">
           <p className="text-xs text-muted">Only changes the admin, just for this browser.</p>
 
           <div className="mt-3 grid grid-cols-2 gap-2">

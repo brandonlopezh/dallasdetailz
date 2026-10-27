@@ -7,7 +7,7 @@ export const metadata = { title: "New booking" };
 export default async function NewBookingPage() {
   await requireBookingsAccess();
   return (
-    <div className="max-w-lg">
+    <div className="min-w-0 max-w-lg">
       <Link href="/admin" className="text-sm text-muted hover:text-ink">
         ← Today
       </Link>
