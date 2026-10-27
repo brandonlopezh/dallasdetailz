@@ -93,7 +93,7 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
     },
     fundraiser: {
       heading: "We could use your help",
-      body: "Ramon is facing surgery and a long recovery. Any support, big or small, means the world to us. Sharing the link helps too.",
+      body: "Our dad is facing surgery and a long recovery. Any support, big or small, means the world to us. Sharing the link helps too.",
     },
     faq: {
       heading: "Questions",
@@ -188,7 +188,7 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
     },
     fundraiser: {
       heading: "Necesitamos tu ayuda",
-      body: "Ramón se enfrenta a una cirugía y una larga recuperación. Cualquier apoyo, grande o pequeño, significa muchísimo para nosotros. Compartir el enlace también ayuda.",
+      body: "Nuestro papá se enfrenta a una cirugía y una larga recuperación. Cualquier apoyo, grande o pequeño, significa muchísimo para nosotros. Compartir el enlace también ayuda.",
     },
     faq: {
       heading: "Preguntas",
