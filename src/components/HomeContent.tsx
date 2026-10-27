@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import BookNowLink from "./BookNowLink";
+import GoFundMeEmbed from "./GoFundMeEmbed";
 import InstagramFeed from "./InstagramFeed";
 import Faq from "./Faq";
 import HeroReel from "./HeroReel";
@@ -23,6 +24,9 @@ interface HomeContentProps {
 
 const BLOG_URL =
   "https://brandonjlopezh.blog/2026/09/02/the-next-generation-isnt-waiting-around-they-are-taking-action/";
+
+const GOFUNDME_EMBED_URL =
+  "https://www.gofundme.com/f/support-ramon-through-surgery-and-recovery/widget/large?attribution_id=sl%3A0e3ba1f6-bb55-464a-845a-5fb8f9b4db63";
 
 export default function HomeContent({ services }: HomeContentProps) {
   const { lang, t, contact, serviceTranslations, parts } = useLanguage();
@@ -140,14 +144,25 @@ export default function HomeContent({ services }: HomeContentProps) {
       </section>
     ),
     faq: (
-      <section className="bg-band-2/70">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <h2 className="mb-8 text-center font-[family-name:var(--font-display)] text-3xl font-extrabold uppercase tracking-tight">
-            {t.faq.heading}
-          </h2>
-          <Faq />
-        </div>
-      </section>
+      <>
+        {/* GoFundMe widget: its own shaded band above the FAQ. Full width
+            on phones, a narrow centered card on larger screens. */}
+        <section className="border-t border-border bg-band-3/70">
+          <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+            <div className="mx-auto w-full overflow-hidden rounded-[var(--radius-lg)] border border-border bg-surface p-3 sm:max-w-xs">
+              <GoFundMeEmbed url={GOFUNDME_EMBED_URL} title="Support Ramon through surgery and recovery" />
+            </div>
+          </div>
+        </section>
+        <section className="bg-band-2/70">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+            <h2 className="mb-8 text-center font-[family-name:var(--font-display)] text-3xl font-extrabold uppercase tracking-tight">
+              {t.faq.heading}
+            </h2>
+            <Faq />
+          </div>
+        </section>
+      </>
     ),
     finalCta: (
       <section className="border-t border-border bg-band-4/70">
@@ -291,6 +306,7 @@ export default function HomeContent({ services }: HomeContentProps) {
               />
             </div>
           </div>
+
         </section>
 
         {parts.sections.map((sec) =>
