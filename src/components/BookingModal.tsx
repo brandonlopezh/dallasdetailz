@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useId, useRef, useState } from "react";
 import { useDialog } from "@/lib/useDialog";
-import BookingFlow from "./BookingFlow";
+import BookingFlow, { useBookingText } from "./BookingFlow";
 
 interface BookingModalCtx {
   open: (serviceId?: string) => void;
@@ -37,6 +37,7 @@ export function BookingModalProvider({ children }: { children: React.ReactNode }
 function BookingDialog({ serviceId, onClose }: { serviceId?: string; onClose: () => void }) {
   const ref = useRef<HTMLDivElement>(null);
   const titleId = useId();
+  const b = useBookingText();
   useDialog(ref, onClose);
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -60,12 +61,12 @@ function BookingDialog({ serviceId, onClose }: { serviceId?: string; onClose: ()
             id={titleId}
             className="font-[family-name:var(--font-display)] text-lg font-extrabold uppercase"
           >
-            Book a detail
+            {b.modalTitle}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close booking form"
+            aria-label={b.close}
             className="tap grid place-items-center rounded-full border border-border text-lg text-muted hover:text-ink"
           >
             <span aria-hidden="true">✕</span>

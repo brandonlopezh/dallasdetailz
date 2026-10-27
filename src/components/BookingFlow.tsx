@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Service } from "@/lib/types";
 import type { DaySlots } from "@/lib/availability";
+import { BOOKING_TEXT } from "@/lib/booking-translations";
+import { useLanguage } from "./LanguageProvider";
 
 // Simplified flow: no vehicle-tier step, no add-ons. Three flat-price
 // services, a spot for custom requests, address + time, then a request
@@ -41,6 +43,11 @@ const EMPTY: Draft = {
 
 function money(n: number) {
   return `$${Math.round(n)}`;
+}
+
+export function useBookingText() {
+  const { lang } = useLanguage();
+  return BOOKING_TEXT[lang];
 }
 
 export default function BookingFlow({
@@ -122,9 +129,10 @@ export default function BookingFlow({
 }
 
 function Stepper({ step }: { step: number }) {
-  const labels = ["Service", "When", "Your info"];
+  const b = useBookingText();
+  const labels = b.steps;
   return (
-    <ol className="mb-6 flex items-center gap-2" aria-label="Booking steps">
+    <ol className="mb-6 flex items-center gap-2" aria-label={b.stepsLabel}>
       {labels.map((l, i) => (
         <li
           key={l}
@@ -166,12 +174,13 @@ function PrimaryBtn({
 }
 
 function BackBtn({ onClick }: { onClick: () => void }) {
+  const b = useBookingText();
   return (
     <button
       onClick={onClick}
       className="tap rounded-[var(--radius-md)] border border-border px-5 font-semibold text-muted hover:text-ink"
     >
-      Back
+      {b.back}
     </button>
   );
 }
@@ -188,18 +197,19 @@ function StepService({
   services: Service[];
   onNext: () => void;
 }) {
+  const b = useBookingText();
+  const { lang, serviceTranslations } = useLanguage();
   return (
     <section>
       <h1 className="font-[family-name:var(--font-display)] text-2xl font-extrabold">
-        Choose your service
+        {b.chooseService}
       </h1>
-      <p className="mt-1 text-sm text-muted">
-        Prices shown are final. We accept Zelle and Cash only.
-      </p>
+      <p className="mt-1 text-sm text-muted">{b.priceNote}</p>
       <div className="mt-5 grid gap-3">
         {services.map((s) => {
           const p = s.pricing.find((x) => x.tier === DEFAULT_TIER);
           const selected = draft.serviceId === s.id;
+          const es = lang === "es" ? serviceTranslations[s.id] : undefined;
           return (
             <button
               key={s.id}
@@ -210,31 +220,31 @@ function StepService({
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="font-bold">{s.name}</span>
+                <span className="font-bold">{es?.name ?? s.name}</span>
                 <span className="font-[family-name:var(--font-display)] text-lg font-extrabold">
-                  {p ? money(p.price) : "TBD"}
+                  {p ? money(p.price) : b.tbd}
                 </span>
               </div>
-              <p className="mt-1 text-sm text-muted">{s.description}</p>
+              <p className="mt-1 text-sm text-muted">{es?.description ?? s.description}</p>
             </button>
           );
         })}
       </div>
 
       <label htmlFor="bf-custom" className="mt-6 block text-sm font-semibold">
-        Need something custom?
+        {b.customLabel}
       </label>
       <textarea
         id="bf-custom"
         className="input mt-2 min-h-24"
-        placeholder="Tell us what you're looking for and we'll follow up (optional)"
+        placeholder={b.customPlaceholder}
         value={draft.customRequest}
         onChange={(e) => set({ customRequest: e.target.value })}
       />
 
       <div className="mt-6">
         <PrimaryBtn onClick={onNext} disabled={!draft.serviceId}>
-          Continue
+          {b.next}
         </PrimaryBtn>
       </div>
       <InputStyles />
@@ -256,6 +266,7 @@ function StepWhereWhen({
   onBack: () => void;
   onNext: () => void;
 }) {
+  const b = useBookingText();
   const [days, setDays] = useState<DaySlots[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [activeDay, setActiveDay] = useState(0);
@@ -275,26 +286,24 @@ function StepWhereWhen({
   return (
     <section className="pb-4">
       <h1 className="font-[family-name:var(--font-display)] text-2xl font-extrabold">
-        Where & when
+        {b.whereWhen}
       </h1>
       <p className="mt-1 text-sm text-muted">{serviceName}</p>
 
       <label htmlFor="bf-address" className="mt-5 block text-sm font-semibold">
-        Service address
+        {b.addressLabel}
       </label>
       <input
         id="bf-address"
         autoComplete="street-address"
         className="input mt-1 w-full"
-        placeholder="Street, city, ZIP"
+        placeholder={b.addressPlaceholder}
         value={draft.address}
         onChange={(e) => set({ address: e.target.value })}
       />
 
       <div className="mt-4 rounded-[var(--radius-md)] border border-warning/40 bg-warning/10 p-3 text-sm">
-        <span className="font-semibold">Required:</span> outdoor water access
-        and a working power outlet at the address. We can&apos;t detail
-        without both.
+        <span className="font-semibold">{b.requiredLabel}</span> {b.requiredBody}
       </div>
 
       <button
@@ -302,12 +311,12 @@ function StepWhereWhen({
         disabled={draft.address.length < 4}
         className="tap mt-5 w-full rounded-[var(--radius-md)] border border-accent px-5 font-semibold text-link disabled:opacity-40"
       >
-        {days ? "Refresh times" : "Show open times"}
+        {days ? b.refreshTimes : b.showTimes}
       </button>
 
       {loading && (
         <p role="status" className="mt-4 text-muted">
-          Finding open slots…
+          {b.findingSlots}
         </p>
       )}
 
@@ -315,8 +324,7 @@ function StepWhereWhen({
         <div className="mt-5">
           {days.length === 0 ? (
             <div className="rounded-[var(--radius-md)] border border-warning/40 bg-warning/10 p-4 text-sm">
-              No open times in the next few weeks. Leave your info on the next
-              step and we&apos;ll text you a time.
+              {b.noSlots}
             </div>
           ) : (
             <>
@@ -330,7 +338,7 @@ function StepWhereWhen({
                       activeDay === i ? "border-accent bg-accent/10" : "border-border"
                     }`}
                   >
-                    {new Date(d.date + "T12:00:00").toLocaleDateString("en-US", {
+                    {new Date(d.date + "T12:00:00").toLocaleDateString(b.dateLocale, {
                       weekday: "short",
                       month: "short",
                       day: "numeric",
@@ -365,7 +373,7 @@ function StepWhereWhen({
           onClick={onNext}
           disabled={draft.address.length < 4 || (!!days && days.length > 0 && !draft.slotStart)}
         >
-          Continue
+          {b.next}
         </PrimaryBtn>
       </div>
       <InputStyles />
@@ -389,6 +397,8 @@ function StepConfirm({
   onBack: () => void;
   onDone?: () => void;
 }) {
+  const b = useBookingText();
+  const { lang, serviceTranslations } = useLanguage();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<{ ref: string } | null>(null);
@@ -416,13 +426,13 @@ function StepConfirm({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Something went wrong.");
+        setError(data.error ?? b.genericError);
       } else {
         setDone({ ref: data.ref });
         localStorage.removeItem(STORAGE_KEY);
       }
     } catch {
-      setError("Network error. Please try again.");
+      setError(b.networkError);
     } finally {
       setSubmitting(false);
     }
@@ -435,10 +445,10 @@ function StepConfirm({
           ✓
         </div>
         <h1 className="mt-4 font-[family-name:var(--font-display)] text-2xl font-extrabold">
-          Thank you for requesting service!
+          {b.thanks}
         </h1>
         <p className="mt-2 text-muted">
-          We will confirm your appointment shortly. Reference{" "}
+          {b.confirmSoon} {b.reference}{" "}
           <span className="font-mono text-ink">{done.ref}</span>.
         </p>
         {onDone ? (
@@ -447,11 +457,11 @@ function StepConfirm({
             onClick={onDone}
             className="tap mt-6 inline-flex items-center rounded-[var(--radius-md)] bg-accent px-6 font-bold text-white"
           >
-            Done
+            {b.done}
           </button>
         ) : (
           <Link href="/" className="tap mt-6 inline-flex items-center rounded-[var(--radius-md)] bg-accent px-6 font-bold text-white">
-            Done
+            {b.done}
           </Link>
         )}
       </section>
@@ -459,28 +469,29 @@ function StepConfirm({
   }
 
   const slot = draft.slotStart ? new Date(draft.slotStart) : null;
+  const es = lang === "es" ? serviceTranslations[service.id] : undefined;
 
   return (
     <section>
       <h1 className="font-[family-name:var(--font-display)] text-2xl font-extrabold">
-        Your info
+        {b.yourInfo}
       </h1>
       <div className="mt-4 grid gap-3">
         <div>
           <label htmlFor="bf-name" className="text-sm font-semibold">
-            Full name
+            {b.fullName}
           </label>
           <input id="bf-name" className="input mt-1" autoComplete="name" required value={draft.name} onChange={(e) => set({ name: e.target.value })} />
         </div>
         <div>
           <label htmlFor="bf-phone" className="text-sm font-semibold">
-            Mobile number
+            {b.mobile}
           </label>
           <input id="bf-phone" className="input mt-1" type="tel" inputMode="tel" autoComplete="tel" required value={draft.phone} onChange={(e) => set({ phone: e.target.value })} />
         </div>
         <div>
           <label htmlFor="bf-email" className="text-sm font-semibold">
-            Email <span className="font-normal text-muted">(optional)</span>
+            {b.email} <span className="font-normal text-muted">{b.optional}</span>
           </label>
           <input id="bf-email" className="input mt-1" type="email" inputMode="email" autoComplete="email" value={draft.email} onChange={(e) => set({ email: e.target.value })} />
         </div>
@@ -488,28 +499,28 @@ function StepConfirm({
 
       {/* Summary card */}
       <div className="mt-5 rounded-[var(--radius-md)] border border-border bg-surface p-4 text-sm">
-        <Row label={service.name} value={money(price)} />
-        {draft.customRequest && <Row label="Custom request" value={draft.customRequest} muted />}
+        <Row label={es?.name ?? service.name} value={money(price)} />
+        {draft.customRequest && <Row label={b.customRequest} value={draft.customRequest} muted />}
         <div className="my-2 border-t border-border" />
         <Row
-          label="When"
+          label={b.when}
           value={
             slot
-              ? slot.toLocaleString("en-US", {
+              ? slot.toLocaleString(b.dateLocale, {
                   weekday: "short",
                   month: "short",
                   day: "numeric",
                   hour: "numeric",
                   minute: "2-digit",
                 })
-              : "Not selected"
+              : b.notSelected
           }
         />
-        <Row label="Where" value={draft.address || "Not entered"} />
+        <Row label={b.where} value={draft.address || b.notEntered} />
         <div className="my-2 border-t border-border" />
-        <Row label="Total" value={money(price)} bold />
+        <Row label={b.total} value={money(price)} bold />
         <p className="mt-1 text-xs text-muted">
-          Zelle or Cash in person. This is a request, not a confirmed booking.
+          {b.requestNote}
         </p>
       </div>
 
@@ -522,7 +533,7 @@ function StepConfirm({
       <div className="mt-6 flex gap-3">
         <BackBtn onClick={onBack} />
         <PrimaryBtn onClick={submit} disabled={!canSubmit || submitting}>
-          {submitting ? "Sending…" : "Request to Book"}
+          {submitting ? b.sending : b.submit}
         </PrimaryBtn>
       </div>
       <InputStyles />

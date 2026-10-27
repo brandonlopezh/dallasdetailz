@@ -149,7 +149,7 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
       title: "Brillo de agencia",
       titleAccent: "En la entrada de tu casa",
       summary:
-        "Dos hermanos, una camioneta llena de equipo y tu entrada.\nOfrecemos limpieza exterior, interior y detallado completo en Duncanville, Dallas y Cedar Hill.",
+        "Ofrecemos limpieza exterior, interior y detallado completo en Duncanville, Dallas y Cedar Hill.",
       seePricing: "Ver precios",
       from: "desde",
       trust: ["Vamos a ti", "Precios accesibles", "Hablamos inglés y español"],
