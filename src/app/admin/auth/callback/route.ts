@@ -16,7 +16,12 @@ export async function GET(req: NextRequest) {
     if (!error) {
       return NextResponse.redirect(`${origin}/admin`);
     }
+    return NextResponse.redirect(
+      `${origin}/admin/login?error=${encodeURIComponent(error.message)}`,
+    );
   }
 
-  return NextResponse.redirect(`${origin}/admin/login?error=auth`);
+  // Supabase puts the reason in the query when it rejects the link itself.
+  const reason = req.nextUrl.searchParams.get("error_description") ?? "missing code";
+  return NextResponse.redirect(`${origin}/admin/login?error=${encodeURIComponent(reason)}`);
 }
