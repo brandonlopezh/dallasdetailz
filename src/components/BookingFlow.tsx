@@ -320,6 +320,26 @@ function StepWhere({
   onNext: () => void;
 }) {
   const b = useBookingText();
+  // Soft check only: once typing pauses, see how far the address is from
+  // 75249 and warn (never block) past 10 miles. The result is keyed by the
+  // address it was computed for, so a stale answer never shows.
+  const [lookup, setLookup] = useState<{ address: string; far: boolean; miles: number | null } | null>(null);
+  useEffect(() => {
+    const address = draft.address.trim();
+    if (address.length < 8) return;
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => {
+      fetch(`/api/distance?${new URLSearchParams({ address })}`, { signal: ctrl.signal })
+        .then((r) => r.json())
+        .then((d) => setLookup({ address: draft.address, far: !!d.far, miles: d.distanceMi ?? null }))
+        .catch(() => {});
+    }, 800);
+    return () => {
+      clearTimeout(timer);
+      ctrl.abort();
+    };
+  }, [draft.address]);
+  const far = lookup?.address === draft.address && lookup.far ? lookup : null;
   return (
     <section className="pb-4">
       <h1 className="font-[family-name:var(--font-display)] text-2xl font-extrabold">
@@ -338,6 +358,14 @@ function StepWhere({
         value={draft.address}
         onChange={(e) => set({ address: e.target.value })}
       />
+
+      <div role="status" aria-live="polite">
+        {far && (
+          <p className="mt-3 rounded-[var(--radius-md)] border border-warning/40 bg-warning/10 p-3 text-sm">
+            {b.farNotice.replace("{miles}", String(Math.round(far.miles ?? 0)))}
+          </p>
+        )}
+      </div>
 
       <div className="mt-4 rounded-[var(--radius-md)] border border-warning/40 bg-warning/10 p-3 text-sm">
         <span className="font-semibold">{b.requiredLabel}</span> {b.requiredBody}

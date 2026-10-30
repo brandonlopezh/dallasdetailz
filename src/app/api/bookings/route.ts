@@ -4,6 +4,7 @@ import { getAddons, getServices, getSettings } from "@/lib/catalog";
 import { isSupabaseConfigured, supabaseAdmin } from "@/lib/supabase/server";
 import { sendSms } from "@/lib/sms";
 import { NOTIFY_EMAIL, escapeHtml, sendEmail } from "@/lib/email";
+import { NEAR_RADIUS_MI, locateAddress } from "@/lib/distance";
 import type { VehicleTier } from "@/lib/types";
 
 const bodySchema = z.object({
@@ -56,6 +57,7 @@ function requestEmailHtml(r: {
   when: string;
   address: string;
   notes: string | null;
+  flag: string | null;
   dashboardUrl: string;
 }): string {
   const row = (label: string, value: string) =>
@@ -70,6 +72,7 @@ function requestEmailHtml(r: {
     ${row("Customer", r.name)}
     ${row("Phone", r.phone)}
     ${r.email ? row("Email", r.email) : ""}
+    ${r.flag ? row("Heads up", r.flag) : ""}
     ${r.notes ? row("Notes", r.notes) : ""}
     ${row("Ref", r.ref)}
   </table>
@@ -193,6 +196,16 @@ export async function POST(req: NextRequest) {
     vehicleId = veh?.id ?? null;
   }
 
+  // Distance from 75249, recomputed here (never trusted from the browser).
+  // Far or unverifiable addresses are still accepted but flagged for the
+  // operator in the internal notes, the email and the text.
+  const located = await locateAddress(b.address);
+  const distanceFlag = !located
+    ? "⚠ Distance unverified: address not found, check it before accepting."
+    : located.distanceMi > NEAR_RADIUS_MI
+      ? `⚠ ${located.distanceMi.toFixed(1)} mi from 75249 (past the ${NEAR_RADIUS_MI}-mile range).`
+      : null;
+
   const { data: booking, error: bookErr } = await sb
     .from("bookings")
     .insert({
@@ -203,8 +216,8 @@ export async function POST(req: NextRequest) {
       scheduled_start: start.toISOString(),
       scheduled_end: end.toISOString(),
       service_address: b.address,
-      lat: b.lat ?? null,
-      lng: b.lng ?? null,
+      lat: b.lat ?? located?.lat ?? null,
+      lng: b.lng ?? located?.lng ?? null,
       water_access: b.waterAccess ?? null,
       outlet_access: b.outletAccess ?? null,
       status: "requested",
@@ -214,6 +227,7 @@ export async function POST(req: NextRequest) {
       travel_fee: travelFee,
       total,
       customer_notes: b.notes ?? null,
+      internal_notes: distanceFlag,
     })
     .select("id, ref, manage_token, approval_token, scheduled_start, scheduled_end, total")
     .single();
@@ -270,6 +284,7 @@ export async function POST(req: NextRequest) {
       when,
       address: b.address,
       notes: b.notes ?? null,
+      flag: distanceFlag,
       dashboardUrl,
     }),
     text: [
@@ -278,6 +293,7 @@ export async function POST(req: NextRequest) {
       `${b.customer.name}, ${b.customer.phone}`,
       when,
       b.address,
+      distanceFlag ?? "",
       b.notes ? `Note: ${b.notes}` : "",
       "",
       `Accept it or offer a new time: ${dashboardUrl}`,
@@ -295,6 +311,7 @@ export async function POST(req: NextRequest) {
       when,
       b.address,
     ];
+    if (distanceFlag) lines.push(distanceFlag);
     if (b.notes) lines.push(`Note: ${b.notes}`);
     lines.push(dashboardUrl);
     await sendSms(operatorPhone, lines.join("\n"));

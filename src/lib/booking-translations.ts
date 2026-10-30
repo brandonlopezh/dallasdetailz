@@ -19,6 +19,7 @@ export interface BookingText {
   requiredLabel: string;
   requiredBody: string;
   accessConfirm: string;
+  farNotice: string; // {miles} placeholder
   showTimes: string;
   refreshTimes: string;
   findingSlots: string;
@@ -66,6 +67,8 @@ export const BOOKING_TEXT: Record<Lang, BookingText> = {
       "outdoor water access and a working power outlet at the address. We can't detail without both.",
     accessConfirm:
       "I confirm there is outdoor water access and a working power outlet at this address.",
+    farNotice:
+      "This address is about {miles} miles from our home base (ZIP 75249), past our usual 10-mile range. You can still send your request, and we'll let you know if we can make it out there.",
     showTimes: "Show open times",
     refreshTimes: "Refresh times",
     findingSlots: "Finding open slots…",
@@ -112,6 +115,8 @@ export const BOOKING_TEXT: Record<Lang, BookingText> = {
       "acceso a agua en el exterior y un tomacorriente que funcione en la dirección. No podemos hacer el detallado sin ambos.",
     accessConfirm:
       "Confirmo que hay acceso a agua en el exterior y un tomacorriente que funciona en esta dirección.",
+    farNotice:
+      "Esta dirección está a unas {miles} millas de nuestra base (código postal 75249), más allá de nuestro rango habitual de 10 millas. Aún puedes enviar tu solicitud y te avisaremos si podemos llegar hasta allá.",
     showTimes: "Ver horarios disponibles",
     refreshTimes: "Actualizar horarios",
     findingSlots: "Buscando horarios disponibles…",
