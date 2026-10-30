@@ -21,8 +21,7 @@ interface Draft {
   serviceId: string | null;
   customRequest: string;
   address: string;
-  waterAccess: boolean;
-  outletAccess: boolean;
+  accessConfirmed: boolean;
   slotStart: string | null;
   name: string;
   phone: string;
@@ -33,8 +32,7 @@ const EMPTY: Draft = {
   serviceId: null,
   customRequest: "",
   address: "",
-  waterAccess: true,
-  outletAccess: true,
+  accessConfirmed: false,
   slotStart: null,
   name: "",
   phone: "",
@@ -96,7 +94,7 @@ export default function BookingFlow({
 
   return (
     <div>
-      <Stepper step={step} />
+      <Stepper step={step} onGo={setStep} />
       {step === 1 && (
         <StepService
           draft={draft}
@@ -106,7 +104,7 @@ export default function BookingFlow({
         />
       )}
       {step === 2 && service && (
-        <StepWhereWhen
+        <StepWhere
           draft={draft}
           set={set}
           serviceName={service.name}
@@ -114,13 +112,22 @@ export default function BookingFlow({
           onNext={() => setStep(3)}
         />
       )}
-      {step === 3 && service && pricing && (
+      {step === 3 && service && (
+        <StepWhen
+          draft={draft}
+          set={set}
+          serviceName={service.name}
+          onBack={() => setStep(2)}
+          onNext={() => setStep(4)}
+        />
+      )}
+      {step === 4 && service && pricing && (
         <StepConfirm
           draft={draft}
           set={set}
           service={service}
           price={pricing.price}
-          onBack={() => setStep(2)}
+          onBack={() => setStep(3)}
           onDone={onDone}
         />
       )}
@@ -128,27 +135,48 @@ export default function BookingFlow({
   );
 }
 
-function Stepper({ step }: { step: number }) {
+function Stepper({ step, onGo }: { step: number; onGo: (n: number) => void }) {
   const b = useBookingText();
   const labels = b.steps;
   return (
-    <ol className="mb-6 flex items-center gap-2" aria-label={b.stepsLabel}>
-      {labels.map((l, i) => (
-        <li
-          key={l}
-          className="flex flex-1 flex-col gap-1"
-          aria-current={i + 1 === step ? "step" : undefined}
-        >
-          <div
-            className={`h-1.5 rounded-full ${i + 1 <= step ? "bg-accent" : "bg-border"}`}
-          />
-          <span
-            className={`text-[11px] ${i + 1 === step ? "text-ink" : "text-muted"}`}
-          >
-            {l}
-          </span>
-        </li>
-      ))}
+    <ol className="mb-6 flex items-start gap-2" aria-label={b.stepsLabel}>
+      {labels.map((l, i) => {
+        const n = i + 1;
+        const done = n < step;
+        const current = n === step;
+        const label = (
+          <>
+            <div
+              className={`h-1.5 rounded-full ${
+                done ? "bg-link" : current ? "bg-accent" : "bg-[var(--color-control)]/40"
+              }`}
+            />
+            <span
+              className={`flex items-center gap-1 text-xs ${
+                current ? "font-bold text-ink" : done ? "font-semibold text-link" : "text-muted"
+              }`}
+            >
+              {done ? <span aria-hidden="true">✓</span> : <span aria-hidden="true">{n}.</span>}
+              {l}
+            </span>
+          </>
+        );
+        return (
+          <li key={l} className="flex-1" aria-current={current ? "step" : undefined}>
+            {done ? (
+              <button
+                type="button"
+                onClick={() => onGo(n)}
+                className="flex w-full flex-col gap-1 rounded-[var(--radius-sm)] text-left hover:opacity-80"
+              >
+                {label}
+              </button>
+            ) : (
+              <div className="flex flex-col gap-1">{label}</div>
+            )}
+          </li>
+        );
+      })}
     </ol>
   );
 }
@@ -178,7 +206,7 @@ function BackBtn({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="tap rounded-[var(--radius-md)] border border-border px-5 font-semibold text-muted hover:text-ink"
+      className="tap rounded-[var(--radius-md)] border border-[var(--color-control)] px-5 font-semibold text-muted hover:text-ink"
     >
       {b.back}
     </button>
@@ -198,37 +226,62 @@ function StepService({
   onNext: () => void;
 }) {
   const b = useBookingText();
-  const { lang, serviceTranslations } = useLanguage();
+  const { lang, t, serviceTranslations } = useLanguage();
   return (
     <section>
       <h1 className="font-[family-name:var(--font-display)] text-2xl font-extrabold">
         {b.chooseService}
       </h1>
       <p className="mt-1 text-sm text-muted">{b.priceNote}</p>
-      <div className="mt-5 grid gap-3">
-        {services.map((s) => {
-          const p = s.pricing.find((x) => x.tier === DEFAULT_TIER);
-          const selected = draft.serviceId === s.id;
-          const es = lang === "es" ? serviceTranslations[s.id] : undefined;
-          return (
-            <button
-              key={s.id}
-              onClick={() => set({ serviceId: s.id })}
-              aria-pressed={selected}
-              className={`rounded-[var(--radius-md)] border p-4 text-left transition-colors ${
-                selected ? "border-accent bg-accent/10" : "border-border bg-surface hover:border-accent/50"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-bold">{es?.name ?? s.name}</span>
-                <span className="font-[family-name:var(--font-display)] text-lg font-extrabold">
-                  {p ? money(p.price) : b.tbd}
-                </span>
+      <div role="radiogroup" aria-label={b.chooseService} className="mt-5 grid gap-3">
+        {[...services]
+          .sort((a, b) => Number(b.category === "full") - Number(a.category === "full"))
+          .map((s) => {
+            const p = s.pricing.find((x) => x.tier === DEFAULT_TIER);
+            const selected = draft.serviceId === s.id;
+            const es = lang === "es" ? serviceTranslations[s.id] : undefined;
+            const isBestDeal = s.category === "full";
+            return (
+              <div key={s.id} className={`relative ${isBestDeal ? "pt-2" : ""}`}>
+                {isBestDeal && (
+                  <span className="absolute right-3 top-0 z-10 rounded-full bg-blue-700 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white shadow">
+                    {t.services.bestDeal}
+                  </span>
+                )}
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  onClick={() => set({ serviceId: s.id })}
+                  className={`w-full rounded-[var(--radius-md)] border p-4 text-left transition-colors ${
+                    selected
+                      ? "border-link bg-accent/10 ring-1 ring-link"
+                      : "border-[var(--color-control)] bg-surface hover:border-link"
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="flex items-center gap-3 font-bold">
+                      <span
+                        aria-hidden="true"
+                        className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 text-[11px] leading-none ${
+                          selected
+                            ? "border-link bg-link text-[var(--color-base)]"
+                            : "border-[var(--color-control)]"
+                        }`}
+                      >
+                        {selected && "✓"}
+                      </span>
+                      {es?.name ?? s.name}
+                    </span>
+                    <span className="font-[family-name:var(--font-display)] text-lg font-extrabold">
+                      {p ? money(p.price) : b.tbd}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-sm text-muted">{es?.description ?? s.description}</p>
+                </button>
               </div>
-              <p className="mt-1 text-sm text-muted">{es?.description ?? s.description}</p>
-            </button>
-          );
-        })}
+            );
+          })}
       </div>
 
       <label htmlFor="bf-custom" className="mt-6 block text-sm font-semibold">
@@ -252,8 +305,8 @@ function StepService({
   );
 }
 
-// STEP 2 — where & when -----------------------------------------------------
-function StepWhereWhen({
+// STEP 2 — where ----------------------------------------------------------
+function StepWhere({
   draft,
   set,
   serviceName,
@@ -267,26 +320,10 @@ function StepWhereWhen({
   onNext: () => void;
 }) {
   const b = useBookingText();
-  const [days, setDays] = useState<DaySlots[] | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [activeDay, setActiveDay] = useState(0);
-
-  const loadSlots = () => {
-    setLoading(true);
-    const qs = new URLSearchParams({
-      serviceId: draft.serviceId!,
-      tier: DEFAULT_TIER,
-    });
-    fetch(`/api/availability?${qs}`)
-      .then((r) => r.json())
-      .then((d) => setDays(d.days ?? []))
-      .finally(() => setLoading(false));
-  };
-
   return (
     <section className="pb-4">
       <h1 className="font-[family-name:var(--font-display)] text-2xl font-extrabold">
-        {b.whereWhen}
+        {b.where}
       </h1>
       <p className="mt-1 text-sm text-muted">{serviceName}</p>
 
@@ -306,16 +343,83 @@ function StepWhereWhen({
         <span className="font-semibold">{b.requiredLabel}</span> {b.requiredBody}
       </div>
 
-      <button
-        onClick={loadSlots}
-        disabled={draft.address.length < 4}
-        className="tap mt-5 w-full rounded-[var(--radius-md)] border border-accent px-5 font-semibold text-link disabled:opacity-40"
+      <label
+        htmlFor="bf-access"
+        className="mt-4 flex cursor-pointer items-start gap-3 rounded-[var(--radius-md)] border border-[var(--color-control)] bg-surface p-3 text-sm"
       >
-        {days ? b.refreshTimes : b.showTimes}
-      </button>
+        <input
+          id="bf-access"
+          type="checkbox"
+          required
+          checked={draft.accessConfirmed}
+          onChange={(e) => set({ accessConfirmed: e.target.checked })}
+          className="mt-0.5 h-6 w-6 shrink-0 cursor-pointer accent-link"
+        />
+        <span className="font-semibold">{b.accessConfirm}</span>
+      </label>
+
+      <div className="mt-6 flex gap-3">
+        <BackBtn onClick={onBack} />
+        <PrimaryBtn onClick={onNext} disabled={draft.address.length < 4 || !draft.accessConfirmed}>
+          {b.next}
+        </PrimaryBtn>
+      </div>
+      <InputStyles />
+    </section>
+  );
+}
+
+// STEP 3 — when -------------------------------------------------------------
+function StepWhen({
+  draft,
+  set,
+  serviceName,
+  onBack,
+  onNext,
+}: {
+  draft: Draft;
+  set: (p: Partial<Draft>) => void;
+  serviceName: string;
+  onBack: () => void;
+  onNext: () => void;
+}) {
+  const b = useBookingText();
+  const [days, setDays] = useState<DaySlots[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeDay, setActiveDay] = useState(0);
+
+  const fetchSlots = () => {
+    const qs = new URLSearchParams({
+      serviceId: draft.serviceId!,
+      tier: DEFAULT_TIER,
+    });
+    fetch(`/api/availability?${qs}`)
+      .then((r) => r.json())
+      .then((d) => setDays(d.days ?? []))
+      .catch(() => setDays([]))
+      .finally(() => setLoading(false));
+  };
+
+  // Times load as soon as the step opens (no separate "show times" tap).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(fetchSlots, []);
+
+  const refresh = () => {
+    setLoading(true);
+    fetchSlots();
+  };
+
+  return (
+    <section className="pb-4">
+      <h1 className="font-[family-name:var(--font-display)] text-2xl font-extrabold">
+        {b.when}
+      </h1>
+      <p className="mt-1 text-sm text-muted">
+        {serviceName} · {draft.address}
+      </p>
 
       {loading && (
-        <p role="status" className="mt-4 text-muted">
+        <p role="status" className="mt-5 text-muted">
           {b.findingSlots}
         </p>
       )}
@@ -335,7 +439,9 @@ function StepWhereWhen({
                     onClick={() => setActiveDay(i)}
                     aria-pressed={activeDay === i}
                     className={`shrink-0 rounded-[var(--radius-sm)] border px-3 py-2 text-sm ${
-                      activeDay === i ? "border-accent bg-accent/10" : "border-border"
+                      activeDay === i
+                        ? "border-link bg-accent font-bold text-white"
+                        : "border-[var(--color-control)]"
                     }`}
                   >
                     {new Date(d.date + "T12:00:00").toLocaleDateString(b.dateLocale, {
@@ -354,10 +460,11 @@ function StepWhereWhen({
                     aria-pressed={draft.slotStart === s.start}
                     className={`rounded-[var(--radius-sm)] border py-2 text-sm ${
                       draft.slotStart === s.start
-                        ? "border-accent bg-accent text-white"
-                        : "border-border"
+                        ? "border-link bg-accent text-white"
+                        : "border-[var(--color-control)]"
                     }`}
                   >
+                    {draft.slotStart === s.start && <span aria-hidden="true">✓ </span>}
                     {s.label}
                   </button>
                 ))}
@@ -367,11 +474,19 @@ function StepWhereWhen({
         </div>
       )}
 
+      <button
+        onClick={refresh}
+        disabled={loading}
+        className="tap mt-5 w-full rounded-[var(--radius-md)] border border-link px-5 font-semibold text-link disabled:opacity-40"
+      >
+        {b.refreshTimes}
+      </button>
+
       <div className="mt-6 flex gap-3">
         <BackBtn onClick={onBack} />
         <PrimaryBtn
           onClick={onNext}
-          disabled={draft.address.length < 4 || (!!days && days.length > 0 && !draft.slotStart)}
+          disabled={loading || (!!days && days.length > 0 && !draft.slotStart)}
         >
           {b.next}
         </PrimaryBtn>
@@ -381,7 +496,7 @@ function StepWhereWhen({
   );
 }
 
-// STEP 3 — your info / request to book ---------------------------------------
+// STEP 4 — your info / request to book ---------------------------------------
 function StepConfirm({
   draft,
   set,
@@ -418,8 +533,8 @@ function StepConfirm({
           addonIds: [],
           slotStart: draft.slotStart,
           address: draft.address,
-          waterAccess: draft.waterAccess,
-          outletAccess: draft.outletAccess,
+          waterAccess: draft.accessConfirmed,
+          outletAccess: draft.accessConfirmed,
           customer: { name: draft.name, phone: draft.phone, email: draft.email },
           notes: draft.customRequest || undefined,
         }),
@@ -568,14 +683,14 @@ function InputStyles() {
     <style>{`
       .input {
         background: var(--color-surface);
-        border: 1px solid var(--color-border);
+        border: 1px solid var(--color-control, var(--color-border));
         border-radius: var(--radius-sm);
         padding: 0.7rem 0.9rem;
         color: var(--color-ink);
         min-height: 48px;
         width: 100%;
       }
-      .input:focus { outline: 2px solid var(--color-accent); border-color: transparent; }
+      .input:focus { outline: 2px solid var(--color-link); outline-offset: 1px; border-color: var(--color-link); }
       .input::placeholder { color: var(--color-muted); }
     `}</style>
   );

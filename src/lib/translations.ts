@@ -35,6 +35,7 @@ export interface Translations {
     disclaimer: string;
     swipeHint: string;
     bookThis: string;
+    wantThis: string;
     bestDeal: string;
     smsBody: string;
     smsBodyFull: string;
@@ -76,6 +77,7 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
       disclaimer: "Prices shown are final, we accept Zelle and Cash only.",
       swipeHint: "Swipe to compare →",
       bookThis: "Book this",
+      wantThis: "I want this service",
       bestDeal: "Best Deal",
       smsBody: "Hello, I am interested in booking the {service} service! Let me know when there is availability.",
       smsBodyFull:
@@ -171,6 +173,7 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
       disclaimer: "Los precios mostrados son finales, aceptamos solo Zelle y efectivo.",
       swipeHint: "Desliza para comparar →",
       bookThis: "Reservar esto",
+      wantThis: "Quiero este servicio",
       bestDeal: "Mejor oferta",
       smsBody: "Hola, me interesa reservar el servicio de {service}. Avísame cuándo hay disponibilidad.",
       smsBodyFull:

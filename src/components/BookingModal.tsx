@@ -54,7 +54,7 @@ function BookingDialog({ serviceId, onClose }: { serviceId?: string; onClose: ()
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className="relative flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col overflow-hidden rounded-[var(--radius-lg)] border border-border bg-base shadow-2xl"
+        className="booking-soft relative flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col overflow-hidden rounded-[var(--radius-lg)] border border-border bg-base text-ink shadow-2xl"
       >
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <h2
@@ -67,7 +67,7 @@ function BookingDialog({ serviceId, onClose }: { serviceId?: string; onClose: ()
             type="button"
             onClick={onClose}
             aria-label={b.close}
-            className="tap grid place-items-center rounded-full border border-border text-lg text-muted hover:text-ink"
+            className="tap grid place-items-center rounded-full border border-[var(--color-control)] text-lg text-muted hover:text-ink"
           >
             <span aria-hidden="true">✕</span>
           </button>

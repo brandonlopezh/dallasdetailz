@@ -6,7 +6,7 @@ export interface BookingText {
   modalTitle: string;
   close: string;
   stepsLabel: string;
-  steps: [string, string, string];
+  steps: [string, string, string, string];
   back: string;
   next: string;
   chooseService: string;
@@ -14,11 +14,11 @@ export interface BookingText {
   tbd: string;
   customLabel: string;
   customPlaceholder: string;
-  whereWhen: string;
   addressLabel: string;
   addressPlaceholder: string;
   requiredLabel: string;
   requiredBody: string;
+  accessConfirm: string;
   showTimes: string;
   refreshTimes: string;
   findingSlots: string;
@@ -51,7 +51,7 @@ export const BOOKING_TEXT: Record<Lang, BookingText> = {
     modalTitle: "Book a detail",
     close: "Close booking form",
     stepsLabel: "Booking steps",
-    steps: ["Service", "When", "Your info"],
+    steps: ["Service", "Where", "When", "Your info"],
     back: "Back",
     next: "Continue",
     chooseService: "Choose your service",
@@ -59,12 +59,13 @@ export const BOOKING_TEXT: Record<Lang, BookingText> = {
     tbd: "TBD",
     customLabel: "Need something custom?",
     customPlaceholder: "Tell us what you're looking for and we'll follow up (optional)",
-    whereWhen: "Where & when",
     addressLabel: "Service address",
     addressPlaceholder: "Street, city, ZIP",
     requiredLabel: "Required:",
     requiredBody:
       "outdoor water access and a working power outlet at the address. We can't detail without both.",
+    accessConfirm:
+      "I confirm there is outdoor water access and a working power outlet at this address.",
     showTimes: "Show open times",
     refreshTimes: "Refresh times",
     findingSlots: "Finding open slots…",
@@ -96,7 +97,7 @@ export const BOOKING_TEXT: Record<Lang, BookingText> = {
     modalTitle: "Reserva un detallado",
     close: "Cerrar formulario de reserva",
     stepsLabel: "Pasos de la reserva",
-    steps: ["Servicio", "Cuándo", "Tus datos"],
+    steps: ["Servicio", "Dónde", "Cuándo", "Tus datos"],
     back: "Atrás",
     next: "Continuar",
     chooseService: "Elige tu servicio",
@@ -104,12 +105,13 @@ export const BOOKING_TEXT: Record<Lang, BookingText> = {
     tbd: "Por definir",
     customLabel: "¿Necesitas algo personalizado?",
     customPlaceholder: "Cuéntanos qué buscas y te contactaremos (opcional)",
-    whereWhen: "Dónde y cuándo",
     addressLabel: "Dirección del servicio",
     addressPlaceholder: "Calle, ciudad, código postal",
     requiredLabel: "Requerido:",
     requiredBody:
       "acceso a agua en el exterior y un tomacorriente que funcione en la dirección. No podemos hacer el detallado sin ambos.",
+    accessConfirm:
+      "Confirmo que hay acceso a agua en el exterior y un tomacorriente que funciona en esta dirección.",
     showTimes: "Ver horarios disponibles",
     refreshTimes: "Actualizar horarios",
     findingSlots: "Buscando horarios disponibles…",

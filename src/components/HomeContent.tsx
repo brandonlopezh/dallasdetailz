@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useBookingModal } from "./BookingModal";
 import BookNowLink from "./BookNowLink";
 import GoFundMeEmbed from "./GoFundMeEmbed";
 import InstagramFeed from "./InstagramFeed";
@@ -30,6 +31,7 @@ const GOFUNDME_EMBED_URL =
 
 export default function HomeContent({ services }: HomeContentProps) {
   const { lang, t, contact, serviceTranslations, parts } = useLanguage();
+  const { open: openBooking } = useBookingModal();
   const priceFrom = (s: Service) => Math.min(...s.pricing.map((p) => p.price));
   const lowestPrice = Math.min(...services.map(priceFrom));
   const textLabel = lang === "es" ? "Envíanos un mensaje" : "Text us";
@@ -38,11 +40,11 @@ export default function HomeContent({ services }: HomeContentProps) {
     services: (
       <section id="services" className="scroll-mt-20 border-b border-border bg-band-2/70">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <h2 className="font-[family-name:var(--font-display)] text-3xl font-extrabold uppercase tracking-tight">
+          <h2 className="text-center font-[family-name:var(--font-display)] text-4xl font-extrabold uppercase tracking-tight sm:text-5xl">
             {t.services.heading}
           </h2>
-          <p className="mt-2 max-w-xl text-muted">{t.services.disclaimer}</p>
-          <p className="mt-1 text-xs text-muted sm:hidden">{t.services.swipeHint}</p>
+          <p className="mx-auto mt-2 max-w-xl text-center text-muted">{t.services.disclaimer}</p>
+          <p className="mt-1 text-center text-xs text-muted sm:hidden">{t.services.swipeHint}</p>
           <div className="no-scrollbar mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2 sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0">
             {[...services]
               .sort((a, b) => Number(b.category === "full") - Number(a.category === "full"))
@@ -61,10 +63,17 @@ export default function HomeContent({ services }: HomeContentProps) {
                       {t.services.bestDeal}
                     </span>
                   )}
+                  {/* The whole card opens the booking popup. Clicks on the real
+                      buttons inside are left to them (keyboard + screen readers
+                      use those), so the popup never opens twice. */}
                   <div
-                    className={`hover-lift flex flex-1 flex-col rounded-[var(--radius-lg)] bg-surface p-6 transition-colors ${
+                    onClick={(e) => {
+                      if ((e.target as HTMLElement).closest("button")) return;
+                      openBooking(s.id);
+                    }}
+                    className={`hover-lift group flex flex-1 cursor-pointer flex-col rounded-[var(--radius-lg)] bg-surface p-6 transition-colors ${
                       isBestDeal
-                        ? "border-2 border-border hover:border-accent sm:scale-105"
+                        ? "border-[3px] border-ink shadow-xl shadow-black/40 hover:border-link motion-safe:sm:hover:scale-[1.06]"
                         : "border border-border hover:border-accent"
                     }`}
                   >
@@ -72,10 +81,16 @@ export default function HomeContent({ services }: HomeContentProps) {
                       {name}
                     </h3>
                     <p className="mt-3 flex-1 text-sm leading-relaxed text-muted">{description}</p>
-                    <div className="mt-5 flex items-baseline gap-2">
+                    <div className="mt-5 flex flex-col items-start gap-3">
                       <span className="font-[family-name:var(--font-display)] text-3xl font-extrabold">
                         {money(priceFrom(s))}
                       </span>
+                      <BookNowLink
+                        serviceId={s.id}
+                        className="hidden origin-left py-1 text-sm font-semibold italic text-link duration-200 ease-[ease] sm:inline-block motion-safe:transition-transform motion-safe:group-hover:scale-125"
+                      >
+                        {t.services.wantThis} <span aria-hidden="true">⤴&#xFE0E;</span>
+                      </BookNowLink>
                     </div>
                     <BookNowLink
                       serviceId={s.id}
@@ -244,19 +259,8 @@ export default function HomeContent({ services }: HomeContentProps) {
                 ))}
               </h2>
 
-              <div className="animate-fade-up mt-9 flex w-full flex-col gap-3 sm:w-auto sm:flex-row [animation-delay:240ms]">
+              <div className="animate-fade-up mt-9 flex w-full flex-col gap-3 sm:w-auto [animation-delay:240ms]">
                 <div className="flex gap-3">
-                  <a
-                    href="#services"
-                    className="tap inline-flex flex-1 items-center justify-center gap-2 rounded-[var(--radius-md)] border border-border bg-surface/60 px-8 text-lg font-semibold text-ink backdrop-blur transition-colors hover:border-accent"
-                  >
-                    {t.hero.seePricing}
-                    {Number.isFinite(lowestPrice) && (
-                      <span className="text-sm font-medium text-muted">
-                        {t.hero.from} {money(lowestPrice)}
-                      </span>
-                    )}
-                  </a>
                   <a
                     href={INSTAGRAM_URL}
                     target="_blank"
@@ -274,6 +278,17 @@ export default function HomeContent({ services }: HomeContentProps) {
                     className="tap grid aspect-square place-items-center rounded-[var(--radius-md)] border border-border bg-surface/60 text-ink backdrop-blur transition-colors hover:border-accent hover:text-link"
                   >
                     <MessageIcon className="h-6 w-6" />
+                  </a>
+                  <a
+                    href="#services"
+                    className="tap inline-flex flex-1 items-center justify-center gap-2 rounded-[var(--radius-md)] border border-border bg-surface/60 px-8 text-lg font-semibold text-ink backdrop-blur transition-colors hover:border-accent"
+                  >
+                    {t.hero.seePricing}
+                    {Number.isFinite(lowestPrice) && (
+                      <span className="text-sm font-medium text-muted">
+                        {t.hero.from} {money(lowestPrice)}
+                      </span>
+                    )}
                   </a>
                 </div>
                 <BookNowLink className="tap inline-flex items-center justify-center gap-2 rounded-[var(--radius-md)] bg-accent px-8 text-lg font-bold text-white shadow-lg shadow-accent/30 transition-colors hover:bg-accent-hi">

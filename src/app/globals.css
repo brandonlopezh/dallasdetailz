@@ -82,6 +82,37 @@
   color-scheme: dark;
 }
 
+/*
+  Booking popup — keeps the site's near-black in dark mode and a light gray in
+  light mode. Scoped overrides of the same tokens, so every utility inside the
+  popup (text-ink, bg-surface, border-border...) re-themes without touching
+  the components. The dark block only adds the accessibility tokens the base
+  theme lacks.
+*/
+.booking-soft {
+  /* WCAG 1.4.11: control borders need 3:1 against the panel and cards */
+  --color-control: #7d7568;
+  --color-accent-hi: #486789; /* hover fill; white text stays above 4.5:1 */
+}
+:root[data-theme="light"] .booking-soft {
+  --color-base: #e6e3de;
+  --color-surface: #f2f0ec;
+  --color-surface-alt: #dad6cf;
+  --color-border: #c8c2b8;
+  --color-ink: #1d1a15;
+  --color-muted: #5f574c;
+  --color-link: #2f4a6a;
+  --color-control: #7d766a;
+  --color-accent-hi: #2f4a6a;
+  --color-success: #62994a;
+  --color-warning: #a8741a;
+  --color-danger: #a8402d;
+  --color-success-text: #3f6a2d;
+  --color-warning-text: #7f5410;
+  --color-danger-text: #933725;
+  color-scheme: light;
+}
+
 body {
   background: var(--color-base);
   color: var(--color-ink);
@@ -149,7 +180,7 @@ body::after {
 /* Card hover — lift + shadow, only on pointer devices that can actually
    hover (skips touch so cards don't get stuck "lifted" after a tap). */
 .hover-lift {
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.2s ease, scale 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 @media (hover: hover) {
   .hover-lift:hover {
