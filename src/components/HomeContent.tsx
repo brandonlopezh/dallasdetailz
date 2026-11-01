@@ -253,11 +253,11 @@ export default function HomeContent({ services }: HomeContentProps) {
             <div className="flex min-w-0 flex-col items-center text-center md:items-start md:text-left">
               {/* Two-line title: white line on top, blue accent line below. */}
               <h1 className="animate-fade-up flex flex-col font-[family-name:var(--font-display)] text-[clamp(2.25rem,11.5vw,3.75rem)] uppercase leading-[0.95] tracking-[-0.02em] sm:text-6xl lg:text-7xl">
-                <span className="whitespace-nowrap font-[family-name:var(--font-script)] normal-case tracking-normal text-ink [text-shadow:0_0_6px_rgb(255_255_255/0.7),0_0_14px_rgb(96_165_250/0.8)]">{t.hero.title}</span>
-                <span className="mt-1 text-[0.7em] text-link">{t.hero.titleAccent}</span>
+                <span className="whitespace-nowrap font-[family-name:var(--font-script)] normal-case tracking-normal text-ink [text-shadow:0_0_6px_rgb(255_255_255/0.7),0_0_14px_rgb(96_165_250/0.8)] max-md:[text-shadow:0_2px_4px_rgb(0_0_0/0.9),0_0_14px_rgb(0_0_0/0.8)]">{t.hero.title}</span>
+                <span className="mt-1 text-[0.7em] text-link max-md:[text-shadow:0_2px_4px_rgb(0_0_0/0.9),0_0_14px_rgb(0_0_0/0.8)]">{t.hero.titleAccent}</span>
               </h1>
 
-              <h2 className="animate-fade-up mx-auto mt-6 max-w-xl text-pretty text-base italic leading-relaxed text-ink sm:text-lg md:mx-0 [animation-delay:80ms]">
+              <h2 className="animate-fade-up mx-auto mt-6 max-w-xl text-pretty text-base italic leading-relaxed text-ink sm:text-lg md:mx-0 max-md:[text-shadow:0_2px_4px_rgb(0_0_0/0.9),0_0_14px_rgb(0_0_0/0.8)] [animation-delay:80ms]">
                 {t.hero.summary.split("\n").map((line, i) => (
                   <span key={i} className={i > 0 ? "mt-1 block" : undefined}>
                     {line}
