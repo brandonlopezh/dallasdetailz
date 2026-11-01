@@ -2,11 +2,35 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import BookNowLink from "./BookNowLink";
 import { useLanguage } from "./LanguageProvider";
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dallasdetailz.com";
+
 export default function SiteHeader() {
   const { t, toggleLang } = useLanguage();
+  const [copied, setCopied] = useState(false);
+
+  async function share() {
+    const url = SITE_URL;
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      // Clipboard API unavailable (insecure context or blocked); use the legacy path.
+      const input = document.createElement("textarea");
+      input.value = url;
+      input.style.position = "fixed";
+      input.style.opacity = "0";
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand("copy");
+      input.remove();
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
   const NAV = [
     { href: "#services", label: t.nav.services },
     // TEMPORARILY HIDDEN: { href: "#gallery", label: "Gallery" },
@@ -40,6 +64,14 @@ export default function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={share}
+            aria-live="polite"
+            className="tap whitespace-nowrap rounded-full px-2 py-1.5 text-xs font-semibold text-link underline-offset-4 hover:underline sm:text-sm"
+          >
+            {copied ? t.share.copied : t.share.label}
+          </button>
           <button
             type="button"
             onClick={toggleLang}

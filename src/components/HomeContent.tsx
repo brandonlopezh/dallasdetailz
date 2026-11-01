@@ -116,7 +116,7 @@ export default function HomeContent({ services }: HomeContentProps) {
                       </span>
                       <BookNowLink
                         serviceId={s.id}
-                        className="hidden origin-left py-1 text-sm font-semibold italic text-link duration-200 ease-[ease] sm:inline-block motion-safe:transition-transform motion-safe:group-hover:scale-125"
+                        className="hidden origin-left py-1 text-sm font-semibold italic text-link opacity-0 duration-200 ease-[ease] focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 sm:inline-block motion-safe:transition-[opacity,transform] motion-safe:group-hover:scale-125"
                       >
                         {t.services.wantThis} <span aria-hidden="true">⤴&#xFE0E;</span>
                       </BookNowLink>
@@ -159,7 +159,7 @@ export default function HomeContent({ services }: HomeContentProps) {
       <section id="area" className="scroll-mt-20 border-y border-border bg-band-1/70">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-16 sm:px-6 md:grid-cols-2 md:items-center">
           <div>
-            <h2 className="font-[family-name:var(--font-display)] text-3xl font-extrabold uppercase tracking-tight">
+            <h2 className="font-[family-name:var(--font-display)] text-4xl font-extrabold uppercase tracking-tight">
               {t.area.heading}
             </h2>
             <p className="mt-3 text-muted">{t.area.description}</p>

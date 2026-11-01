@@ -52,6 +52,7 @@ export interface Translations {
   mobileBar: { callLabel: string; instagramTooltip: string; bookNowSmsBody: string };
   leaving: { title: string; subtitle: string; tapHere: string };
   languageToggle: { label: string };
+  share: { label: string; copied: string; title: string; text: string };
 }
 
 export const TRANSLATIONS: Record<Lang, Translations> = {
@@ -152,6 +153,12 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
       tapHere: "Tap here if it doesn't open",
     },
     languageToggle: { label: "Español" },
+    share: {
+      label: "Refer a friend",
+      copied: "Link copied!",
+      title: "Dallas Detailz",
+      text: "Check out Dallas Detailz, mobile car detailing that comes to your driveway!",
+    },
   },
   es: {
     nav: { services: "Servicios", area: "Zona" },
@@ -250,6 +257,12 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
       tapHere: "Toca aquí si no se abre",
     },
     languageToggle: { label: "English" },
+    share: {
+      label: "Recomienda a un amigo",
+      copied: "¡Enlace copiado!",
+      title: "Dallas Detailz",
+      text: "¡Mira Dallas Detailz, detallado de autos a domicilio en tu entrada!",
+    },
   },
 };
 
