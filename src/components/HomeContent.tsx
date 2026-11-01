@@ -58,6 +58,12 @@ export default function HomeContent({ services }: HomeContentProps) {
               const isBestDeal = s.category === "full";
               const details = SERVICE_DETAILS[s.id]?.[lang];
               const pitch = SERVICE_PITCH[s.id]?.[lang];
+              // No pitch: show the description, with everything after its first
+              // sentence on its own line (e.g. Full Detail's "Our most-booked…").
+              const text = description ?? "";
+              const cut = text.indexOf(". ");
+              const firstSentence = cut === -1 ? text : text.slice(0, cut + 1);
+              const restSentences = cut === -1 ? "" : text.slice(cut + 2);
               return (
                 <div
                   key={s.id}
@@ -86,7 +92,12 @@ export default function HomeContent({ services }: HomeContentProps) {
                       {name}
                     </h3>
                     <div className="mt-3 flex-1">
-                      <p className="text-sm leading-relaxed text-muted">{pitch ?? description}</p>
+                      <p className="text-sm leading-relaxed text-muted">
+                        {pitch ?? firstSentence}
+                        {!pitch && restSentences && (
+                          <span className="mt-2 block text-ink">{restSentences}</span>
+                        )}
+                      </p>
                       {details && (
                         <button
                           type="button"
