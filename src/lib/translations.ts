@@ -37,6 +37,8 @@ export interface Translations {
     bookThis: string;
     wantThis: string;
     bestDeal: string;
+    included: string;
+    close: string;
     smsBody: string;
     smsBodyFull: string;
     smsLabels: { exterior: string; interior: string; full: string };
@@ -57,7 +59,7 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
     nav: { services: "Services", area: "Area" },
     common: { bookNow: "Book Now" },
     hero: {
-      title: "A showroom shine",
+      title: "A Showroom Shine",
       titleAccent: "Right in your driveway",
       summary:
         "Providing exterior, interior, and full details across Duncanville, Dallas, and Cedar Hill.",
@@ -78,7 +80,9 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
       swipeHint: "Swipe to compare →",
       bookThis: "Book this",
       wantThis: "I want this service",
-      bestDeal: "Best Deal",
+      bestDeal: "Best Value Deal",
+      included: "What's included",
+      close: "Close",
       smsBody: "Hello, I am interested in booking the {service} service! Let me know when there is availability.",
       smsBodyFull:
         "Hello, I am interested in your best deal, the {service} service! Let me know when there is availability.",
@@ -175,6 +179,8 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
       bookThis: "Reservar esto",
       wantThis: "Quiero este servicio",
       bestDeal: "Mejor oferta",
+      included: "Qué incluye",
+      close: "Cerrar",
       smsBody: "Hola, me interesa reservar el servicio de {service}. Avísame cuándo hay disponibilidad.",
       smsBodyFull:
         "Hola, me interesa su mejor oferta, el servicio de {service}. Avísame cuándo hay disponibilidad.",
@@ -260,12 +266,71 @@ export const SERVICE_TRANSLATIONS: Record<string, { name: string; description: s
   },
   "22222222-2222-2222-2222-222222222222": {
     name: "Detallado Interior",
-    description: "Aspirado completo, limpieza de piel/plástico, limpieza de ventanas, desodorización.",
+    description:
+      "Aspirado completo, limpieza de piel/plástico, limpieza de ventanas.",
   },
   "33333333-3333-3333-3333-333333333333": {
     name: "Detallado Completo",
     description:
       "Todo lo incluido en Exterior + Interior. Nuestro paquete más reservado para camionetas y SUVs.",
+  },
+};
+
+// One-sentence pitch shown on a service card above "What's included". A
+// service with no entry falls back to its description.
+export const SERVICE_PITCH: Record<string, Record<Lang, string>> = {
+  "11111111-1111-1111-1111-111111111111": {
+    en: "A hand wash that lifts off road grime, bugs, and tar and leaves your paint turning heads.",
+    es: "Un lavado a mano que quita la mugre del camino, insectos y alquitrán, y deja tu pintura luciendo increíble.",
+  },
+  "22222222-2222-2222-2222-222222222222": {
+    en: "A deep clean for your cabin that makes every ride feel brand new again.",
+    es: "Una limpieza profunda de tu cabina que hace que cada viaje se sienta como nuevo.",
+  },
+};
+
+// Checklist shown in the expander on a service card. Same fixed UUIDs as
+// SERVICE_TRANSLATIONS; a service with no entry simply has no expander.
+export const SERVICE_DETAILS: Record<string, Record<Lang, string[]>> = {
+  "11111111-1111-1111-1111-111111111111": {
+    en: [
+      "Foam wash",
+      "Wheels & tires",
+      "Bug/tar removal",
+      "Spotless windows",
+      "Hand dry",
+      "Tire shine",
+    ],
+    es: [
+      "Lavado a espuma",
+      "Llantas y rines",
+      "Remoción de insectos/alquitrán",
+      "Ventanas impecables",
+      "Secado a mano",
+      "Brillo para llantas",
+    ],
+  },
+  "22222222-2222-2222-2222-222222222222": {
+    en: [
+      "Vacuum interior",
+      "Wipe down surfaces (leather/plastic)",
+      "Remove light stains",
+      "Clean door panels",
+      "Dashboard cleaning",
+      "Cup holders & center console",
+      "Floor mats cleaned",
+      "Window cleaning",
+    ],
+    es: [
+      "Aspirado del interior",
+      "Limpieza de superficies (piel/plástico)",
+      "Eliminación de manchas leves",
+      "Limpieza de paneles de las puertas",
+      "Limpieza del tablero",
+      "Portavasos y consola central",
+      "Tapetes limpios",
+      "Limpieza de ventanas",
+    ],
   },
 };
 

@@ -14,7 +14,7 @@ insert into services (id, name, description, category, base_duration_min, sort_o
    'exterior', 75, 1),
   ('22222222-2222-2222-2222-222222222222',
    'Interior Detail',
-   'Full vacuum, leather/plastic wipe-down, window cleaning, deodorize.',
+   'Full vacuum, leather/plastic wipe-down, window cleaning.',
    'interior', 120, 2),
   ('33333333-3333-3333-3333-333333333333',
    'Full Detail',

@@ -7,13 +7,15 @@ import GoFundMeEmbed from "./GoFundMeEmbed";
 import InstagramFeed from "./InstagramFeed";
 import Faq from "./Faq";
 import HeroReel from "./HeroReel";
+import ServiceDetailsDialog from "./ServiceDetailsDialog";
 import InstagramIcon from "./icons/InstagramIcon";
 import MessageIcon from "./icons/MessageIcon";
 import { useLanguage } from "./LanguageProvider";
-import { Fragment, type ReactNode } from "react";
+import { Fragment, useState, type ReactNode } from "react";
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from "@/lib/site-config";
 import type { SectionId } from "@/lib/content-schema";
 import type { Service } from "@/lib/types";
+import { SERVICE_DETAILS, SERVICE_PITCH } from "@/lib/translations";
 
 function money(n: number) {
   return `$${Math.round(n)}`;
@@ -32,6 +34,7 @@ const GOFUNDME_EMBED_URL =
 export default function HomeContent({ services }: HomeContentProps) {
   const { lang, t, contact, serviceTranslations, parts } = useLanguage();
   const { open: openBooking } = useBookingModal();
+  const [detailsId, setDetailsId] = useState<string | null>(null);
   const priceFrom = (s: Service) => Math.min(...s.pricing.map((p) => p.price));
   const lowestPrice = Math.min(...services.map(priceFrom));
   const textLabel = lang === "es" ? "Envíanos un mensaje" : "Text us";
@@ -53,36 +56,51 @@ export default function HomeContent({ services }: HomeContentProps) {
               const name = es?.name ?? s.name;
               const description = es?.description ?? s.description;
               const isBestDeal = s.category === "full";
+              const details = SERVICE_DETAILS[s.id]?.[lang];
+              const pitch = SERVICE_PITCH[s.id]?.[lang];
               return (
                 <div
                   key={s.id}
-                  className={`relative flex w-[82%] shrink-0 snap-start flex-col pt-3 sm:w-auto sm:shrink ${isBestDeal ? "sm:z-10" : ""}`}
+                  className={`relative flex w-[82%] shrink-0 snap-start flex-col pt-11 sm:w-auto sm:shrink ${isBestDeal ? "sm:z-10" : ""}`}
                 >
-                  {isBestDeal && (
-                    <span className="absolute left-1/2 top-0 z-10 -translate-x-1/2 rounded-full bg-blue-700 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white shadow">
-                      {t.services.bestDeal}
-                    </span>
-                  )}
                   {/* The whole card opens the booking popup. Clicks on the real
                       buttons inside are left to them (keyboard + screen readers
                       use those), so the popup never opens twice. */}
                   <div
                     onClick={(e) => {
-                      if ((e.target as HTMLElement).closest("button")) return;
+                      if ((e.target as HTMLElement).closest("button, details")) return;
                       openBooking(s.id);
                     }}
-                    className={`hover-lift group flex flex-1 cursor-pointer flex-col rounded-[var(--radius-lg)] bg-surface p-6 transition-colors ${
+                    className={`hover-lift group relative flex flex-1 cursor-pointer flex-col rounded-[var(--radius-lg)] bg-surface p-6 transition-colors ${
                       isBestDeal
-                        ? "border-[3px] border-ink shadow-xl shadow-black/40 hover:border-link motion-safe:sm:hover:scale-[1.06]"
+                        ? "border-2 border-link/60 shadow-xl shadow-link/15 hover:border-link motion-safe:sm:hover:scale-[1.06]"
                         : "border border-border hover:border-accent"
                     }`}
                   >
+                    {isBestDeal && (
+                      <span className="absolute bottom-full right-2 mb-1 font-[family-name:var(--font-script)] text-[2.1rem] font-bold leading-none text-white [text-shadow:0_0_6px_rgb(255_255_255/0.7),0_0_14px_rgb(96_165_250/0.8)]">
+                        {t.services.bestDeal}
+                      </span>
+                    )}
                     <h3 className="font-[family-name:var(--font-display)] text-2xl font-bold">
                       {name}
                     </h3>
-                    <p className="mt-3 flex-1 text-sm leading-relaxed text-muted">{description}</p>
+                    <div className="mt-3 flex-1">
+                      <p className="text-sm leading-relaxed text-muted">{pitch ?? description}</p>
+                      {details && (
+                        <button
+                          type="button"
+                          onClick={() => setDetailsId(s.id)}
+                          className="mt-3 text-sm font-semibold text-link underline-offset-4 hover:underline"
+                        >
+                          {t.services.included} <span aria-hidden="true">+</span>
+                        </button>
+                      )}
+                    </div>
                     <div className="mt-5 flex flex-col items-start gap-3">
-                      <span className="font-[family-name:var(--font-display)] text-3xl font-extrabold">
+                      <span
+                        className={`font-[family-name:var(--font-display)] font-extrabold ${isBestDeal ? "text-5xl" : "text-3xl"}`}
+                      >
                         {money(priceFrom(s))}
                       </span>
                       <BookNowLink
@@ -226,8 +244,8 @@ export default function HomeContent({ services }: HomeContentProps) {
             <div className="flex min-w-0 flex-col items-start text-left">
               {/* Two-line title: white line on top, blue accent line below. */}
               <h1 className="animate-fade-up flex flex-col font-[family-name:var(--font-display)] text-[clamp(2rem,9vw,3.75rem)] uppercase leading-[0.95] tracking-[-0.02em] sm:text-6xl lg:text-7xl">
-                <span className="whitespace-nowrap text-ink">{t.hero.title}</span>
-                <span className="mt-1 text-link">{t.hero.titleAccent}</span>
+                <span className="whitespace-nowrap font-[family-name:var(--font-script)] normal-case tracking-normal text-ink [text-shadow:0_0_6px_rgb(255_255_255/0.7),0_0_14px_rgb(96_165_250/0.8)]">{t.hero.title}</span>
+                <span className="mt-1 text-[0.7em] text-link">{t.hero.titleAccent}</span>
               </h1>
 
               {/* Trust points — filled checkboxes read as "already ticked off". */}
@@ -371,6 +389,19 @@ export default function HomeContent({ services }: HomeContentProps) {
           <p className="text-xs text-muted">© {new Date().getFullYear()} Dallas Detailz</p>
         </div>
       </footer>
+      {detailsId && SERVICE_DETAILS[detailsId]?.[lang] && (
+        <ServiceDetailsDialog
+          title={
+            (lang === "es" ? serviceTranslations[detailsId]?.name : undefined) ??
+            services.find((x) => x.id === detailsId)?.name ??
+            ""
+          }
+          heading={t.services.included}
+          items={SERVICE_DETAILS[detailsId][lang]}
+          closeLabel={t.services.close}
+          onClose={() => setDetailsId(null)}
+        />
+      )}
     </>
   );
 }
