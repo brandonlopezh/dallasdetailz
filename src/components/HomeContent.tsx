@@ -25,9 +25,6 @@ interface HomeContentProps {
   services: Service[];
 }
 
-const BLOG_URL =
-  "https://brandonjlopezh.blog/2026/09/02/the-next-generation-isnt-waiting-around-they-are-taking-action/";
-
 const GOFUNDME_EMBED_URL =
   "https://www.gofundme.com/f/support-ramon-through-surgery-and-recovery/widget/large?attribution_id=sl%3A0e3ba1f6-bb55-464a-845a-5fb8f9b4db63";
 
@@ -238,29 +235,38 @@ export default function HomeContent({ services }: HomeContentProps) {
         <div className="relative isolate overflow-hidden">
           <div
             aria-hidden="true"
-            className="fixed inset-0 -z-20 bg-cover bg-center blur-sm"
+            className="fixed inset-0 -z-20 bg-[length:auto_70%] bg-center bg-no-repeat blur-sm md:bg-cover"
             style={{ backgroundImage: "url('/wallpaper.webp')" }}
           />
-          <div aria-hidden="true" className="absolute inset-0 -z-10 bg-base/35" />
+          <div aria-hidden="true" className="absolute inset-0 -z-10 bg-base/5" />
 
         {/* HERO ------------------------------------------------------------ */}
         <section className="relative isolate overflow-hidden">
           {/* Legibility wash: darkens the bottom for the copy, and fades the
               right side less so the wallpaper still reads on wide screens. */}
-          <div className="absolute inset-0 -z-10 bg-gradient-to-t from-base via-base/70 to-base/30" />
+          <div className="absolute inset-0 -z-10 bg-gradient-to-t from-base/60 via-base/25 to-transparent" />
 
           <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pb-16 pt-10 sm:px-6 sm:pt-16 md:min-h-[600px] md:grid-cols-[1.25fr_0.75fr] lg:pb-20">
-            {/* Copy column — left-aligned at every size so the eye runs
-                headline → checklist → summary → CTA down one edge. */}
-            <div className="flex min-w-0 flex-col items-start text-left">
+            {/* Copy column — centered on phones (where it leads the page),
+                left-aligned from md up so the eye runs headline → checklist
+                → summary → CTA down one edge beside the reel. */}
+            <div className="flex min-w-0 flex-col items-center text-center md:items-start md:text-left">
               {/* Two-line title: white line on top, blue accent line below. */}
-              <h1 className="animate-fade-up flex flex-col font-[family-name:var(--font-display)] text-[clamp(2rem,9vw,3.75rem)] uppercase leading-[0.95] tracking-[-0.02em] sm:text-6xl lg:text-7xl">
+              <h1 className="animate-fade-up flex flex-col font-[family-name:var(--font-display)] text-[clamp(2.25rem,11.5vw,3.75rem)] uppercase leading-[0.95] tracking-[-0.02em] sm:text-6xl lg:text-7xl">
                 <span className="whitespace-nowrap font-[family-name:var(--font-script)] normal-case tracking-normal text-ink [text-shadow:0_0_6px_rgb(255_255_255/0.7),0_0_14px_rgb(96_165_250/0.8)]">{t.hero.title}</span>
                 <span className="mt-1 text-[0.7em] text-link">{t.hero.titleAccent}</span>
               </h1>
 
+              <h2 className="animate-fade-up mx-auto mt-6 max-w-xl text-pretty text-base italic leading-relaxed text-ink sm:text-lg md:mx-0 [animation-delay:80ms]">
+                {t.hero.summary.split("\n").map((line, i) => (
+                  <span key={i} className={i > 0 ? "mt-1 block" : undefined}>
+                    {line}
+                  </span>
+                ))}
+              </h2>
+
               {/* Trust points — filled checkboxes read as "already ticked off". */}
-              <ul className="animate-fade-up mt-6 flex flex-col gap-2.5 text-sm font-semibold uppercase tracking-wide text-ink sm:flex-row sm:flex-wrap sm:gap-x-5 [animation-delay:80ms]">
+              <ul className="animate-fade-up mt-6 flex w-full flex-col items-start gap-2.5 pl-6 text-left sm:pl-0 text-sm font-semibold uppercase tracking-wide text-ink sm:flex-row sm:flex-wrap sm:gap-x-5 [animation-delay:160ms]">
                 {t.hero.trust.map((item) => (
                   <li key={item} className="flex items-center gap-2">
                     <svg
@@ -280,15 +286,7 @@ export default function HomeContent({ services }: HomeContentProps) {
                 ))}
               </ul>
 
-              <h2 className="animate-fade-up mt-6 max-w-xl text-pretty text-base italic leading-relaxed text-ink sm:text-lg [animation-delay:160ms]">
-                {t.hero.summary.split("\n").map((line, i) => (
-                  <span key={i} className={i > 0 ? "mt-1 block" : undefined}>
-                    {line}
-                  </span>
-                ))}
-              </h2>
-
-              <div className="animate-fade-up mt-9 flex w-full flex-col gap-3 sm:w-auto [animation-delay:240ms]">
+              <div className="animate-fade-up mt-9 flex w-full flex-col gap-3 sm:w-auto md:flex-row md:items-stretch [animation-delay:240ms]">
                 <div className="flex gap-3">
                   <a
                     href={INSTAGRAM_URL}
@@ -324,28 +322,13 @@ export default function HomeContent({ services }: HomeContentProps) {
                   {t.common.bookNow}
                 </BookNowLink>
               </div>
-
-              <p className="animate-fade-up mt-6 text-sm text-muted [animation-delay:300ms]">
-                <span className="font-semibold text-ink">{t.hero.blogText}</span>{" "}
-                <span>
-                {t.hero.blogMore}{" "}
-                <a
-                  href={BLOG_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-semibold text-link underline underline-offset-2 hover:text-ink"
-                >
-                  {t.hero.blogLink}
-                </a>
-                .
-                </span>
-              </p>
             </div>
 
             {/* Art column — a real reel in a phone frame shows the work where
-                customers already watch it. Leads the hero on phones; sits
-                right of the copy on wider screens. */}
-            <div className="animate-fade-up relative order-first mx-auto md:order-none md:mx-0 md:mt-16 md:justify-self-start lg:-ml-6 lg:mt-24 [animation-delay:200ms]">
+                customers already watch it. Sits right of the copy on wider
+                screens; hidden on phones, where it only pushed the headline
+                and CTAs down. */}
+            <div className="animate-fade-up relative order-first mx-auto hidden md:order-none md:mx-0 md:block md:mt-16 md:justify-self-start lg:-ml-6 lg:mt-24 [animation-delay:200ms]">
               <div aria-hidden="true" className="absolute -inset-8 -z-10 rounded-full bg-accent/25 blur-3xl" />
               <HeroReel
                 reelUrl={parts.heroReelUrl}
