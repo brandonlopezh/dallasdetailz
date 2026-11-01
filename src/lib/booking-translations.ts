@@ -12,13 +12,21 @@ export interface BookingText {
   chooseService: string;
   priceNote: string;
   tbd: string;
-  customLabel: string;
-  customPlaceholder: string;
   addressLabel: string;
   addressPlaceholder: string;
   requiredLabel: string;
   requiredBody: string;
   accessConfirm: string;
+  vehicleHeading: string;
+  vehicleYear: string;
+  vehicleMake: string;
+  vehicleModel: string;
+  vehicleYearPlaceholder: string;
+  vehicleMakePlaceholder: string;
+  vehicleModelPlaceholder: string;
+  vehicle: string;
+  requiredNote: string;
+  consent: string;
   farNotice: string; // {miles} placeholder
   showTimes: string;
   refreshTimes: string;
@@ -29,7 +37,6 @@ export interface BookingText {
   mobile: string;
   email: string;
   optional: string;
-  customRequest: string;
   when: string;
   where: string;
   total: string;
@@ -58,8 +65,6 @@ export const BOOKING_TEXT: Record<Lang, BookingText> = {
     chooseService: "Choose your service",
     priceNote: "Prices shown are final. We accept Zelle and Cash only.",
     tbd: "TBD",
-    customLabel: "Need something custom?",
-    customPlaceholder: "Tell us what you're looking for and we'll follow up (optional)",
     addressLabel: "Service address",
     addressPlaceholder: "Street, city, ZIP",
     requiredLabel: "Required:",
@@ -67,6 +72,17 @@ export const BOOKING_TEXT: Record<Lang, BookingText> = {
       "outdoor water access and a working power outlet at the address. We can't detail without both.",
     accessConfirm:
       "I confirm there is outdoor water access and a working power outlet at this address.",
+    vehicleHeading: "Your vehicle",
+    vehicleYear: "Year",
+    vehicleMake: "Make",
+    vehicleModel: "Model",
+    vehicleYearPlaceholder: "2020",
+    vehicleMakePlaceholder: "Toyota",
+    vehicleModelPlaceholder: "Camry",
+    vehicle: "Vehicle",
+    requiredNote: "* Required",
+    consent:
+      "By requesting an appointment, you agree to let Dallas Detailz contact you by phone call, text message, or email about your request, scheduling, and service. Message and data rates may apply; reply STOP to opt out of texts. Submitting a request does not guarantee an appointment, which is only confirmed once we confirm it with you. You confirm the information you provided is accurate.",
     farNotice:
       "This address is about {miles} miles from our home base (ZIP 75249), past our usual 10-mile range. You can still send your request, and we'll let you know if we can make it out there.",
     showTimes: "Show open times",
@@ -79,7 +95,6 @@ export const BOOKING_TEXT: Record<Lang, BookingText> = {
     mobile: "Mobile number",
     email: "Email",
     optional: "(optional)",
-    customRequest: "Custom request",
     when: "When",
     where: "Where",
     total: "Total",
@@ -106,8 +121,6 @@ export const BOOKING_TEXT: Record<Lang, BookingText> = {
     chooseService: "Elige tu servicio",
     priceNote: "Los precios mostrados son finales. Solo aceptamos Zelle y efectivo.",
     tbd: "Por definir",
-    customLabel: "¿Necesitas algo personalizado?",
-    customPlaceholder: "Cuéntanos qué buscas y te contactaremos (opcional)",
     addressLabel: "Dirección del servicio",
     addressPlaceholder: "Calle, ciudad, código postal",
     requiredLabel: "Requerido:",
@@ -115,6 +128,17 @@ export const BOOKING_TEXT: Record<Lang, BookingText> = {
       "acceso a agua en el exterior y un tomacorriente que funcione en la dirección. No podemos hacer el detallado sin ambos.",
     accessConfirm:
       "Confirmo que hay acceso a agua en el exterior y un tomacorriente que funciona en esta dirección.",
+    vehicleHeading: "Tu vehículo",
+    vehicleYear: "Año",
+    vehicleMake: "Marca",
+    vehicleModel: "Modelo",
+    vehicleYearPlaceholder: "2020",
+    vehicleMakePlaceholder: "Toyota",
+    vehicleModelPlaceholder: "Camry",
+    vehicle: "Vehículo",
+    requiredNote: "* Requerido",
+    consent:
+      "Al solicitar una cita, aceptas que Dallas Detailz te contacte por llamada, mensaje de texto o correo electrónico sobre tu solicitud, la programación y el servicio. Pueden aplicar tarifas de mensajes y datos; responde STOP para dejar de recibir mensajes de texto. Enviar una solicitud no garantiza una cita, que solo queda confirmada cuando la confirmemos contigo. Confirmas que la información que proporcionaste es correcta.",
     farNotice:
       "Esta dirección está a unas {miles} millas de nuestra base (código postal 75249), más allá de nuestro rango habitual de 10 millas. Aún puedes enviar tu solicitud y te avisaremos si podemos llegar hasta allá.",
     showTimes: "Ver horarios disponibles",
@@ -127,7 +151,6 @@ export const BOOKING_TEXT: Record<Lang, BookingText> = {
     mobile: "Número de celular",
     email: "Correo electrónico",
     optional: "(opcional)",
-    customRequest: "Solicitud personalizada",
     when: "Cuándo",
     where: "Dónde",
     total: "Total",

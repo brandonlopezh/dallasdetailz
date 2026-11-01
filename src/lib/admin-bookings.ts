@@ -11,18 +11,23 @@ export interface AdminBooking {
   source: BookingSource;
   vehicle_tier: VehicleTier;
   service_address: string;
+  subtotal: number;
+  addon_total: number;
+  travel_fee: number;
   total: number;
+  payment_status: "unpaid" | "deposit_paid" | "paid";
   water_access: boolean | null;
   outlet_access: boolean | null;
   customer_notes: string | null;
   internal_notes: string | null;
   created_at: string;
   customers: { name: string; phone: string; email: string | null } | null;
+  vehicles: { year: number | null; make: string | null; model: string | null } | null;
   services: { name: string; category: string } | null;
 }
 
 const SELECT =
-  "id, ref, scheduled_start, scheduled_end, status, source, vehicle_tier, service_address, total, water_access, outlet_access, customer_notes, internal_notes, created_at, customers(name, phone, email), services(name, category)";
+  "id, ref, scheduled_start, scheduled_end, status, source, vehicle_tier, service_address, subtotal, addon_total, travel_fee, total, payment_status, water_access, outlet_access, customer_notes, internal_notes, created_at, customers(name, phone, email), vehicles(year, make, model), services(name, category)";
 
 /** Bookings in a time window, optionally filtered by status. Chronological. */
 export async function listBookings(opts: {
@@ -74,6 +79,11 @@ export async function countRequests(): Promise<number> {
     .select("*", { count: "exact", head: true })
     .eq("status", "requested");
   return count ?? 0;
+}
+
+/** "2020 Toyota Camry", or null when the customer gave no vehicle. */
+export function vehicleLabel(v: AdminBooking["vehicles"]): string | null {
+  return [v?.year, v?.make, v?.model].filter(Boolean).join(" ") || null;
 }
 
 // Status lifecycle (AD-6): which actions are offered from a given status.

@@ -11,11 +11,12 @@ const patchSchema = z
     scheduled_start: z.string().datetime().optional(),
     scheduled_end: z.string().datetime().optional(),
     internal_notes: z.string().nullable().optional(),
+    payment_status: z.enum(["unpaid", "deposit_paid", "paid"]).optional(),
   })
   .refine((v) => Object.keys(v).length > 0, { message: "No fields to update" });
 
 /**
- * PATCH /api/admin/bookings/[id] — change status, reschedule, or edit notes.
+ * PATCH /api/admin/bookings/[id] — change status, reschedule, edit notes, or set payment status.
  * PRD AD-5. Reschedules that collide with another confirmed job are rejected
  * by the DB exclusion constraint (409).
  */

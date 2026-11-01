@@ -32,6 +32,9 @@ const bodySchema = z.object({
     })
     .optional(),
   notes: z.string().optional(),
+  // The customer ticked "you agree to let us contact you". Required so a
+  // request can't be created without it; the time is logged in internal_notes.
+  contactConsent: z.literal(true),
   source: z
     .enum(["web", "instagram", "phone", "manual", "referral"])
     .default("web"),
@@ -54,6 +57,7 @@ function requestEmailHtml(r: {
   name: string;
   phone: string;
   email: string | null;
+  vehicle: string | null;
   when: string;
   address: string;
   notes: string | null;
@@ -69,6 +73,7 @@ function requestEmailHtml(r: {
     ${row("Service", `${r.service} ($${r.total})`)}
     ${row("When", r.when)}
     ${row("Where", r.address)}
+    ${r.vehicle ? row("Vehicle", r.vehicle) : ""}
     ${row("Customer", r.name)}
     ${row("Phone", r.phone)}
     ${r.email ? row("Email", r.email) : ""}
@@ -227,7 +232,10 @@ export async function POST(req: NextRequest) {
       travel_fee: travelFee,
       total,
       customer_notes: b.notes ?? null,
-      internal_notes: distanceFlag,
+      internal_notes:
+        [distanceFlag, `Consent to be contacted accepted ${new Date().toISOString()}`]
+          .filter(Boolean)
+          .join("\n"),
     })
     .select("id, ref, manage_token, approval_token, scheduled_start, scheduled_end, total")
     .single();
@@ -271,6 +279,9 @@ export async function POST(req: NextRequest) {
     minute: "2-digit",
   }).format(start);
 
+  const vehicleLabel =
+    [b.vehicle?.year, b.vehicle?.make, b.vehicle?.model].filter(Boolean).join(" ") || null;
+
   await sendEmail({
     to: NOTIFY_EMAIL,
     subject: `New booking request: ${b.customer.name}, ${when}`,
@@ -281,6 +292,7 @@ export async function POST(req: NextRequest) {
       name: b.customer.name,
       phone: b.customer.phone,
       email: b.customer.email || null,
+      vehicle: vehicleLabel,
       when,
       address: b.address,
       notes: b.notes ?? null,
@@ -293,6 +305,7 @@ export async function POST(req: NextRequest) {
       `${b.customer.name}, ${b.customer.phone}`,
       when,
       b.address,
+      vehicleLabel ? `Vehicle: ${vehicleLabel}` : "",
       distanceFlag ?? "",
       b.notes ? `Note: ${b.notes}` : "",
       "",
@@ -311,6 +324,7 @@ export async function POST(req: NextRequest) {
       when,
       b.address,
     ];
+    if (vehicleLabel) lines.push(`Vehicle: ${vehicleLabel}`);
     if (distanceFlag) lines.push(distanceFlag);
     if (b.notes) lines.push(`Note: ${b.notes}`);
     lines.push(dashboardUrl);

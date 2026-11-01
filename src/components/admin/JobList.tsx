@@ -1,7 +1,7 @@
 import Link from "next/link";
 import CancelAppointment from "./CancelAppointment";
 import type { AdminBooking } from "@/lib/admin-bookings";
-import { STATUS_COLOR, STATUS_LABEL } from "@/lib/admin-bookings";
+import { STATUS_COLOR, STATUS_LABEL, vehicleLabel } from "@/lib/admin-bookings";
 import { formatInTz, TIME_OPTS } from "@/lib/tz";
 import type { BookingStatus } from "@/lib/types";
 
@@ -50,6 +50,44 @@ export function BookingRow({ b, tz }: { b: AdminBooking; tz: string }) {
   );
 }
 
+/** Appointment summary shown in the calendar day popup, with a link to the full details page. */
+export function BookingPopupCard({ b, tz }: { b: AdminBooking; tz: string }) {
+  const vehicle = vehicleLabel(b.vehicles);
+  return (
+    <div className="min-w-0 rounded-[var(--radius-md)] border border-border bg-surface p-4">
+      <div className="flex items-start justify-between gap-3">
+        <p className="font-[family-name:var(--font-display)] text-lg font-extrabold">
+          {formatInTz(b.scheduled_start, tz, TIME_OPTS)}
+          <span className="text-muted"> – {formatInTz(b.scheduled_end, tz, TIME_OPTS)}</span>
+        </p>
+        <StatusBadge status={b.status} />
+      </div>
+      <p className="mt-1 font-semibold">
+        {b.services?.name ?? "Service"} · {money(b.total)}
+      </p>
+      <p className="mt-2 text-sm">{b.customers?.name ?? "Customer"}</p>
+      {vehicle && <p className="text-sm text-muted">{vehicle}</p>}
+      <p className="break-words text-sm text-muted">{b.service_address}</p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {b.customers?.phone && (
+          <a
+            href={`tel:${b.customers.phone}`}
+            className="tap inline-flex items-center justify-center gap-1 rounded-[var(--radius-sm)] border border-border px-3 text-sm"
+          >
+            📞 Call
+          </a>
+        )}
+        <Link
+          href={`/admin/bookings/${b.id}`}
+          className="tap ml-auto inline-flex items-center justify-center rounded-[var(--radius-sm)] bg-accent px-4 text-sm font-bold text-white"
+        >
+          Full details →
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 /** Field-ready card for the Today view — call + navigate on big tap targets. */
 export function TodayJob({ b, tz }: { b: AdminBooking; tz: string }) {
   const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
@@ -67,7 +105,7 @@ export function TodayJob({ b, tz }: { b: AdminBooking; tz: string }) {
             </span>
           </p>
           <p className="mt-0.5 font-semibold">
-            {b.services?.name} · {TIER_LABEL[b.vehicle_tier]}
+            {b.services?.name} · {vehicleLabel(b.vehicles) ?? TIER_LABEL[b.vehicle_tier]}
           </p>
         </div>
         <StatusBadge status={b.status} />

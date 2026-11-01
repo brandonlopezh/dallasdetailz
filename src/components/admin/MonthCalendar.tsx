@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { AdminBooking } from "@/lib/admin-bookings";
-import { BookingRow } from "@/components/admin/JobList";
+import { BookingPopupCard } from "@/components/admin/JobList";
+import DayJobsDialog from "@/components/admin/DayJobsDialog";
 import { dateKeyInTz, formatInTz } from "@/lib/tz";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -143,32 +144,27 @@ export default function MonthCalendar({
         </div>
       </div>
 
-      <div className="mt-4">
-        {selectedDay ? (
-          <>
-            <h3 className="mb-2 text-sm font-semibold text-muted">
-              {formatInTz(new Date(`${selectedDay}T12:00:00Z`), "UTC", {
-                weekday: "long",
-                month: "long",
-                day: "numeric",
-              })}
-            </h3>
-            {selectedJobs.length === 0 ? (
-              <div className="rounded-[var(--radius-md)] border border-dashed border-border p-6 text-center text-sm text-muted">
-                Nothing booked this day.
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-2">
-                {selectedJobs.map((b) => (
-                  <BookingRow key={b.id} b={b} tz={tz} />
-                ))}
-              </div>
-            )}
-          </>
-        ) : (
-          <p className="text-sm text-muted">Tap a day to see its jobs.</p>
-        )}
-      </div>
+      {selectedDay ? (
+        <DayJobsDialog
+          key={selectedDay}
+          closeHref={href(monthKey)}
+          title={formatInTz(new Date(`${selectedDay}T12:00:00Z`), "UTC", {
+            weekday: "long",
+            month: "long",
+            day: "numeric",
+          })}
+        >
+          {selectedJobs.length === 0 ? (
+            <div className="rounded-[var(--radius-md)] border border-dashed border-border p-6 text-center text-sm text-muted">
+              Nothing booked this day.
+            </div>
+          ) : (
+            selectedJobs.map((b) => <BookingPopupCard key={b.id} b={b} tz={tz} />)
+          )}
+        </DayJobsDialog>
+      ) : (
+        <p className="mt-4 text-sm text-muted">Tap a day to see its jobs.</p>
+      )}
     </section>
   );
 }

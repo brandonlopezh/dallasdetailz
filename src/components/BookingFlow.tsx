@@ -8,7 +8,7 @@ import { BOOKING_TEXT } from "@/lib/booking-translations";
 import { useLanguage } from "./LanguageProvider";
 
 // Simplified flow: no vehicle-tier step, no add-ons. Three flat-price
-// services, a spot for custom requests, address + time, then a request
+// services, address + time, then a request
 // (not an instant confirmation) goes to the brothers for approval.
 const STORAGE_KEY = "dd-booking-v2";
 
@@ -19,9 +19,11 @@ const DEFAULT_TIER = "mid_suv" as const;
 
 interface Draft {
   serviceId: string | null;
-  customRequest: string;
   address: string;
   accessConfirmed: boolean;
+  vehicleYear: string;
+  vehicleMake: string;
+  vehicleModel: string;
   slotStart: string | null;
   name: string;
   phone: string;
@@ -30,14 +32,31 @@ interface Draft {
 
 const EMPTY: Draft = {
   serviceId: null,
-  customRequest: "",
   address: "",
   accessConfirmed: false,
+  vehicleYear: "",
+  vehicleMake: "",
+  vehicleModel: "",
   slotStart: null,
   name: "",
   phone: "",
   email: "",
 };
+
+const VEHICLE_YEAR_RE = /^\d{4}$/;
+
+function vehicleComplete(d: Draft) {
+  return VEHICLE_YEAR_RE.test(d.vehicleYear) && !!d.vehicleMake.trim() && !!d.vehicleModel.trim();
+}
+
+function Req() {
+  return (
+    <span aria-hidden="true" className="text-danger-text">
+      {" "}
+      *
+    </span>
+  );
+}
 
 function money(n: number) {
   return `$${Math.round(n)}`;
@@ -284,17 +303,6 @@ function StepService({
           })}
       </div>
 
-      <label htmlFor="bf-custom" className="mt-6 block text-sm font-semibold">
-        {b.customLabel}
-      </label>
-      <textarea
-        id="bf-custom"
-        className="input mt-2 min-h-24"
-        placeholder={b.customPlaceholder}
-        value={draft.customRequest}
-        onChange={(e) => set({ customRequest: e.target.value })}
-      />
-
       <div className="mt-6">
         <PrimaryBtn onClick={onNext} disabled={!draft.serviceId}>
           {b.next}
@@ -367,8 +375,58 @@ function StepWhere({
         )}
       </div>
 
-      <div className="mt-4 rounded-[var(--radius-md)] border border-warning/40 bg-warning/10 p-3 text-sm">
-        <span className="font-semibold">{b.requiredLabel}</span> {b.requiredBody}
+      <fieldset className="mt-5">
+        <legend className="text-sm font-semibold">{b.vehicleHeading}</legend>
+        <div className="mt-1 grid grid-cols-[5.5rem_1fr_1fr] gap-2">
+          <div>
+            <label htmlFor="bf-vyear" className="text-xs text-muted">
+              {b.vehicleYear}
+              <Req />
+            </label>
+            <input
+              id="bf-vyear"
+              className="input mt-1"
+              inputMode="numeric"
+              maxLength={4}
+              required
+              placeholder={b.vehicleYearPlaceholder}
+              value={draft.vehicleYear}
+              onChange={(e) => set({ vehicleYear: e.target.value.replace(/\D/g, "") })}
+            />
+          </div>
+          <div>
+            <label htmlFor="bf-vmake" className="text-xs text-muted">
+              {b.vehicleMake}
+              <Req />
+            </label>
+            <input
+              id="bf-vmake"
+              className="input mt-1"
+              required
+              placeholder={b.vehicleMakePlaceholder}
+              value={draft.vehicleMake}
+              onChange={(e) => set({ vehicleMake: e.target.value })}
+            />
+          </div>
+          <div>
+            <label htmlFor="bf-vmodel" className="text-xs text-muted">
+              {b.vehicleModel}
+              <Req />
+            </label>
+            <input
+              id="bf-vmodel"
+              className="input mt-1"
+              required
+              placeholder={b.vehicleModelPlaceholder}
+              value={draft.vehicleModel}
+              onChange={(e) => set({ vehicleModel: e.target.value })}
+            />
+          </div>
+        </div>
+      </fieldset>
+
+      <div className="mt-4 rounded-[var(--radius-md)] border border-danger/50 bg-danger/10 p-3 text-sm">
+        <span className="font-semibold text-danger-text">{b.requiredLabel}</span> {b.requiredBody}
       </div>
 
       <label
@@ -388,7 +446,10 @@ function StepWhere({
 
       <div className="mt-6 flex gap-3">
         <BackBtn onClick={onBack} />
-        <PrimaryBtn onClick={onNext} disabled={draft.address.length < 4 || !draft.accessConfirmed}>
+        <PrimaryBtn
+          onClick={onNext}
+          disabled={draft.address.length < 4 || !vehicleComplete(draft) || !draft.accessConfirmed}
+        >
           {b.next}
         </PrimaryBtn>
       </div>
@@ -545,8 +606,11 @@ function StepConfirm({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<{ ref: string } | null>(null);
+  // Deliberately not part of the saved draft: consent is given fresh on every submit.
+  const [consent, setConsent] = useState(false);
 
-  const canSubmit = draft.name.length > 0 && draft.phone.length >= 7 && draft.slotStart;
+  const canSubmit =
+    draft.name.trim().length > 0 && draft.phone.length >= 7 && draft.slotStart && consent;
 
   const submit = async () => {
     setSubmitting(true);
@@ -564,7 +628,12 @@ function StepConfirm({
           waterAccess: draft.accessConfirmed,
           outletAccess: draft.accessConfirmed,
           customer: { name: draft.name, phone: draft.phone, email: draft.email },
-          notes: draft.customRequest || undefined,
+          vehicle: {
+            year: Number(draft.vehicleYear),
+            make: draft.vehicleMake.trim(),
+            model: draft.vehicleModel.trim(),
+          },
+          contactConsent: true,
         }),
       });
       const data = await res.json();
@@ -584,7 +653,7 @@ function StepConfirm({
   if (done) {
     return (
       <section className="text-center">
-        <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-success/20 text-3xl">
+        <div className="mx-auto grid h-16 w-16 place-items-center rounded-full border-2 border-ink text-3xl text-ink">
           ✓
         </div>
         <h1 className="mt-4 font-[family-name:var(--font-display)] text-2xl font-extrabold">
@@ -619,16 +688,19 @@ function StepConfirm({
       <h1 className="font-[family-name:var(--font-display)] text-2xl font-extrabold">
         {b.yourInfo}
       </h1>
-      <div className="mt-4 grid gap-3">
+      <p className="mt-1 text-xs text-muted">{b.requiredNote}</p>
+      <div className="mt-3 grid gap-3">
         <div>
           <label htmlFor="bf-name" className="text-sm font-semibold">
             {b.fullName}
+            <Req />
           </label>
           <input id="bf-name" className="input mt-1" autoComplete="name" required value={draft.name} onChange={(e) => set({ name: e.target.value })} />
         </div>
         <div>
           <label htmlFor="bf-phone" className="text-sm font-semibold">
             {b.mobile}
+            <Req />
           </label>
           <input id="bf-phone" className="input mt-1" type="tel" inputMode="tel" autoComplete="tel" required value={draft.phone} onChange={(e) => set({ phone: e.target.value })} />
         </div>
@@ -643,7 +715,6 @@ function StepConfirm({
       {/* Summary card */}
       <div className="mt-5 rounded-[var(--radius-md)] border border-border bg-surface p-4 text-sm">
         <Row label={es?.name ?? service.name} value={money(price)} />
-        {draft.customRequest && <Row label={b.customRequest} value={draft.customRequest} muted />}
         <div className="my-2 border-t border-border" />
         <Row
           label={b.when}
@@ -660,12 +731,34 @@ function StepConfirm({
           }
         />
         <Row label={b.where} value={draft.address || b.notEntered} />
+        <Row
+          label={b.vehicle}
+          value={`${draft.vehicleYear} ${draft.vehicleMake} ${draft.vehicleModel}`.trim()}
+        />
         <div className="my-2 border-t border-border" />
         <Row label={b.total} value={money(price)} bold />
         <p className="mt-1 text-xs text-muted">
           {b.requestNote}
         </p>
       </div>
+
+      <label
+        htmlFor="bf-consent"
+        className="mt-4 flex cursor-pointer items-start gap-3 rounded-[var(--radius-md)] border border-[var(--color-control)] bg-surface p-3 text-xs leading-relaxed"
+      >
+        <input
+          id="bf-consent"
+          type="checkbox"
+          required
+          checked={consent}
+          onChange={(e) => setConsent(e.target.checked)}
+          className="mt-0.5 h-6 w-6 shrink-0 cursor-pointer accent-link"
+        />
+        <span>
+          <Req />
+          {b.consent}
+        </span>
+      </label>
 
       {error && (
         <p role="alert" className="mt-3 rounded-[var(--radius-sm)] border border-danger/40 bg-danger/10 p-3 text-sm text-danger-text">

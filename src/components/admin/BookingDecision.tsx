@@ -118,7 +118,10 @@ export default function BookingDecision({ b, tz }: { b: AdminBooking; tz: string
           </p>
           <p className="mb-2 mt-5 text-sm font-semibold">Add to my calendar</p>
           <CalendarButtons b={b} />
-          <div className="mt-2">
+          <div className="mt-2 grid gap-2">
+            <BigButton href={`/admin/invoice/${b.id}`} external>
+              <span aria-hidden="true">🧾</span> Print invoice
+            </BigButton>
             <BigButton onClick={close}>Done</BigButton>
           </div>
         </Sheet>

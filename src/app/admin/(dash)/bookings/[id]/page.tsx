@@ -2,9 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireBookingsAccess } from "@/lib/admin-guard";
 import { getSettings } from "@/lib/catalog";
-import { getBooking } from "@/lib/admin-bookings";
+import { getBooking, vehicleLabel } from "@/lib/admin-bookings";
 import { StatusBadge, money } from "@/components/admin/JobList";
 import BookingActions from "@/components/admin/BookingActions";
+import PaymentToggle from "@/components/admin/PaymentToggle";
 import { formatInTz } from "@/lib/tz";
 
 export const dynamic = "force-dynamic";
@@ -49,6 +50,14 @@ export default async function BookingDetail({
       </div>
       <p className="text-sm text-muted">
         Ref {b.ref} · via {b.source}
+        {b.status !== "requested" && b.status !== "cancelled" && (
+          <>
+            {" · "}
+            <Link href={`/admin/invoice/${b.id}`} className="text-link underline">
+              Invoice
+            </Link>
+          </>
+        )}
       </p>
 
       <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -56,9 +65,18 @@ export default async function BookingDetail({
           <h2 className="text-lg font-bold">Booking</h2>
           <dl className="mt-2 divide-y divide-border/60 text-sm">
             <Field label="When" value={when} />
-            <Field label="Vehicle" value={TIER_LABEL[b.vehicle_tier]} />
+            <Field label="Vehicle" value={vehicleLabel(b.vehicles) ?? TIER_LABEL[b.vehicle_tier]} />
             <Field label="Address" value={b.service_address} />
             <Field label="Total" value={money(b.total)} />
+            <Field
+              label="Payment"
+              value={
+                <span className="flex flex-wrap items-center gap-2 sm:justify-end">
+                  {b.payment_status === "paid" ? "Paid" : "Unpaid"}
+                  <PaymentToggle id={b.id} paid={b.payment_status === "paid"} />
+                </span>
+              }
+            />
             <Field
               label="Access"
               value={`Water: ${access(b.water_access)} · Outlet: ${access(b.outlet_access)}`}
