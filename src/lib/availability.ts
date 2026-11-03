@@ -131,12 +131,15 @@ export function computeAvailability(params: {
 
     const slots: Slot[] = [];
 
-    for (const [open, close] of windows) {
+    for (const [open, close, latestStart] of windows) {
       const openMs = zonedTimeToUtc(dateKey, open, tz).getTime();
       const closeMs = zonedTimeToUtc(dateKey, close, tz).getTime();
+      const lastStartMs = latestStart
+        ? zonedTimeToUtc(dateKey, latestStart, tz).getTime()
+        : Infinity;
 
       // Step candidate starts across the window at fixed granularity.
-      for (let t = openMs; t + durationMs <= closeMs; t += SLOT_GRANULARITY_MIN * 60_000) {
+      for (let t = openMs; t + durationMs <= closeMs && t <= lastStartMs; t += SLOT_GRANULARITY_MIN * 60_000) {
         if (t < earliest) continue;
         const end = t + durationMs;
         if (overlapsBlocked(t, end)) continue;

@@ -37,7 +37,8 @@ export interface Addon {
 }
 
 export interface BusinessSettings {
-  working_hours: Record<string, [string, string][]>;
+  /** [open, close, latestStart?] — slots must end by close; latestStart caps the last start time. */
+  working_hours: Record<string, [string, string, string?][]>;
   daily_job_cap: number;
   job_buffer_min: number;
   service_radius_mi: number;

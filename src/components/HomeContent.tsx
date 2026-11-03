@@ -39,7 +39,7 @@ export default function HomeContent({ services }: HomeContentProps) {
   const sections: Record<SectionId, ReactNode> = {
     services: (
       <section id="services" className="scroll-mt-20 border-b border-border bg-band-2/70">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+        <div className="mx-auto w-[90%] max-w-6xl sm:w-auto px-4 py-16 sm:px-6">
           <h2 className="text-center font-[family-name:var(--font-display)] text-4xl font-extrabold uppercase tracking-tight sm:text-5xl">
             {t.services.heading}
           </h2>
@@ -134,7 +134,7 @@ export default function HomeContent({ services }: HomeContentProps) {
     ),
     instagram: (
       <section className="border-b border-border bg-band-3/70">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+        <div className="mx-auto w-[90%] max-w-6xl sm:w-auto px-4 py-16 sm:px-6">
           <div className="mb-8 flex items-end justify-between">
             <h2 className="font-[family-name:var(--font-display)] text-3xl font-extrabold uppercase tracking-tight">
               {INSTAGRAM_HANDLE}
@@ -154,7 +154,7 @@ export default function HomeContent({ services }: HomeContentProps) {
     ),
     area: (
       <section id="area" className="scroll-mt-20 border-y border-border bg-band-1/70">
-        <div className="mx-auto grid max-w-6xl gap-8 px-4 py-16 sm:px-6 md:grid-cols-2 md:items-center">
+        <div className="mx-auto grid w-[90%] max-w-6xl sm:w-auto gap-8 px-4 py-16 sm:px-6 md:grid-cols-2 md:items-center">
           <div>
             <h2 className="font-[family-name:var(--font-display)] text-4xl font-extrabold uppercase tracking-tight">
               {t.area.heading}
@@ -189,7 +189,7 @@ export default function HomeContent({ services }: HomeContentProps) {
         {/* GoFundMe widget: its own shaded band above the FAQ. Full width
             on phones, a narrow centered card on larger screens. */}
         <section className="border-t border-border bg-band-3/70">
-          <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+          <div className="mx-auto w-[90%] max-w-6xl sm:w-auto px-4 py-12 sm:px-6">
             <div className="mx-auto mb-6 max-w-xl text-center">
               <h2 className="font-[family-name:var(--font-display)] text-2xl font-extrabold uppercase tracking-tight sm:text-3xl">
                 {t.fundraiser.heading}
@@ -202,7 +202,7 @@ export default function HomeContent({ services }: HomeContentProps) {
           </div>
         </section>
         <section className="bg-band-2/70">
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+          <div className="mx-auto w-[90%] max-w-6xl sm:w-auto px-4 py-16 sm:px-6">
             <h2 className="mb-8 text-center font-[family-name:var(--font-display)] text-3xl font-extrabold uppercase tracking-tight">
               {t.faq.heading}
             </h2>
@@ -213,7 +213,7 @@ export default function HomeContent({ services }: HomeContentProps) {
     ),
     finalCta: (
       <section className="border-t border-border bg-band-4/70">
-        <div className="mx-auto max-w-6xl px-4 py-20 text-center sm:px-6">
+        <div className="mx-auto w-[90%] max-w-6xl sm:w-auto px-4 py-20 text-center sm:px-6">
           <h2 className="font-[family-name:var(--font-display)] text-4xl font-extrabold uppercase tracking-tight sm:text-5xl">
             {t.finalCta.heading}
           </h2>
@@ -235,7 +235,7 @@ export default function HomeContent({ services }: HomeContentProps) {
         <div className="relative isolate overflow-hidden">
           <div
             aria-hidden="true"
-            className="fixed inset-0 -z-20 bg-[length:auto_70%] bg-center bg-no-repeat blur-sm md:bg-cover"
+            className="fixed inset-0 -z-20 bg-[length:auto_90%] bg-center bg-no-repeat blur-sm md:bg-cover"
             style={{ backgroundImage: "url('/wallpaper.webp')" }}
           />
           <div aria-hidden="true" className="absolute inset-0 -z-10 bg-base/5" />
@@ -246,7 +246,7 @@ export default function HomeContent({ services }: HomeContentProps) {
               right side less so the wallpaper still reads on wide screens. */}
           <div className="absolute inset-0 -z-10 bg-gradient-to-t from-base/60 via-base/25 to-transparent" />
 
-          <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pb-16 pt-10 sm:px-6 sm:pt-16 md:min-h-[600px] md:grid-cols-[1.25fr_0.75fr] lg:pb-20">
+          <div className="relative mx-auto grid w-[90%] max-w-6xl sm:w-auto items-center gap-12 px-4 pb-16 pt-16 sm:px-6 md:min-h-[600px] md:grid-cols-[1.25fr_0.75fr] lg:pb-20">
             {/* Copy column — centered on phones (where it leads the page),
                 left-aligned from md up so the eye runs headline → checklist
                 → summary → CTA down one edge beside the reel. */}
@@ -308,11 +308,11 @@ export default function HomeContent({ services }: HomeContentProps) {
                   </a>
                   <a
                     href="#services"
-                    className="tap inline-flex flex-1 items-center justify-center gap-2 rounded-[var(--radius-md)] border border-border bg-surface/60 px-8 text-lg font-semibold text-ink backdrop-blur transition-colors hover:border-accent"
+                    className="tap inline-flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-[var(--radius-md)] border border-border bg-surface/60 px-3 text-sm font-semibold sm:gap-2 sm:px-8 sm:text-lg text-ink backdrop-blur transition-colors hover:border-accent"
                   >
                     {t.hero.seePricing}
                     {Number.isFinite(lowestPrice) && (
-                      <span className="text-sm font-medium text-muted">
+                      <span className="text-xs font-medium sm:text-sm text-muted">
                         {t.hero.from} {money(lowestPrice)}
                       </span>
                     )}
@@ -350,7 +350,7 @@ export default function HomeContent({ services }: HomeContentProps) {
 
       {/* FOOTER ------------------------------------------------------------ */}
       <footer className="border-t border-border bg-base">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 pt-10 pb-28 sm:flex-row sm:items-center sm:justify-between sm:px-6 md:pb-10">
+        <div className="mx-auto flex w-[90%] max-w-6xl sm:w-auto flex-col gap-4 px-4 pt-10 pb-28 sm:flex-row sm:items-center sm:justify-between sm:px-6 md:pb-10">
           <div className="flex items-center gap-3">
             <Image
               src="/logo.jpg"
