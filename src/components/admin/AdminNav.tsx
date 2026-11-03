@@ -80,7 +80,7 @@ export function PendingBanner({ count }: { count: number }) {
   return (
     <Link
       href="/admin/requests"
-      className="flex items-center justify-between gap-3 border-b border-warning/50 bg-warning px-4 py-3 text-sm font-extrabold text-black"
+      className="flex items-center justify-between gap-3 border-b border-accent-hi bg-surface-alt px-4 py-3 text-sm font-extrabold text-link"
     >
       <span>
         {count} request{count === 1 ? "" : "s"} waiting for your answer

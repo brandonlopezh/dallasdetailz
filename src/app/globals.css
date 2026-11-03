@@ -258,11 +258,54 @@ body::after {
   animation: bucket-glow 0.9s ease-in-out infinite;
 }
 
-/* Admin themes: filled accent buttons switch to dark text when a custom accent
-   color is too light for white (see onAccent in lib/admin-theme.ts). Scoped to
-   #admin-root, so the public site is unaffected. */
+/*
+  Admin palette: black or white backgrounds (no beige), neutral grays for
+  panels, the Dallas Detailz blue for buttons and links, and red / green /
+  orange for status labels. Set on body (not just #admin-root) so the page
+  behind and around the admin is black/white too, and the warm film grain is
+  turned off there. The public site keeps its own theme.
+*/
+body:has(#admin-root) {
+  --color-base: #000000;
+  --color-surface: #0d0d0d;
+  --color-surface-alt: #1a1a1a;
+  --color-border: #2e2e2e;
+  --color-ink: #ffffff;
+  --color-muted: #a3a3a3;
+  --color-accent: #3f5c7e; /* Dallas Detailz blue */
+  --color-accent-hi: #597ba1;
+  --color-link: #7a9cc4;
+  --color-success: #16a34a;
+  --color-success-text: #4ade80;
+  --color-warning: #f97316;
+  --color-warning-text: #fb923c;
+  --color-danger: #dc2626;
+  --color-danger-text: #f87171;
+}
+:root[data-theme="light"] body:has(#admin-root) {
+  --color-base: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f2f2f2;
+  --color-border: #d4d4d4;
+  --color-ink: #000000;
+  --color-muted: #525252;
+  --color-accent: #3f5c7e;
+  --color-accent-hi: #2f4a6a;
+  --color-link: #2f4a6a;
+  --color-success: #15803d;
+  --color-success-text: #15803d;
+  --color-warning: #ea580c;
+  --color-warning-text: #9a3412;
+  --color-danger: #b91c1c;
+  --color-danger-text: #b91c1c;
+}
+body:has(#admin-root)::after {
+  display: none;
+}
+
+/* Filled accent buttons in the admin always use white text. */
 #admin-root .bg-accent {
-  color: var(--admin-on-accent, #fff);
+  color: #fff;
 }
 
 /*
@@ -274,11 +317,6 @@ body::after {
 */
 #admin-root {
   overflow-x: clip;
-  /* Admin uses Calibri (Carlito is its metric-compatible twin on Android/Linux). */
-  --font-display: Calibri, Carlito, "Segoe UI", system-ui, sans-serif;
-  --font-body: Calibri, Carlito, "Segoe UI", system-ui, sans-serif;
-  font-family: var(--font-body);
-  font-size: 1.0625rem; /* Calibri runs small; nudge up so it reads like 16px Inter */
 }
 #admin-root input[type="datetime-local"],
 #admin-root input[type="date"],
@@ -293,3 +331,13 @@ body::after {
     font-size: 16px;
   }
 }
+
+/*
+  Admin text weight. Every weight steps down one notch, and the display font
+  (Racing Sans One, which only ships a regular weight) is never faux-bolded,
+  which is what made headings look so thick.
+*/
+#admin-root .font-extrabold { font-weight: 700; }
+#admin-root .font-bold { font-weight: 600; }
+#admin-root .font-semibold { font-weight: 500; }
+#admin-root [class*="--font-display"] { font-weight: 400; }

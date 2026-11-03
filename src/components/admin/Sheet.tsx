@@ -51,19 +51,21 @@ export function BigButton({
   tone = "default",
   external,
   disabled,
+  className = "",
 }: {
   children: React.ReactNode;
+  className?: string;
   href?: string;
   onClick?: () => void;
   tone?: "default" | "primary" | "success" | "danger";
   external?: boolean;
   disabled?: boolean;
 }) {
-  const cls = `tap flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] px-5 text-base font-bold disabled:opacity-50 ${
+  const cls = `tap flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] px-5 text-base font-bold disabled:opacity-50 ${className} ${
     {
       default: "border border-border bg-surface text-ink",
       primary: "bg-accent text-white",
-      success: "bg-success text-black",
+      success: "border border-success/60 bg-surface text-success-text",
       danger: "border border-danger/60 bg-surface text-danger-text",
     }[tone]
   }`;

@@ -1,22 +1,18 @@
 import Image from "next/image";
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
-import AdminThemePicker from "./AdminThemePicker";
 import SignOutButton from "./SignOutButton";
 import SessionRefresher from "./SessionRefresher";
 import { BottomNav, PendingBanner, type NavItem } from "./AdminNav";
-import { themeVars, type ThemeChoice } from "@/lib/admin-theme";
 
 /** Page chrome for every signed-in admin screen: top bar, banner, bottom tabs. */
 export default function AdminShell({
   user,
-  theme,
   requests,
   nav,
   children,
 }: {
   user: { email: string; role: string };
-  theme: ThemeChoice | null;
   requests: number;
   nav: NavItem[];
   children: React.ReactNode;
@@ -25,7 +21,6 @@ export default function AdminShell({
     <div
       id="admin-root"
       className="min-h-screen bg-base text-ink"
-      style={themeVars(theme) as React.CSSProperties}
     >
       <SessionRefresher />
       <header className="sticky top-0 z-40 border-b border-border bg-base/85 backdrop-blur">
@@ -65,7 +60,6 @@ export default function AdminShell({
             <span className="hidden text-xs text-muted sm:inline">
               {user.email}
             </span>
-            <AdminThemePicker initial={theme} />
             <ThemeToggle className="h-11 w-11 !min-h-0 !min-w-0" />
             <SignOutButton />
           </div>

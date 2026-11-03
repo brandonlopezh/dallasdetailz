@@ -17,20 +17,16 @@ export default function RequestCard({ b, tz }: { b: AdminBooking; tz: string }) 
   const phone = b.customers?.phone;
 
   return (
-    <div className="rounded-[var(--radius-lg)] border-2 border-warning/60 bg-warning/5 p-4">
-      <div className="flex items-center justify-between gap-2">
-        <span className="rounded-full bg-warning px-2.5 py-0.5 text-xs font-extrabold uppercase tracking-wide text-black">
-          Needs your answer
-        </span>
-        <Link href={`/admin/bookings/${b.id}`} className="text-sm font-semibold text-link">
+    <div className="rounded-[var(--radius-lg)] border-2 border-accent-hi bg-surface-alt p-4">
+      <div className="flex items-start justify-between gap-3">
+        <p className="font-[family-name:var(--font-display)] text-3xl font-extrabold leading-tight sm:text-4xl">
+          {when}
+        </p>
+        <Link href={`/admin/bookings/${b.id}`} className="shrink-0 pt-1.5 text-sm font-semibold text-link">
           Details →
         </Link>
       </div>
-
-      <p className="mt-3 font-[family-name:var(--font-display)] text-2xl font-extrabold leading-tight">
-        {when}
-      </p>
-      <p className="mt-0.5 font-semibold">
+      <p className="mt-1 font-semibold">
         {b.services?.name ?? "Service"} · {money(b.total)}
       </p>
 

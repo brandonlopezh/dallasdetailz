@@ -14,7 +14,7 @@ type Outcome =
   | { kind: "offered"; when: string };
 
 /**
- * Accept / decline / offer-a-new-time for a pending request. Each outcome
+ * Accept / decline for a pending request; declining can offer a new time instead. Each outcome
  * opens a popup: booked → add to calendar; declined or new time offered →
  * the customer's number with Call / Text. The list behind refreshes when the
  * popup is closed (not before, or the card — and popup — would vanish).
@@ -25,7 +25,7 @@ export default function BookingDecision({ b, tz }: { b: AdminBooking; tz: string
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
-  const [offering, setOffering] = useState(false);
+  const [declining, setDeclining] = useState(false);
   const [newStart, setNewStart] = useState(toLocalInput(b.scheduled_start));
 
   const name = b.customers?.name ?? "Customer";
@@ -59,7 +59,7 @@ export default function BookingDecision({ b, tz }: { b: AdminBooking; tz: string
       scheduled_end: new Date(start.getTime() + durationMs).toISOString(),
     });
     if (ok) {
-      setOffering(false);
+      setDeclining(false);
       setOutcome({ kind: "offered", when: whenLabel(start.toISOString(), tz) });
     }
   };
@@ -71,24 +71,19 @@ export default function BookingDecision({ b, tz }: { b: AdminBooking; tz: string
 
   return (
     <div>
-      <div className="grid gap-2">
-        <BigButton tone="success" onClick={approve} disabled={busy}>
+      <div className="grid grid-cols-[2fr_1fr] gap-2">
+        <BigButton tone="success" onClick={approve} disabled={busy} className="!text-xl">
           <span aria-hidden="true">✓</span> Accept
         </BigButton>
-        <div className="grid grid-cols-2 gap-2">
-          <BigButton onClick={() => setOffering((v) => !v)} disabled={busy}>
-            <span aria-hidden="true">🕒</span> New time
-          </BigButton>
-          <BigButton tone="danger" onClick={decline} disabled={busy}>
-            <span aria-hidden="true">✕</span> Decline
-          </BigButton>
-        </div>
+        <BigButton tone="danger" onClick={() => setDeclining((v) => !v)} disabled={busy} className="!gap-1 !px-2 !text-sm">
+          <span aria-hidden="true">✕</span> Decline
+        </BigButton>
       </div>
 
-      {offering && (
+      {declining && (
         <div className="mt-3 grid gap-2 rounded-[var(--radius-md)] border border-border bg-base p-3">
           <label htmlFor={inputId} className="text-sm font-semibold">
-            Offer a different time
+            Offer a different time instead
           </label>
           <input
             id={inputId}
@@ -98,7 +93,10 @@ export default function BookingDecision({ b, tz }: { b: AdminBooking; tz: string
             className={DATETIME_INPUT}
           />
           <BigButton tone="primary" onClick={offer} disabled={busy}>
-            Save new time
+            Offer new time
+          </BigButton>
+          <BigButton tone="danger" onClick={decline} disabled={busy}>
+            Decline without a new time
           </BigButton>
         </div>
       )}

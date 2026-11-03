@@ -51,14 +51,15 @@ export default async function TodayView({
   return (
     <div className="space-y-10">
       {/* Welcome */}
-      <h1 className="text-center font-[family-name:var(--font-script)] text-5xl font-bold leading-tight sm:text-6xl">
-        Aim for Greatness
+      <h1 className="text-center font-[family-name:var(--font-display)] uppercase text-4xl font-bold leading-tight sm:text-5xl">
+        Detailer Dashboard
       </h1>
 
       {/* Pending requests — first thing seen, with one-tap answers */}
       {pending.length > 0 && (
         <section className="-mt-4">
-          <h2 className="font-[family-name:var(--font-display)] text-xl font-extrabold text-warning-text">
+          <hr className="mb-6 border-border" />
+          <h2 className="font-[family-name:var(--font-display)] text-xl font-extrabold text-link">
             {pending.length} request{pending.length === 1 ? "" : "s"} waiting
           </h2>
           <div className="mt-3 grid gap-4">
