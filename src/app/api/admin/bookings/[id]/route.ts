@@ -12,6 +12,8 @@ const patchSchema = z
     scheduled_end: z.string().datetime().optional(),
     internal_notes: z.string().nullable().optional(),
     payment_status: z.enum(["unpaid", "deposit_paid", "paid"]).optional(),
+    /** true = a new time was offered to the customer (request is now waiting on them). */
+    offered: z.boolean().optional(),
   })
   .refine((v) => Object.keys(v).length > 0, { message: "No fields to update" });
 
@@ -32,12 +34,20 @@ export async function PATCH(
   if (!parsed.success)
     return NextResponse.json({ error: "Invalid body" }, { status: 400 });
 
-  const { data, error } = await supabaseAdmin()
-    .from("bookings")
-    .update(parsed.data)
-    .eq("id", id)
-    .select("id, status, scheduled_start, scheduled_end")
-    .single();
+  const { offered, ...fields } = parsed.data;
+  const run = (update: Record<string, unknown>) =>
+    supabaseAdmin()
+      .from("bookings")
+      .update(update)
+      .eq("id", id)
+      .select("id, status, scheduled_start, scheduled_end")
+      .single();
+
+  let { data, error } = await run(
+    offered ? { ...fields, offered_at: new Date().toISOString() } : fields,
+  );
+  // 42703 = column missing (migration 0013 not applied yet): still save the change.
+  if (error?.code === "42703" && offered) ({ data, error } = await run(fields));
 
   if (error) {
     if (error.code === "23P01")

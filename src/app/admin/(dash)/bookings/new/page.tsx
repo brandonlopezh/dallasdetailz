@@ -7,7 +7,7 @@ export const metadata = { title: "New booking" };
 export default async function NewBookingPage() {
   await requireBookingsAccess();
   return (
-    <div className="min-w-0 max-w-lg">
+    <div className="min-w-0">
       <Link href="/admin" className="text-sm text-muted hover:text-ink">
         ← Today
       </Link>
@@ -17,7 +17,9 @@ export default async function NewBookingPage() {
       <p className="mb-5 text-sm text-muted">
         For phone, walk-up, or Instagram customers.
       </p>
-      <ManualBookingForm />
+      <div className="rounded-[var(--radius-lg)] border border-border bg-surface p-5 sm:p-8">
+        <ManualBookingForm />
+      </div>
     </div>
   );
 }

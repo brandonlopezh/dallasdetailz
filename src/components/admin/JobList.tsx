@@ -2,7 +2,7 @@ import Link from "next/link";
 import CancelAppointment from "./CancelAppointment";
 import type { AdminBooking } from "@/lib/admin-bookings";
 import { STATUS_COLOR, STATUS_LABEL, vehicleLabel } from "@/lib/admin-bookings";
-import { formatInTz, TIME_OPTS } from "@/lib/tz";
+import { formatInTz, TIME_OPTS, DAY_OPTS } from "@/lib/tz";
 import type { BookingStatus } from "@/lib/types";
 
 const TIER_LABEL: Record<string, string> = {
@@ -18,6 +18,22 @@ export function StatusBadge({ status }: { status: BookingStatus }) {
       className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold ${STATUS_COLOR[status]}`}
     >
       {STATUS_LABEL[status]}
+    </span>
+  );
+}
+
+const PAYMENT: Record<AdminBooking["payment_status"], { label: string; cls: string }> = {
+  paid: { label: "Paid", cls: "text-success-text border-success/40 bg-success/10" },
+  deposit_paid: { label: "Deposit paid", cls: "text-link border-accent/40 bg-accent/10" },
+  unpaid: { label: "Unpaid", cls: "text-warning-text border-warning/40 bg-warning/10" },
+};
+
+/** Payment pill — what the Today and Scheduled callouts show instead of status. */
+export function PaymentBadge({ status }: { status: AdminBooking["payment_status"] }) {
+  const p = PAYMENT[status] ?? PAYMENT.unpaid;
+  return (
+    <span className={`inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-xs font-semibold ${p.cls}`}>
+      {p.label}
     </span>
   );
 }
@@ -153,6 +169,66 @@ export function TodayJob({ b, tz }: { b: AdminBooking; tz: string }) {
           {b.outlet_access === false && "no outlet access"}
         </p>
       )}
+    </div>
+  );
+}
+
+/** One appointment as a swipeable callout: date first, then the details you need on the way there. */
+export function ScheduledCard({ b, tz }: { b: AdminBooking; tz: string }) {
+  const vehicle = vehicleLabel(b.vehicles);
+  const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+    b.service_address,
+  )}`;
+  return (
+    <div className="flex h-full min-w-0 flex-col">
+      <div className="grid gap-y-4">
+        <div className="min-w-0">
+          <div className="flex items-start justify-between gap-3">
+            <p className="font-[family-name:var(--font-display)] text-2xl font-extrabold leading-tight">
+              {formatInTz(b.scheduled_start, tz, DAY_OPTS)}
+            </p>
+            <PaymentBadge status={b.payment_status} />
+          </div>
+          <p className="mt-1 text-lg font-semibold text-link">
+            {formatInTz(b.scheduled_start, tz, TIME_OPTS)}
+            <span className="text-muted"> – {formatInTz(b.scheduled_end, tz, TIME_OPTS)}</span>
+          </p>
+          <p className="mt-3 font-semibold">
+            {b.services?.name ?? "Service"} · {money(b.total)}
+          </p>
+        </div>
+        <hr className="border-border" />
+        <div className="min-w-0 space-y-0.5">
+          <p className="text-xs font-bold uppercase tracking-wider text-muted">Customer</p>
+          <p className="text-lg font-semibold">{b.customers?.name ?? "Customer"}</p>
+          {vehicle && <p className="text-muted">{vehicle}</p>}
+          <p className="break-words text-muted">{b.service_address}</p>
+        </div>
+      </div>
+      <div className="mt-5 flex flex-wrap gap-2">
+        {b.customers?.phone && (
+          <a
+            href={`tel:${b.customers.phone}`}
+            className="tap inline-flex items-center justify-center gap-1 rounded-[var(--radius-sm)] border border-border px-4 text-sm"
+          >
+            📞 Call
+          </a>
+        )}
+        <a
+          href={mapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="tap inline-flex items-center justify-center gap-1 rounded-[var(--radius-sm)] border border-border px-4 text-sm"
+        >
+          🧭 Navigate
+        </a>
+        <Link
+          href={`/admin/bookings/${b.id}`}
+          className="tap ml-auto inline-flex items-center justify-center rounded-[var(--radius-sm)] bg-accent px-5 text-sm font-bold text-white"
+        >
+          Details →
+        </Link>
+      </div>
     </div>
   );
 }

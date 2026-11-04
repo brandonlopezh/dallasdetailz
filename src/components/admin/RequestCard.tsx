@@ -5,7 +5,16 @@ import BookingDecision from "./BookingDecision";
 const money = (n: number) => `$${Math.round(Number(n))}`;
 
 /** A pending request, impossible to miss, with one-tap Accept/Decline/New time. */
-export default function RequestCard({ b, tz }: { b: AdminBooking; tz: string }) {
+export default function RequestCard({
+  b,
+  tz,
+  waitingOnClient,
+}: {
+  b: AdminBooking;
+  tz: string;
+  /** A new time was offered; we're waiting for the customer to say yes. */
+  waitingOnClient?: boolean;
+}) {
   const when = new Intl.DateTimeFormat("en-US", {
     timeZone: tz,
     weekday: "short",
@@ -17,7 +26,16 @@ export default function RequestCard({ b, tz }: { b: AdminBooking; tz: string }) 
   const phone = b.customers?.phone;
 
   return (
-    <div className="rounded-[var(--radius-lg)] border-2 border-accent-hi bg-surface-alt p-4">
+    <div
+      className={`rounded-[var(--radius-lg)] border-2 bg-surface-alt p-4 ${
+        waitingOnClient ? "border-border" : "border-accent-hi"
+      }`}
+    >
+      {waitingOnClient && (
+        <p className="mb-2 inline-flex rounded-full border border-border bg-base px-2 py-0.5 text-xs font-semibold text-muted">
+          New time offered · waiting on client
+        </p>
+      )}
       <div className="flex items-start justify-between gap-3">
         <p className="font-[family-name:var(--font-display)] text-3xl font-extrabold leading-tight sm:text-4xl">
           {when}

@@ -57,7 +57,7 @@ export function BigButton({
   className?: string;
   href?: string;
   onClick?: () => void;
-  tone?: "default" | "primary" | "success" | "danger";
+  tone?: "default" | "primary" | "success" | "solid-success" | "danger";
   external?: boolean;
   disabled?: boolean;
 }) {
@@ -66,6 +66,7 @@ export function BigButton({
       default: "border border-border bg-surface text-ink",
       primary: "bg-accent text-white",
       success: "border border-success/60 bg-surface text-success-text",
+      "solid-success": "bg-success text-black",
       danger: "border border-danger/60 bg-surface text-danger-text",
     }[tone]
   }`;

@@ -1,7 +1,5 @@
 import Link from "next/link";
 import type { AdminBooking } from "@/lib/admin-bookings";
-import { BookingPopupCard } from "@/components/admin/JobList";
-import DayJobsDialog from "@/components/admin/DayJobsDialog";
 import { dateKeyInTz, formatInTz } from "@/lib/tz";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -13,13 +11,15 @@ export function shiftMonth(monthKey: string, delta: number): string {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
-const href = (month: string, day?: string) =>
-  `/admin?month=${month}${day ? `&day=${day}` : ""}#schedule`;
+export const calendarHref = (month: string, day?: string) =>
+  `/admin?month=${month}${day ? `&day=${day}` : ""}`;
+const href = calendarHref;
 
 /**
- * Server-rendered month grid. Navigation is plain links (?month=, ?day=), so
- * it needs no client JS. Days with bookings show time chips on wider screens
- * and a count badge on phones; tapping a day lists its jobs underneath.
+ * Server-rendered month grid, shown inside the "View full calendar" popup.
+ * Navigation is plain links (?month=, ?day=), so it needs no client JS. Days
+ * with bookings show time chips on wider screens and a count badge on phones;
+ * tapping a day opens its jobs (rendered by the Today page).
  */
 export default function MonthCalendar({
   monthKey,
@@ -58,19 +58,15 @@ export default function MonthCalendar({
     month: "long",
     year: "numeric",
   });
-  const selectedJobs = selectedDay ? (byDay.get(selectedDay) ?? []) : [];
   const navBtn =
-    "grid h-10 w-10 place-items-center rounded-[var(--radius-sm)] border border-border text-sm hover:border-accent";
+    "tap inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-border px-3 text-sm font-semibold hover:border-accent";
 
   return (
-    <section id="schedule" className="scroll-mt-20">
+    <section>
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-        <div>
-          <h2 className="font-[family-name:var(--font-display)] text-xl font-extrabold">
-            Schedule
-          </h2>
-          <p className="text-sm text-muted">{title}</p>
-        </div>
+        <h3 className="font-[family-name:var(--font-display)] text-xl font-extrabold">
+          {title}
+        </h3>
         <div className="flex items-center gap-2">
           {monthKey !== currentMonth && (
             <Link href={href(currentMonth)} className="text-sm text-link underline">
@@ -78,10 +74,10 @@ export default function MonthCalendar({
             </Link>
           )}
           <Link href={href(shiftMonth(monthKey, -1))} aria-label="Previous month" className={navBtn}>
-            ←
+            <span aria-hidden="true">←</span> Prev
           </Link>
           <Link href={href(shiftMonth(monthKey, 1))} aria-label="Next month" className={navBtn}>
-            →
+            Next <span aria-hidden="true">→</span>
           </Link>
         </div>
       </div>
@@ -104,7 +100,7 @@ export default function MonthCalendar({
             return (
               <Link
                 key={key}
-                href={href(monthKey, key)}
+                href={jobs.length === 1 ? `/admin/bookings/${jobs[0].id}` : href(monthKey, key)}
                 aria-label={`${key}, ${jobs.length} job${jobs.length === 1 ? "" : "s"}`}
                 className={`flex min-h-14 flex-col gap-1 border-b border-r border-border/60 p-1 transition-colors hover:bg-surface-alt sm:min-h-24 sm:p-1.5 ${
                   isSelected ? "bg-accent/15 ring-1 ring-inset ring-accent" : ""
@@ -144,27 +140,7 @@ export default function MonthCalendar({
         </div>
       </div>
 
-      {selectedDay ? (
-        <DayJobsDialog
-          key={selectedDay}
-          closeHref={href(monthKey)}
-          title={formatInTz(new Date(`${selectedDay}T12:00:00Z`), "UTC", {
-            weekday: "long",
-            month: "long",
-            day: "numeric",
-          })}
-        >
-          {selectedJobs.length === 0 ? (
-            <div className="rounded-[var(--radius-md)] border border-dashed border-border p-6 text-center text-sm text-muted">
-              Nothing booked this day.
-            </div>
-          ) : (
-            selectedJobs.map((b) => <BookingPopupCard key={b.id} b={b} tz={tz} />)
-          )}
-        </DayJobsDialog>
-      ) : (
-        <p className="mt-4 text-sm text-muted">Tap a day to see its jobs.</p>
-      )}
+      {!selectedDay && <p className="mt-3 text-sm text-muted">Tap a day to open its job. Days with several jobs show a list to pick from.</p>}
     </section>
   );
 }

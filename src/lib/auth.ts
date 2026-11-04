@@ -31,7 +31,46 @@ export type AdminRole = "master" | "manager" | "editor";
 export interface AdminUser {
   id: string;
   email: string;
+  /** Full display name. */
+  name: string;
+  /** Used for "Hi {firstName}". */
+  firstName: string;
   role: AdminRole;
+}
+
+function prettyName(email: string): string {
+  const local = email.split("@")[0].split(/[._+-]/)[0] || email;
+  return local.charAt(0).toUpperCase() + local.slice(1);
+}
+
+/** Name set on the Users page (admin_profiles) → operators table → auth metadata → email. */
+async function displayName(
+  email: string,
+  meta: Record<string, unknown> | undefined,
+): Promise<{ name: string; firstName: string }> {
+  const e = email.toLowerCase();
+  try {
+    const { data } = await supabaseAdmin()
+      .from("admin_profiles")
+      .select("first_name, last_name")
+      .eq("email", e)
+      .maybeSingle();
+    const first = data?.first_name?.trim();
+    if (first) return { firstName: first, name: `${first} ${data?.last_name?.trim() ?? ""}`.trim() };
+  } catch {
+    // table not created yet → fall through
+  }
+  try {
+    const { data } = await supabaseAdmin().from("operators").select("name").eq("email", e).maybeSingle();
+    if (data?.name?.trim()) return { name: data.name.trim(), firstName: data.name.trim().split(" ")[0] };
+  } catch {
+    // fall through
+  }
+  const fromMeta = meta?.full_name ?? meta?.name;
+  if (typeof fromMeta === "string" && fromMeta.trim())
+    return { name: fromMeta.trim(), firstName: fromMeta.trim().split(" ")[0] };
+  const pretty = prettyName(email);
+  return { name: pretty, firstName: pretty };
 }
 
 async function roleForEmail(email: string): Promise<AdminRole | null> {
@@ -56,7 +95,9 @@ export async function getAdminUser(): Promise<AdminUser | null> {
   } = await supabase.auth.getUser();
   if (!user?.email) return null;
   const role = await roleForEmail(user.email);
-  return role ? { id: user.id, email: user.email, role } : null;
+  if (!role) return null;
+  const { name, firstName } = await displayName(user.email, user.user_metadata);
+  return { id: user.id, email: user.email, name, firstName, role };
 }
 
 /** Admin who may touch bookings/customers (not editors). */

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-// Schedule now lives under Today (/admin#schedule).
+// The calendar now opens from Today (/admin).
 export default function SchedulePage() {
-  redirect("/admin#schedule");
+  redirect("/admin");
 }

@@ -59,13 +59,13 @@ export default function ManualBookingForm() {
   };
 
   const input =
-    "w-full rounded-[var(--radius-sm)] border border-border bg-surface px-3 py-2 text-sm";
+    "w-full rounded-[var(--radius-sm)] border border-border bg-base px-3 py-3 text-base";
 
   return (
-    <form onSubmit={submit} className="grid grid-cols-1 gap-3">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+    <form onSubmit={submit} className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label className="min-w-0 text-sm">
-          <span className="text-muted">Service</span>
+          <span className="font-semibold text-muted">Service</span>
           <select
             value={serviceId}
             onChange={(e) => setServiceId(e.target.value)}
@@ -80,7 +80,7 @@ export default function ManualBookingForm() {
           </select>
         </label>
         <label className="min-w-0 text-sm">
-          <span className="text-muted">Vehicle</span>
+          <span className="font-semibold text-muted">Vehicle</span>
           <select
             value={tier}
             onChange={(e) => setTier(e.target.value as VehicleTier)}
@@ -96,7 +96,7 @@ export default function ManualBookingForm() {
       </div>
 
       <label className="min-w-0 text-sm">
-        <span className="text-muted">Date & time</span>
+        <span className="font-semibold text-muted">Date & time</span>
         <input
           type="datetime-local"
           value={start}
@@ -106,23 +106,23 @@ export default function ManualBookingForm() {
         />
       </label>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <input className={input} placeholder="Customer name" value={name} onChange={(e) => setName(e.target.value)} required />
         <input className={input} placeholder="Mobile" value={phone} onChange={(e) => setPhone(e.target.value)} required />
       </div>
       <input className={input} placeholder="Email (optional)" value={email} onChange={(e) => setEmail(e.target.value)} />
       <input className={input} placeholder="Service address" value={address} onChange={(e) => setAddress(e.target.value)} required />
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label className="min-w-0 text-sm">
-          <span className="text-muted">Status</span>
+          <span className="font-semibold text-muted">Status</span>
           <select value={status} onChange={(e) => setStatus(e.target.value)} className={`mt-1 ${input}`}>
             <option value="confirmed">Confirmed</option>
             <option value="requested">Requested</option>
           </select>
         </label>
         <label className="min-w-0 text-sm">
-          <span className="text-muted">Source</span>
+          <span className="font-semibold text-muted">Source</span>
           <select value={source} onChange={(e) => setSource(e.target.value)} className={`mt-1 ${input}`}>
             <option value="phone">Phone</option>
             <option value="instagram">Instagram</option>
@@ -132,14 +132,14 @@ export default function ManualBookingForm() {
         </label>
       </div>
 
-      <textarea className={`${input} min-h-16`} placeholder="Internal notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} />
+      <textarea className={`${input} min-h-28`} placeholder="Internal notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} />
 
       {error && <p className="text-sm text-danger-text">{error}</p>}
 
       <button
         type="submit"
         disabled={busy}
-        className="tap rounded-[var(--radius-md)] bg-accent px-5 font-bold text-white disabled:opacity-50"
+        className="tap min-h-14 rounded-[var(--radius-md)] bg-accent px-5 text-base font-bold text-white disabled:opacity-50"
       >
         {busy ? "Creating…" : "Create booking"}
       </button>

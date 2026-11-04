@@ -7,43 +7,19 @@ import type { AdminBooking } from "@/lib/admin-bookings";
 import BookingDecision from "./BookingDecision";
 import CalendarButtons from "./CalendarButtons";
 import CancelAppointment from "./CancelAppointment";
+import Sheet, { BigButton } from "./Sheet";
 import { DATETIME_INPUT, patchBooking, toLocalInput } from "./patchBooking";
-
-// Status moves offered besides Cancel (which has its own confirm + contact flow).
-const NEXT: Record<BookingStatus, BookingStatus[]> = {
-  requested: [],
-  confirmed: ["in_progress", "completed", "no_show"],
-  in_progress: ["completed"],
-  completed: [],
-  cancelled: ["confirmed"],
-  no_show: ["confirmed"],
-};
-
-const ACTION_LABEL: Partial<Record<BookingStatus, string>> = {
-  confirmed: "Re-book this appointment",
-  in_progress: "Start job",
-  completed: "Mark complete",
-  no_show: "No-show",
-};
-
-const ACTION_STYLE: Partial<Record<BookingStatus, string>> = {
-  confirmed: "bg-accent text-white",
-  in_progress: "bg-accent text-white",
-  completed: "bg-success text-black",
-  no_show: "border border-danger/60 bg-surface text-danger-text",
-};
 
 const CANCELLABLE: BookingStatus[] = ["confirmed", "in_progress"];
 
 export default function BookingActions({ b, tz }: { b: AdminBooking; tz: string }) {
-  const { id, status, scheduled_start: start, scheduled_end: end, internal_notes: internalNotes } = b;
+  const { id, status, scheduled_start: start, scheduled_end: end } = b;
   const router = useRouter();
   const startId = useId();
-  const notesId = useId();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [notes, setNotes] = useState(internalNotes ?? "");
   const [rescheduling, setRescheduling] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const [newStart, setNewStart] = useState(toLocalInput(start));
 
   const durationMs = new Date(end).getTime() - new Date(start).getTime();
@@ -72,22 +48,36 @@ export default function BookingActions({ b, tz }: { b: AdminBooking; tz: string 
   };
 
   const buttonCls =
-    "tap rounded-[var(--radius-md)] px-4 py-3 text-base font-bold disabled:opacity-50";
+    "tap min-h-12 rounded-[var(--radius-md)] px-3 text-sm font-bold disabled:opacity-50 sm:min-h-14 sm:px-5 sm:text-[16px]";
 
   return (
-    <div className="rounded-[var(--radius-md)] border border-border bg-surface p-4">
-      <h2 className="font-bold">Actions</h2>
+    <div className="rounded-[var(--radius-lg)] border border-border bg-surface p-5 sm:p-6">
+      <h2 className="text-xl font-extrabold">
+        {status === "requested" ? "Your answer" : "Actions"}
+      </h2>
 
-      {status === "requested" && (
-        <div className="mt-3">
-          <BookingDecision b={b} tz={tz} />
+      {!["requested", ...CANCELLABLE].includes(status) && (
+        <p className="mt-3 text-muted">
+          {status === "completed" ? "This job is complete." : "This appointment is closed."}
+        </p>
+      )}
+      {status === "completed" && (
+        <div className="mt-4 grid gap-3">
+          <a
+            href={`/admin/invoice/${id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${buttonCls} flex items-center justify-center gap-2 border border-border bg-surface text-ink`}
+          >
+            <span aria-hidden="true">🧾</span> Print invoice
+            <span className="sr-only"> (opens in a new tab)</span>
+          </a>
         </div>
       )}
 
-      {status === "confirmed" && (
-        <div className="mt-3">
-          <p className="mb-2 text-sm font-semibold">Add to my calendar</p>
-          <CalendarButtons b={b} />
+      {status === "requested" && (
+        <div className="mt-4">
+          <BookingDecision b={b} tz={tz} />
         </div>
       )}
 
@@ -97,19 +87,16 @@ export default function BookingActions({ b, tz }: { b: AdminBooking; tz: string 
         </p>
       )}
 
-      <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-        {NEXT[status].map((next) => (
+      {CANCELLABLE.includes(status) && (
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-3">
           <button
-            key={next}
             type="button"
             disabled={busy}
-            onClick={() => patch({ status: next })}
-            className={`${buttonCls} ${ACTION_STYLE[next] ?? "border border-border"}`}
+            onClick={() => patch({ status: "completed" })}
+            className={`${buttonCls} bg-[#4a7a37] text-white`}
           >
-            {ACTION_LABEL[next]}
+            Mark completed
           </button>
-        ))}
-        {status !== "requested" && status !== "cancelled" && (
           <button
             type="button"
             disabled={busy}
@@ -119,17 +106,11 @@ export default function BookingActions({ b, tz }: { b: AdminBooking; tz: string 
           >
             Reschedule
           </button>
-        )}
-      </div>
-
-      {CANCELLABLE.includes(status) && (
-        <div className="mt-2">
-          <CancelAppointment b={b} tz={tz} />
         </div>
       )}
 
       {rescheduling && (
-        <div className="mt-3 grid gap-2 rounded-[var(--radius-md)] border border-border bg-base p-3">
+        <div className="mt-3 grid gap-3 rounded-[var(--radius-md)] border border-border bg-base p-4">
           <label htmlFor={startId} className="text-sm font-semibold">
             New start time
           </label>
@@ -151,25 +132,46 @@ export default function BookingActions({ b, tz }: { b: AdminBooking; tz: string 
         </div>
       )}
 
-      <div className="mt-4">
-        <label htmlFor={notesId} className="text-sm text-muted">
-          Internal notes
-        </label>
-        <textarea
-          id={notesId}
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          className="mt-1 block min-h-24 w-full rounded-[var(--radius-sm)] border border-border bg-base px-3 py-2 text-base"
-        />
-        <button
-          type="button"
-          disabled={busy || notes === (internalNotes ?? "")}
-          onClick={() => patch({ internal_notes: notes })}
-          className="tap mt-2 rounded-[var(--radius-md)] border border-border bg-surface px-4 text-base font-semibold text-ink disabled:opacity-40"
-        >
-          Save notes
-        </button>
-      </div>
+      {CANCELLABLE.includes(status) && (
+        <div className="mt-2 sm:mt-3">
+          <CancelAppointment
+            b={b}
+            tz={tz}
+            className="tap min-h-12 w-full rounded-[var(--radius-md)] border border-danger/60 bg-surface px-3 text-sm font-bold text-danger-text sm:min-h-14 sm:text-[16px]"
+          />
+        </div>
+      )}
+
+      {CANCELLABLE.includes(status) && (
+        <div className="mt-5 grid grid-cols-2 gap-2 border-t border-border pt-5 sm:gap-3">
+          <button
+            type="button"
+            onClick={() => setCalendarOpen(true)}
+            className={`${buttonCls} border border-border bg-surface text-ink`}
+          >
+            <span aria-hidden="true">📅</span> Add to calendar
+          </button>
+          <a
+            href={`/admin/invoice/${id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${buttonCls} flex items-center justify-center gap-2 border border-border bg-surface text-ink`}
+          >
+            <span aria-hidden="true">🧾</span> Print invoice
+            <span className="sr-only"> (opens in a new tab)</span>
+          </a>
+        </div>
+      )}
+
+      {calendarOpen && (
+        <Sheet title="Add to calendar" onClose={() => setCalendarOpen(false)}>
+          <p className="mb-4 mt-1 text-center text-sm text-muted">Which phone do you use?</p>
+          <CalendarButtons b={b} />
+          <div className="mt-2">
+            <BigButton onClick={() => setCalendarOpen(false)}>Close</BigButton>
+          </div>
+        </Sheet>
+      )}
     </div>
   );
 }

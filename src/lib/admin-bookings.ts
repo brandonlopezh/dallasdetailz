@@ -35,6 +35,7 @@ export async function listBookings(opts: {
   toISO?: string;
   statuses?: BookingStatus[];
   order?: "start" | "created";
+  limit?: number;
 }): Promise<AdminBooking[]> {
   let q = supabaseAdmin().from("bookings").select(SELECT);
   if (opts.fromISO) q = q.gte("scheduled_start", opts.fromISO);
@@ -44,9 +45,26 @@ export async function listBookings(opts: {
     ascending: true,
   });
 
+  if (opts.limit) q = q.limit(opts.limit);
+
   const { data, error } = await q;
   if (error || !data) return [];
   return data as unknown as AdminBooking[];
+}
+
+/**
+ * Ids of requests where a new time was offered and the customer hasn't
+ * answered ("waiting on client"). Empty if migration 0013 hasn't been run yet,
+ * so everything simply shows as "waiting on me" until it is.
+ */
+export async function listOfferedIds(): Promise<Set<string>> {
+  const { data, error } = await supabaseAdmin()
+    .from("bookings")
+    .select("id")
+    .eq("status", "requested")
+    .not("offered_at", "is", null);
+  if (error || !data) return new Set();
+  return new Set(data.map((r) => r.id as string));
 }
 
 export async function getBooking(id: string): Promise<AdminBooking | null> {
@@ -71,6 +89,44 @@ export async function getBookingByApprovalToken(
     .eq("approval_token", token)
     .maybeSingle();
   return (data as unknown as AdminBooking) ?? null;
+}
+
+export interface AdminCustomer {
+  id: string;
+  name: string;
+  phone: string;
+  email: string | null;
+  instagram_handle: string | null;
+  created_at: string;
+  /** Start of their most recent job that has already happened, or null. */
+  last_detail: string | null;
+}
+
+/** Every customer, A–Z, for the dashboard's Customers section. */
+export async function listCustomers(): Promise<AdminCustomer[]> {
+  const sb = supabaseAdmin();
+  const [{ data, error }, { data: past }] = await Promise.all([
+    sb
+      .from("customers")
+      .select("id, name, phone, email, instagram_handle, created_at")
+      .order("name", { ascending: true })
+      .limit(500),
+    sb
+      .from("bookings")
+      .select("customer_id, scheduled_start")
+      .in("status", ["confirmed", "in_progress", "completed"])
+      .lte("scheduled_start", new Date().toISOString())
+      .order("scheduled_start", { ascending: false })
+      .limit(2000),
+  ]);
+  if (error || !data) return [];
+  // Newest first, so the first booking seen per customer is their latest.
+  const last = new Map<string, string>();
+  for (const r of past ?? []) {
+    const id = r.customer_id as string;
+    if (!last.has(id)) last.set(id, r.scheduled_start as string);
+  }
+  return data.map((c) => ({ ...(c as Omit<AdminCustomer, "last_detail">), last_detail: last.get(c.id) ?? null }));
 }
 
 export async function countRequests(): Promise<number> {

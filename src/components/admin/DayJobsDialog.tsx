@@ -12,17 +12,25 @@ import { useDialog } from "@/lib/useDialog";
 export default function DayJobsDialog({
   title,
   closeHref,
+  wide,
   children,
 }: {
   title: string;
   closeHref: string;
+  /** Wider panel, for the full month calendar. */
+  wide?: boolean;
   children: React.ReactNode;
 }) {
   const router = useRouter();
   const ref = useRef<HTMLDivElement>(null);
   const titleId = useId();
   const close = () => router.push(closeHref, { scroll: false });
-  useDialog(ref, close);
+  // Dialogs can stack (day popup over the calendar); Escape only closes the top one.
+  const closeIfTop = () => {
+    const layers = document.querySelectorAll("[data-dialog-layer]");
+    if (layers[layers.length - 1] === ref.current) close();
+  };
+  useDialog(ref, closeIfTop);
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <button
@@ -38,7 +46,8 @@ export default function DayJobsDialog({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className="relative flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col overflow-hidden rounded-[var(--radius-lg)] border border-border bg-base shadow-2xl"
+        data-dialog-layer=""
+        className={`relative flex max-h-[calc(100dvh-2rem)] w-full ${wide ? "max-w-3xl" : "max-w-lg"} flex-col overflow-hidden rounded-[var(--radius-lg)] border border-border bg-base shadow-2xl`}
       >
         <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
           <h2 id={titleId} className="font-[family-name:var(--font-display)] text-lg font-extrabold">
@@ -48,9 +57,9 @@ export default function DayJobsDialog({
             type="button"
             onClick={close}
             aria-label="Close"
-            className="tap grid place-items-center rounded-full border border-border text-lg text-muted hover:text-ink"
+            className="tap inline-flex items-center justify-center gap-2 rounded-full border border-border px-4 text-sm font-semibold text-muted hover:text-ink"
           >
-            <span aria-hidden="true">✕</span>
+            <span aria-hidden="true">✕</span> Close
           </button>
         </div>
         <div className="grid gap-3 overflow-y-auto p-4">{children}</div>

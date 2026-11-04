@@ -7,10 +7,9 @@ import type { NavItem } from "@/components/admin/AdminNav";
 
 type Role = "master" | "manager" | "editor";
 const NAV: (NavItem & { roles: Role[] })[] = [
-  { href: "/admin", label: "Today", icon: "today", roles: ["master", "manager"] },
-  { href: "/admin/requests", label: "Requests", icon: "requests", badge: true, roles: ["master", "manager"] },
-  { href: "/admin/users", label: "Users", icon: "users", roles: ["master"] },
-  { href: "/admin/website", label: "Settings", icon: "settings", roles: ["master", "manager", "editor"] },
+  { href: "/admin", label: "Today", roles: ["master", "manager"] },
+  { href: "/admin/requests", label: "Requests", badge: true, roles: ["master", "manager"] },
+  { href: "/admin/website", label: "Settings", roles: ["master", "manager", "editor"] },
 ];
 
 export default async function DashLayout({

@@ -281,6 +281,7 @@ body:has(#admin-root) {
   --color-warning-text: #fb923c;
   --color-danger: #dc2626;
   --color-danger-text: #f87171;
+  --topbar-border: #4a4a4a; /* pure black would vanish on the black page */
 }
 :root[data-theme="light"] body:has(#admin-root) {
   --color-base: #ffffff;
@@ -298,6 +299,7 @@ body:has(#admin-root) {
   --color-warning-text: #9a3412;
   --color-danger: #b91c1c;
   --color-danger-text: #b91c1c;
+  --topbar-border: #000000;
 }
 body:has(#admin-root)::after {
   display: none;

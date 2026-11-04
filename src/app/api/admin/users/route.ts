@@ -5,6 +5,15 @@ import { supabaseAdmin } from "@/lib/supabase/server";
 
 const emailSchema = z.string().trim().toLowerCase().pipe(z.email().max(200));
 
+const nameSchema = z.string().trim().max(60);
+
+/** Saves the person's name for the "Hi {first name}" greeting. */
+async function saveName(email: string, firstName: string, lastName: string) {
+  return supabaseAdmin()
+    .from("admin_profiles")
+    .upsert({ email, first_name: firstName, last_name: lastName, updated_at: new Date().toISOString() });
+}
+
 const passwordSchema = z.string().min(8, "Password must be at least 8 characters.").max(72);
 
 /** Creates the sign-in account (or resets its password) so no one has to
@@ -38,15 +47,21 @@ export async function POST(req: NextRequest) {
       email: emailSchema,
       role: z.enum(["master", "manager", "editor"]),
       password: passwordSchema.optional(),
+      firstName: nameSchema.min(1, "Enter a first name."),
+      lastName: nameSchema.default(""),
     })
     .safeParse(await req.json().catch(() => null));
   if (!parsed.success)
     return NextResponse.json(
-      { error: parsed.error.issues.find((i) => i.path[0] === "password")?.message ?? "Enter a valid email and role." },
+      {
+        error:
+          parsed.error.issues.find((i) => i.path[0] === "password" || i.path[0] === "firstName")?.message ??
+          "Enter a valid email and role.",
+      },
       { status: 400 },
     );
 
-  const { email, role, password } = parsed.data;
+  const { email, role, password, firstName, lastName } = parsed.data;
   if (isAdminEmail(email))
     return NextResponse.json({ error: "That account is already a master account." }, { status: 400 });
 
@@ -54,6 +69,13 @@ export async function POST(req: NextRequest) {
     .from("admin_users")
     .upsert({ email, role, added_by: me.email });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  const { error: nameError } = await saveName(email, firstName, lastName);
+  if (nameError)
+    return NextResponse.json(
+      { error: "Added, but the name wasn't saved. Run the 0014_admin_profiles.sql migration in Supabase." },
+      { status: 500 },
+    );
 
   if (password) {
     const pwError = await setLoginPassword(email, password);
@@ -104,5 +126,26 @@ export async function DELETE(req: NextRequest) {
 
   const { error } = await supabaseAdmin().from("admin_users").delete().eq("email", parsed.data.email);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ ok: true });
+}
+
+// PATCH /api/admin/users — change someone's first/last name. Master only.
+// Works for every account, including the owner accounts from ADMIN_EMAILS.
+export async function PATCH(req: NextRequest) {
+  const me = await getMasterUser();
+  if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const parsed = z
+    .object({ email: emailSchema, firstName: nameSchema.min(1, "Enter a first name."), lastName: nameSchema.default("") })
+    .safeParse(await req.json().catch(() => null));
+  if (!parsed.success)
+    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid request" }, { status: 400 });
+
+  const { error } = await saveName(parsed.data.email, parsed.data.firstName, parsed.data.lastName);
+  if (error)
+    return NextResponse.json(
+      { error: "Couldn't save. Run the 0014_admin_profiles.sql migration in Supabase." },
+      { status: 500 },
+    );
   return NextResponse.json({ ok: true });
 }

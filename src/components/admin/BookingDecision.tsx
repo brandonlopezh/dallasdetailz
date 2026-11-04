@@ -57,6 +57,7 @@ export default function BookingDecision({ b, tz }: { b: AdminBooking; tz: string
     const ok = await patch({
       scheduled_start: start.toISOString(),
       scheduled_end: new Date(start.getTime() + durationMs).toISOString(),
+      offered: true,
     });
     if (ok) {
       setDeclining(false);
@@ -71,17 +72,18 @@ export default function BookingDecision({ b, tz }: { b: AdminBooking; tz: string
 
   return (
     <div>
-      <div className="grid grid-cols-[2fr_1fr] gap-2">
-        <BigButton tone="success" onClick={approve} disabled={busy} className="!text-xl">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3">
+        <BigButton tone="solid-success" onClick={approve} disabled={busy} className="!min-h-12 !px-3 !text-sm sm:!min-h-14 sm:!text-[16px]">
           <span aria-hidden="true">✓</span> Accept
         </BigButton>
-        <BigButton tone="danger" onClick={() => setDeclining((v) => !v)} disabled={busy} className="!gap-1 !px-2 !text-sm">
+        <BigButton tone="danger" onClick={() => setDeclining((v) => !v)} disabled={busy} className="!min-h-12 !px-3 !text-sm sm:!min-h-14 sm:!text-[16px]">
           <span aria-hidden="true">✕</span> Decline
         </BigButton>
       </div>
+      {!declining && <p className="mt-2 text-xs text-muted">Decline lets you offer a different time instead.</p>}
 
       {declining && (
-        <div className="mt-3 grid gap-2 rounded-[var(--radius-md)] border border-border bg-base p-3">
+        <div className="mt-4 grid gap-3 rounded-[var(--radius-md)] border border-border bg-base p-4">
           <label htmlFor={inputId} className="text-sm font-semibold">
             Offer a different time instead
           </label>
