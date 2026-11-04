@@ -11,10 +11,7 @@ export default async function NewBookingPage() {
       <Link href="/admin" className="text-sm text-muted hover:text-ink">
         ← Today
       </Link>
-      <h1 className="mt-2 font-[family-name:var(--font-display)] text-2xl font-extrabold">
-        New booking
-      </h1>
-      <p className="mb-5 text-sm text-muted">
+      <p className="mb-5 mt-1 text-sm text-muted">
         For phone, walk-up, or Instagram customers.
       </p>
       <div className="rounded-[var(--radius-lg)] border border-border bg-surface p-5 sm:p-8">

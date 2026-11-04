@@ -37,4 +37,4 @@ export const toLocalInput = (iso: string) => {
 
 /** Classes that keep iOS Safari's datetime-local from overflowing its card. */
 export const DATETIME_INPUT =
-  "block w-full min-w-0 max-w-full appearance-none rounded-[var(--radius-sm)] border border-border bg-surface px-3 py-3 text-base text-ink";
+  "block w-full min-w-0 max-w-full appearance-none rounded-[var(--radius-sm)] border border-border bg-surface px-3 py-3 text-[16px] text-ink";

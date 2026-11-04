@@ -59,7 +59,7 @@ export default function ManualBookingForm() {
   };
 
   const input =
-    "w-full rounded-[var(--radius-sm)] border border-border bg-base px-3 py-3 text-base";
+    "w-full rounded-[var(--radius-sm)] border border-border bg-base px-3 py-3 text-[16px] text-ink";
 
   return (
     <form onSubmit={submit} className="grid grid-cols-1 gap-4">
@@ -139,7 +139,7 @@ export default function ManualBookingForm() {
       <button
         type="submit"
         disabled={busy}
-        className="tap min-h-14 rounded-[var(--radius-md)] bg-accent px-5 text-base font-bold text-white disabled:opacity-50"
+        className="tap min-h-14 rounded-[var(--radius-md)] bg-accent px-5 text-[16px] font-bold text-white disabled:opacity-50"
       >
         {busy ? "Creating…" : "Create booking"}
       </button>

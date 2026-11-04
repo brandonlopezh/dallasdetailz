@@ -48,11 +48,7 @@ export default async function BookingDetail({
 
   return (
     <div className="min-w-0">
-      <Link href="/admin" className="inline-flex min-h-11 items-center text-sm font-semibold text-muted hover:text-ink">
-        ← Back to dashboard
-      </Link>
-
-      <div className="mt-2 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_25rem]">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_25rem]">
         {/* Hero */}
         <section className={`${CARD} space-y-5 !p-6 sm:!p-8`}>
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -71,9 +67,9 @@ export default async function BookingDetail({
           </div>
 
           <div>
-            <h1 className="font-[family-name:var(--font-display)] text-4xl font-extrabold leading-tight sm:text-5xl">
+            <h2 className="font-[family-name:var(--font-display)] text-4xl font-extrabold leading-tight sm:text-5xl">
               {formatInTz(b.scheduled_start, tz, DAY_OPTS)}
-            </h1>
+            </h2>
             <p className="mt-1 text-xl font-semibold text-link sm:text-2xl">
               {formatInTz(b.scheduled_start, tz, TIME_OPTS)}
               <span className="text-muted"> – {formatInTz(b.scheduled_end, tz, TIME_OPTS)}</span>
@@ -147,6 +143,14 @@ export default async function BookingDetail({
         {/* Actions — right column on desktop, directly under the hero on phones */}
         <div>
           <BookingActions b={b} tz={tz} />
+          <div className="mt-3 flex justify-end">
+            <Link
+              href="/admin"
+              className="inline-flex min-h-11 items-center text-sm font-semibold text-muted hover:text-ink"
+            >
+              ← Back to dashboard
+            </Link>
+          </div>
         </div>
 
       </div>

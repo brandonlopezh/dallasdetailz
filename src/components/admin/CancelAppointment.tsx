@@ -53,7 +53,7 @@ export default function CancelAppointment({
         }}
         className={
           className ??
-          "tap min-h-[52px] w-full rounded-[var(--radius-md)] border border-danger/60 bg-surface px-5 text-base font-bold text-danger-text"
+          "tap min-h-[52px] w-full rounded-[var(--radius-md)] border border-danger/60 bg-surface px-5 text-[16px] font-bold text-danger-text"
         }
       >
         Cancel appointment

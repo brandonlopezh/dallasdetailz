@@ -16,17 +16,17 @@ function isActive(pathname: string, href: string) {
 /** "Detailer Dashboard / Hi {name}" — the very top of the Today screen, above the tabs. */
 export function DashGreeting({ firstName }: { firstName: string }) {
   const pathname = usePathname();
-  // Same greeting on every dashboard tab so switching tabs never feels like a new page;
-  // booking detail / new-booking screens keep their own heading.
-  if (pathname.startsWith("/admin/bookings")) return null;
-  const Heading = pathname === "/admin" ? "h1" : "p";
+  // Same big heading block on every dashboard screen so moving around never feels like a new page.
+    const isNew = pathname === "/admin/bookings/new";
+  const isDetail = pathname.startsWith("/admin/bookings/") && !isNew;
+  const Heading = pathname === "/admin" || isDetail || isNew ? "h1" : "p";
   return (
     <div className="mx-auto max-w-5xl px-5 pb-5 pt-6 sm:px-6 sm:pb-8 sm:pt-12">
       <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted sm:text-sm">
         Detailer Dashboard
       </p>
       <Heading className="mt-3 break-words font-[family-name:var(--font-display)] text-5xl font-extrabold leading-[1.05] sm:mt-4 sm:text-7xl">
-        Hi {firstName}
+        {isNew ? "New Booking" : isDetail ? "Detail Information" : `Hi ${firstName}`}
       </Heading>
     </div>
   );
@@ -37,7 +37,7 @@ export function DashTabs({ items, pending }: { items: NavItem[]; pending: number
   const pathname = usePathname();
   return (
     <nav aria-label="Admin sections" className="border-b border-border">
-      <ul className="mx-auto flex max-w-5xl px-4">
+      <ul className="mx-auto flex max-w-5xl overflow-x-auto px-2 sm:px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {items.map((n) => {
           const active = isActive(pathname, n.href);
           return (
@@ -45,7 +45,7 @@ export function DashTabs({ items, pending }: { items: NavItem[]; pending: number
               <Link
                 href={n.href}
                 aria-current={active ? "page" : undefined}
-                className={`relative -mb-px flex min-h-12 items-center justify-center gap-2 border-b-2 px-5 text-sm font-bold transition-colors ${
+                className={`relative -mb-px flex min-h-12 items-center justify-center gap-1.5 whitespace-nowrap border-b-2 px-2 text-sm font-bold sm:gap-2 sm:px-5 transition-colors ${
                   active
                     ? "border-accent-hi text-ink"
                     : "border-transparent text-muted hover:text-ink"

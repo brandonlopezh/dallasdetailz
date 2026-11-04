@@ -9,6 +9,7 @@ type Role = "master" | "manager" | "editor";
 const NAV: (NavItem & { roles: Role[] })[] = [
   { href: "/admin", label: "Today", roles: ["master", "manager"] },
   { href: "/admin/requests", label: "Requests", badge: true, roles: ["master", "manager"] },
+  { href: "/admin/customers", label: "Customers", roles: ["master", "manager"] },
   { href: "/admin/website", label: "Settings", roles: ["master", "manager", "editor"] },
 ];
 

@@ -4,6 +4,7 @@ import { getSettings } from "@/lib/catalog";
 import { listBookings, listCustomers, vehicleLabel } from "@/lib/admin-bookings";
 import { BookingPopupCard, PaymentBadge, ScheduledCard, money } from "@/components/admin/JobList";
 import Carousel from "@/components/admin/Carousel";
+import NewCustomer from "@/components/admin/NewCustomer";
 import CustomerCard from "@/components/admin/CustomerCard";
 import TwoWeekStrip from "@/components/admin/TwoWeekStrip";
 import DayJobsDialog from "@/components/admin/DayJobsDialog";
@@ -131,36 +132,36 @@ export default async function TodayView({
       </div>
 
       <section className={TILE} aria-labelledby="cal-h">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-3">
           <h2 id="cal-h" className={TILE_TITLE}>Next two weeks</h2>
-          <Link
-            href={calendarHref(todayKey.slice(0, 7))}
-            className="tap inline-flex items-center rounded-[var(--radius-sm)] border border-border px-3 text-sm font-semibold text-link hover:border-accent"
-          >
-            View full calendar
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/admin/bookings/new"
+              className="tap inline-flex items-center rounded-[var(--radius-sm)] bg-accent px-4 text-sm font-bold text-white"
+            >
+              + New booking
+            </Link>
+            <Link
+              href={calendarHref(todayKey.slice(0, 7))}
+              className="tap inline-flex items-center rounded-[var(--radius-sm)] border border-border px-3 text-sm font-semibold text-link hover:border-accent"
+            >
+              View full calendar
+            </Link>
+          </div>
         </div>
         <div className="mt-4">
           <TwoWeekStrip todayKey={todayKey} bookings={stripJobs} tz={tz} />
         </div>
       </section>
 
-      <div className="flex justify-end">
-        <Link
-          href="/admin/bookings/new"
-          className="tap inline-flex items-center rounded-[var(--radius-sm)] bg-accent px-4 text-sm font-bold text-white"
-        >
-          + New booking
-        </Link>
-      </div>
-
       {/* Customers */}
       <section className={TILE} aria-labelledby="cust-h">
-        <div className="flex items-baseline justify-between gap-3">
-          <h2 id="cust-h" className={TILE_TITLE}>Customers</h2>
-          <p className="text-sm text-muted">
-            {customers.length} total
-          </p>
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-3">
+          <div>
+            <h2 id="cust-h" className={TILE_TITLE}>Customers</h2>
+            <p className="text-sm text-muted">{customers.length} total</p>
+          </div>
+          <NewCustomer />
         </div>
         {customers.length === 0 ? (
           <p className="mt-4 text-muted">No customers yet.</p>
