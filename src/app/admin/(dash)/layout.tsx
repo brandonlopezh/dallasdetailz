@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getAdminUser } from "@/lib/auth";
+import { getAdminStatus } from "@/lib/auth";
 import { countRequests } from "@/lib/admin-bookings";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import AdminShell from "@/components/admin/AdminShell";
@@ -35,8 +35,10 @@ export default async function DashLayout({
     );
   }
 
-  const user = await getAdminUser();
-  if (!user) redirect("/admin/login");
+  const { user, reason } = await getAdminStatus();
+  if (!user) {
+    redirect(reason ? `/admin/login?error=${encodeURIComponent(reason)}` : "/admin/login");
+  }
 
   const requests = user.role === "editor" ? 0 : await countRequests();
   const nav = NAV.filter((n) => n.roles.includes(user.role));

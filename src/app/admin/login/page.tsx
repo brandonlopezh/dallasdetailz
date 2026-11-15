@@ -22,7 +22,9 @@ export default async function AdminLoginPage({
         operators can access the admin.
       </p>
       {error && (
-        <p className="mb-4 text-sm text-danger-text">Sign-in failed: {error}</p>
+        <p role="alert" className="mb-4 text-sm text-danger-text">
+          {error}
+        </p>
       )}
       <LoginForm />
     </main>

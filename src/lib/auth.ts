@@ -86,18 +86,50 @@ async function roleForEmail(email: string): Promise<AdminRole | null> {
     : null;
 }
 
-/** Returns the signed-in admin (any role), or null if not authenticated / not allowed. */
-export async function getAdminUser(): Promise<AdminUser | null> {
-  if (!isSupabaseConfigured()) return null;
+export type AdminStatus =
+  | { user: AdminUser; reason?: undefined }
+  | { user: null; reason: string };
+
+/**
+ * Like getAdminUser(), but says *why* access was denied so the login page can
+ * show it instead of silently bouncing the operator.
+ */
+export async function getAdminStatus(): Promise<AdminStatus> {
+  if (!isSupabaseConfigured()) {
+    return { user: null, reason: "Admin isn't configured on the server (missing Supabase env vars)." };
+  }
   const supabase = await supabaseServer();
   const {
     data: { user },
+    error,
   } = await supabase.auth.getUser();
-  if (!user?.email) return null;
-  const role = await roleForEmail(user.email);
-  if (!role) return null;
+  if (!user?.email) {
+    // No session at all is the normal "signed out" case — only report real errors.
+    return {
+      user: null,
+      reason: error && error.name !== "AuthSessionMissingError" ? `Session problem: ${error.message}` : "",
+    };
+  }
+  let role: AdminRole | null;
+  try {
+    role = await roleForEmail(user.email);
+  } catch (e) {
+    console.error("[admin auth] role lookup failed", e);
+    return { user: null, reason: "Couldn't check admin permissions (database error). Try again." };
+  }
+  if (!role) {
+    return {
+      user: null,
+      reason: `${user.email} is signed in but isn't on the admin list. Ask an owner to add it on the Users page.`,
+    };
+  }
   const { name, firstName } = await displayName(user.email, user.user_metadata);
-  return { id: user.id, email: user.email, name, firstName, role };
+  return { user: { id: user.id, email: user.email, name, firstName, role } };
+}
+
+/** Returns the signed-in admin (any role), or null if not authenticated / not allowed. */
+export async function getAdminUser(): Promise<AdminUser | null> {
+  return (await getAdminStatus()).user;
 }
 
 /** Admin who may touch bookings/customers (not editors). */
