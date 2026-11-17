@@ -42,25 +42,35 @@ export function money(n: number) {
   return `$${Math.round(Number(n))}`;
 }
 
-/** Compact row for schedule / requests lists. */
-export function BookingRow({ b, tz }: { b: AdminBooking; tz: string }) {
+/**
+ * Compact row for schedule / requests lists. `stacked` keeps the two-line
+ * phone layout at every width, for narrow columns.
+ */
+export function BookingRow({ b, tz, stacked }: { b: AdminBooking; tz: string; stacked?: boolean }) {
   return (
     <Link
       href={`/admin/bookings/${b.id}`}
-      className="grid min-w-0 grid-cols-[1fr_auto] gap-x-3 gap-y-1 rounded-[var(--radius-md)] border border-border bg-surface p-3 transition-colors hover:border-accent sm:grid-cols-[4.5rem_1fr_auto] sm:items-center"
+      className={`grid min-w-0 grid-cols-[1fr_auto] gap-x-3 gap-y-1 rounded-[var(--radius-md)] border border-border bg-surface p-3 transition-colors hover:border-accent ${
+        stacked ? "" : "sm:grid-cols-[4.5rem_1fr_auto] sm:items-center"
+      }`}
     >
-      <div className="text-sm font-semibold sm:row-auto">
+      <div className="text-sm font-semibold">
+        {stacked && <>{formatInTz(b.scheduled_start, tz, { weekday: "short", month: "short", day: "numeric" })} · </>}
         {formatInTz(b.scheduled_start, tz, TIME_OPTS)}
       </div>
-      <div className="col-start-2 row-start-1 flex flex-col items-end gap-1 sm:col-start-3 sm:row-start-1">
+      <div
+        className={`col-start-2 row-start-1 flex flex-col items-end gap-1 ${
+          stacked ? "" : "sm:col-start-3 sm:row-start-1"
+        }`}
+      >
         <StatusBadge status={b.status} />
         <p className="text-sm font-bold">{money(b.total)}</p>
       </div>
-      <div className="col-span-2 min-w-0 sm:col-span-1 sm:col-start-2 sm:row-start-1">
-        <p className="font-semibold sm:truncate">
+      <div className={`col-span-2 min-w-0 ${stacked ? "" : "sm:col-span-1 sm:col-start-2 sm:row-start-1"}`}>
+        <p className={`font-semibold ${stacked ? "" : "sm:truncate"}`}>
           {b.services?.name ?? "Service"} · {b.customers?.name ?? "Customer"}
         </p>
-        <p className="text-xs text-muted sm:truncate">{b.service_address}</p>
+        <p className={`text-xs text-muted ${stacked ? "" : "sm:truncate"}`}>{b.service_address}</p>
       </div>
     </Link>
   );

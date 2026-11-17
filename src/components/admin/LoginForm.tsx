@@ -64,7 +64,7 @@ export default function LoginForm() {
   }
 
   const input =
-    "w-full rounded-[var(--radius-sm)] border border-border bg-surface px-4 py-3 text-ink outline-none focus:ring-2 focus:ring-accent";
+    "w-full rounded-[var(--radius-sm)] border border-border bg-base px-4 py-3 text-ink outline-none focus:ring-2 focus:ring-accent";
 
   return (
     <form onSubmit={submit} className="grid gap-3">

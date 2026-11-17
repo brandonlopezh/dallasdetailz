@@ -37,7 +37,7 @@ export default function RequestCard({
         </p>
       )}
       <div className="flex items-start justify-between gap-3">
-        <p className="font-[family-name:var(--font-display)] text-3xl font-extrabold leading-tight sm:text-4xl">
+        <p className="font-[family-name:var(--font-display)] text-2xl font-extrabold leading-tight sm:text-3xl lg:text-2xl">
           {when}
         </p>
         <Link href={`/admin/bookings/${b.id}`} className="shrink-0 pt-1.5 text-sm font-semibold text-link">

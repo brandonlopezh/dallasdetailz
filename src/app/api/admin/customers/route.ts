@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getBookingsUser } from "@/lib/auth";
+import { findCustomerByPhone, phoneForStorage } from "@/lib/customers";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 const createSchema = z.object({
@@ -24,11 +25,7 @@ export async function POST(req: NextRequest) {
   const c = parsed.data;
   const sb = supabaseAdmin();
 
-  const { data: existing } = await sb
-    .from("customers")
-    .select("name")
-    .eq("phone", c.phone)
-    .maybeSingle();
+  const existing = await findCustomerByPhone(sb, c.phone);
   if (existing)
     return NextResponse.json(
       { error: `That number already belongs to ${existing.name}.` },
@@ -37,7 +34,7 @@ export async function POST(req: NextRequest) {
 
   const { error } = await sb.from("customers").insert({
     name: c.name,
-    phone: c.phone,
+    phone: phoneForStorage(c.phone),
     email: c.email || null,
     instagram_handle: c.instagram?.replace(/^@/, "") || null,
   });

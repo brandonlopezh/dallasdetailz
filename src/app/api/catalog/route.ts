@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import { getAddons, getServices, getSettings } from "@/lib/catalog";
+import { getAddonsCached, getServicesCached, getSettingsCached } from "@/lib/catalog";
 
 // Public catalog for the booking flow: services + pricing, add-ons, and the
 // customer-relevant slice of business settings.
 export async function GET() {
   const [services, addons, settings] = await Promise.all([
-    getServices(),
-    getAddons(),
-    getSettings(),
+    getServicesCached(),
+    getAddonsCached(),
+    getSettingsCached(),
   ]);
 
   return NextResponse.json({

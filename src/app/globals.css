@@ -259,37 +259,39 @@ body::after {
 }
 
 /*
-  Admin palette: black or white backgrounds (no beige), neutral grays for
-  panels, the Dallas Detailz blue for buttons and links, and red / green /
+  Admin look. Soft neutral backgrounds instead of pure black/white (easier on
+  the eyes over a long session), white cards on a light gray page in light
+  mode, the Dallas Detailz blue for buttons and links, and red / green /
   orange for status labels. Set on body (not just #admin-root) so the page
-  behind and around the admin is black/white too, and the warm film grain is
-  turned off there. The public site keeps its own theme.
+  behind and around the admin matches, and the warm film grain is turned off
+  there. The public site keeps its own theme.
 */
 body:has(#admin-root) {
-  --color-base: #000000;
-  --color-surface: #0d0d0d;
-  --color-surface-alt: #1a1a1a;
-  --color-border: #2e2e2e;
-  --color-ink: #ffffff;
-  --color-muted: #a3a3a3;
+  --color-base: #0f1115;
+  --color-surface: #171a20;
+  --color-surface-alt: #20242c;
+  --color-border: #2b303a;
+  --color-ink: #f1f3f6;
+  --color-muted: #9aa3b0;
   --color-accent: #3f5c7e; /* Dallas Detailz blue */
   --color-accent-hi: #597ba1;
-  --color-link: #7a9cc4;
+  --color-link: #8fb0d6;
   --color-success: #16a34a;
   --color-success-text: #4ade80;
   --color-warning: #f97316;
   --color-warning-text: #fb923c;
   --color-danger: #dc2626;
   --color-danger-text: #f87171;
-  --topbar-border: #4a4a4a; /* pure black would vanish on the black page */
+  --topbar-border: #2b303a;
+  --admin-card-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
 }
 :root[data-theme="light"] body:has(#admin-root) {
-  --color-base: #ffffff;
+  --color-base: #f3f4f6;
   --color-surface: #ffffff;
-  --color-surface-alt: #f2f2f2;
-  --color-border: #d4d4d4;
-  --color-ink: #000000;
-  --color-muted: #525252;
+  --color-surface-alt: #eceef1;
+  --color-border: #dfe2e7;
+  --color-ink: #171a1f;
+  --color-muted: #5c6573;
   --color-accent: #3f5c7e;
   --color-accent-hi: #2f4a6a;
   --color-link: #2f4a6a;
@@ -299,10 +301,45 @@ body:has(#admin-root) {
   --color-warning-text: #9a3412;
   --color-danger: #b91c1c;
   --color-danger-text: #b91c1c;
-  --topbar-border: #000000;
+  --topbar-border: #dfe2e7;
+  --admin-card-shadow: 0 1px 2px rgb(16 24 40 / 0.05), 0 1px 3px rgb(16 24 40 / 0.06);
 }
 body:has(#admin-root)::after {
   display: none;
+}
+
+/*
+  Admin typography and shape. One typeface (Figtree, see lib/admin-font.ts)
+  for headings and text alike: headings used to be the heavy italic brand
+  font, which was tiring to read in a tool you look at all day. Corners are a
+  little rounder and cards get a faint shadow so they lift off the page.
+*/
+/* The brand font, captured before the admin swaps --font-display below, so
+   the wordmark in the admin top bar can still use it. */
+html {
+  --font-brand: var(--font-display);
+}
+#admin-root {
+  --font-display: var(--font-admin), system-ui, sans-serif;
+  --font-body: var(--font-admin), system-ui, sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+#admin-root [class*="--font-display"] {
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+#admin-root .font-extrabold { font-weight: 700; }
+#admin-root [class*="radius-lg"][class*="bg-surface"] {
+  box-shadow: var(--admin-card-shadow);
+}
+/* Numbers line up in lists and stat tiles. */
+#admin-root {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Filled accent buttons in the admin always use white text. */
@@ -333,13 +370,3 @@ body:has(#admin-root)::after {
     font-size: 16px;
   }
 }
-
-/*
-  Admin text weight. Every weight steps down one notch, and the display font
-  (Racing Sans One, which only ships a regular weight) is never faux-bolded,
-  which is what made headings look so thick.
-*/
-#admin-root .font-extrabold { font-weight: 700; }
-#admin-root .font-bold { font-weight: 600; }
-#admin-root .font-semibold { font-weight: 500; }
-#admin-root [class*="--font-display"] { font-weight: 400; }

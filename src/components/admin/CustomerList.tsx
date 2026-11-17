@@ -2,11 +2,11 @@
 
 import { useId, useMemo, useState } from "react";
 import type { AdminCustomer } from "@/lib/admin-bookings";
-import CustomerRow from "./CustomerRow";
+import CustomerCard from "./CustomerCard";
 
 const digits = (s: string) => s.replace(/\D/g, "");
 
-/** Searchable customer list: filters by name, phone, email or Instagram as you type. */
+/** Searchable customer tiles: filters by name, phone, email or Instagram as you type. */
 export default function CustomerList({ customers, tz }: { customers: AdminCustomer[]; tz: string }) {
   const [q, setQ] = useState("");
   const id = useId();
@@ -37,7 +37,7 @@ export default function CustomerList({ customers, tz }: { customers: AdminCustom
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search by name, phone or email"
           autoComplete="off"
-          className="w-full rounded-[var(--radius-md)] border border-border bg-surface px-4 py-3 text-[16px] text-ink placeholder:text-muted"
+          className="w-full max-w-md rounded-[var(--radius-md)] border border-border bg-surface px-4 py-3 text-[16px] text-ink placeholder:text-muted"
         />
         {q.trim() && (
           <p className="mt-2 text-sm text-muted" aria-live="polite">
@@ -51,10 +51,10 @@ export default function CustomerList({ customers, tz }: { customers: AdminCustom
           {customers.length === 0 ? "No customers yet." : "No customers match that search."}
         </p>
       ) : (
-        <ul className="divide-y divide-border overflow-hidden rounded-[var(--radius-lg)] border border-border bg-surface">
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {shown.map((c) => (
-            <li key={c.id}>
-              <CustomerRow c={c} tz={tz} />
+            <li key={c.id} className="min-w-0">
+              <CustomerCard c={c} tz={tz} standalone />
             </li>
           ))}
         </ul>

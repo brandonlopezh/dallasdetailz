@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useId, useRef, useState } from "react";
 import { useDialog } from "@/lib/useDialog";
+import type { Service } from "@/lib/types";
 import BookingFlow, { useBookingText } from "./BookingFlow";
 
 interface BookingModalCtx {
@@ -17,7 +18,14 @@ export const useBookingModal = () => useContext(Ctx);
  * instead of navigating away. Provider sits above the page so any button can
  * call `open(serviceId?)`.
  */
-export function BookingModalProvider({ children }: { children: React.ReactNode }) {
+export function BookingModalProvider({
+  children,
+  services,
+}: {
+  children: React.ReactNode;
+  /** Already loaded for the homepage; handed to the form so it opens instantly. */
+  services?: Service[];
+}) {
   const [state, setState] = useState<{ serviceId?: string; n: number } | null>(null);
 
   const open = useCallback(
@@ -29,12 +37,20 @@ export function BookingModalProvider({ children }: { children: React.ReactNode }
   return (
     <Ctx.Provider value={{ open }}>
       {children}
-      {state && <BookingDialog key={state.n} serviceId={state.serviceId} onClose={dismiss} />}
+      {state && <BookingDialog key={state.n} serviceId={state.serviceId} services={services} onClose={dismiss} />}
     </Ctx.Provider>
   );
 }
 
-function BookingDialog({ serviceId, onClose }: { serviceId?: string; onClose: () => void }) {
+function BookingDialog({
+  serviceId,
+  services,
+  onClose,
+}: {
+  serviceId?: string;
+  services?: Service[];
+  onClose: () => void;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const titleId = useId();
   const b = useBookingText();
@@ -73,7 +89,7 @@ function BookingDialog({ serviceId, onClose }: { serviceId?: string; onClose: ()
           </button>
         </div>
         <div className="overflow-y-auto px-4 py-5">
-          <BookingFlow initialServiceId={serviceId} onDone={onClose} />
+          <BookingFlow initialServiceId={serviceId} initialServices={services} onDone={onClose} />
         </div>
       </div>
     </div>

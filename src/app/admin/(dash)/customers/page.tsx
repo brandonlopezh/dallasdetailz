@@ -13,12 +13,9 @@ export default async function CustomersPage() {
   const tz = settings.timezone;
 
   return (
-    <div className="space-y-5 pt-2">
+    <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-3">
-        <div>
-          <h2 className="font-[family-name:var(--font-display)] text-xl font-extrabold">Customers</h2>
-          <p className="text-sm text-muted">{customers.length} total</p>
-        </div>
+        <p className="text-sm text-muted">{customers.length} total</p>
         <NewCustomer />
       </div>
 

@@ -1,5 +1,6 @@
 import type { Addon, BusinessSettings, Service } from "./types";
 import { isSupabaseConfigured, supabaseAdmin } from "./supabase/server";
+import { memo } from "./memo";
 
 /**
  * Static fallback that mirrors supabase/migrations/0003_seed.sql. Lets the
@@ -143,3 +144,12 @@ export async function getSettings(): Promise<BusinessSettings> {
   if (error || !data) return DEFAULT_SETTINGS;
   return data as unknown as BusinessSettings;
 }
+
+// Public pages and the booking APIs read the catalog several times per visit
+// (homepage, booking popup, time list, submit). Prices and hours rarely
+// change, so those callers share one lookup per minute. Admin pages keep
+// using the uncached versions above.
+const CATALOG_TTL_MS = 60_000;
+export const getServicesCached = () => memo("catalog:services", CATALOG_TTL_MS, getServices);
+export const getAddonsCached = () => memo("catalog:addons", CATALOG_TTL_MS, getAddons);
+export const getSettingsCached = () => memo("catalog:settings", CATALOG_TTL_MS, getSettings);

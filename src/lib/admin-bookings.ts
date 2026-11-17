@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { supabaseAdmin } from "./supabase/server";
 import type { BookingSource, BookingStatus, VehicleTier } from "./types";
 
@@ -77,20 +78,6 @@ export async function getBooking(id: string): Promise<AdminBooking | null> {
   return data as unknown as AdminBooking;
 }
 
-/** Looks up a booking by its operator approval_token (the /confirm/[token]
- * link). Distinct from the customer-facing manage_token — see
- * supabase/migrations/0005_approval.sql. */
-export async function getBookingByApprovalToken(
-  token: string,
-): Promise<AdminBooking | null> {
-  const { data } = await supabaseAdmin()
-    .from("bookings")
-    .select(SELECT)
-    .eq("approval_token", token)
-    .maybeSingle();
-  return (data as unknown as AdminBooking) ?? null;
-}
-
 export interface AdminCustomer {
   id: string;
   name: string;
@@ -102,24 +89,30 @@ export interface AdminCustomer {
   last_detail: string | null;
 }
 
-/** Every customer, A–Z, for the dashboard's Customers section. */
-export async function listCustomers(): Promise<AdminCustomer[]> {
+/**
+ * Customers A–Z with their most recent past job. Pass `limit` for a short
+ * preview (the dashboard); without it, up to 500 are returned.
+ */
+export async function listCustomers(opts: { limit?: number } = {}): Promise<AdminCustomer[]> {
   const sb = supabaseAdmin();
-  const [{ data, error }, { data: past }] = await Promise.all([
-    sb
-      .from("customers")
-      .select("id, name, phone, email, instagram_handle, created_at")
-      .order("name", { ascending: true })
-      .limit(500),
-    sb
-      .from("bookings")
-      .select("customer_id, scheduled_start")
-      .in("status", ["confirmed", "in_progress", "completed"])
-      .lte("scheduled_start", new Date().toISOString())
-      .order("scheduled_start", { ascending: false })
-      .limit(2000),
-  ]);
+  const { data, error } = await sb
+    .from("customers")
+    .select("id, name, phone, email, instagram_handle, created_at")
+    .order("name", { ascending: true })
+    .limit(opts.limit ?? 500);
   if (error || !data) return [];
+
+  let pastQuery = sb
+    .from("bookings")
+    .select("customer_id, scheduled_start")
+    .in("status", ["confirmed", "in_progress", "completed"])
+    .lte("scheduled_start", new Date().toISOString())
+    .order("scheduled_start", { ascending: false })
+    .limit(2000);
+  // A preview only needs the history of the customers it shows.
+  if (opts.limit) pastQuery = pastQuery.in("customer_id", data.map((c) => c.id as string));
+  const { data: past } = data.length > 0 ? await pastQuery : { data: [] };
+
   // Newest first, so the first booking seen per customer is their latest.
   const last = new Map<string, string>();
   for (const r of past ?? []) {
@@ -129,13 +122,21 @@ export async function listCustomers(): Promise<AdminCustomer[]> {
   return data.map((c) => ({ ...(c as Omit<AdminCustomer, "last_detail">), last_detail: last.get(c.id) ?? null }));
 }
 
-export async function countRequests(): Promise<number> {
+export async function countCustomers(): Promise<number> {
+  const { count } = await supabaseAdmin()
+    .from("customers")
+    .select("*", { count: "exact", head: true });
+  return count ?? 0;
+}
+
+/** Open requests. cache(): the layout (tab badge) and the Today page share one lookup. */
+export const countRequests = cache(async (): Promise<number> => {
   const { count } = await supabaseAdmin()
     .from("bookings")
     .select("*", { count: "exact", head: true })
     .eq("status", "requested");
   return count ?? 0;
-}
+});
 
 /** "2020 Toyota Camry", or null when the customer gave no vehicle. */
 export function vehicleLabel(v: AdminBooking["vehicles"]): string | null {

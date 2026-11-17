@@ -18,6 +18,7 @@ import {
   type Parts,
 } from "@/lib/content-schema";
 import MediaManager from "@/components/admin/MediaManager";
+import NotifyEmails from "@/components/admin/NotifyEmails";
 import type { Lang } from "@/lib/translations";
 
 interface ServiceRow {
@@ -33,6 +34,8 @@ interface Props {
   parts: Parts;
   services: ServiceRow[];
   initialView?: string;
+  /** Booking-request email recipients. Omitted for website-only editors, who don't see that panel. */
+  notify?: { emails: string[]; saved: boolean; needsSetup: boolean; max: number };
 }
 
 type Faq = { q: string; a: string }[];
@@ -45,6 +48,9 @@ const iconBtn =
 const LANG_LABEL: Record<Lang, string> = { en: "English", es: "Español" };
 const SECTION_LABEL = Object.fromEntries(SECTION_DEFS.map((s) => [s.id, s.label]));
 
+const BOOKINGS_MENU = { heading: "Bookings", items: [{ id: "notify", label: "Request emails" }] };
+// Panels that save on their own, so the shared Save bar stays out of the way.
+const SELF_SAVING = ["images", "notify"];
 const MENU = [
   {
     heading: "Content",
@@ -64,7 +70,7 @@ const MENU = [
     ],
   },
 ];
-const VIEW_IDS = MENU.flatMap((g) => g.items.map((i) => i.id));
+const VIEW_IDS = [...MENU, BOOKINGS_MENU].flatMap((g) => g.items.map((i) => i.id));
 
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
@@ -80,8 +86,11 @@ function clean(v: unknown): unknown {
   return typeof v === "string" ? v.trim() : v;
 }
 
-export default function WebsiteEditor({ live, defaults, parts: initialParts, services, initialView }: Props) {
-  const [view, setView] = useState(VIEW_IDS.includes(initialView ?? "") ? initialView! : "prices");
+export default function WebsiteEditor({ live, defaults, parts: initialParts, services, initialView, notify }: Props) {
+  const menu = notify ? [BOOKINGS_MENU, ...MENU] : MENU;
+  const [view, setView] = useState(
+    VIEW_IDS.includes(initialView ?? "") && (initialView !== "notify" || notify) ? initialView! : "prices",
+  );
   const [lang, setLang] = useState<Lang>("en");
 
   // One shared set of edits across every panel, saved together.
@@ -517,6 +526,16 @@ export default function WebsiteEditor({ live, defaults, parts: initialParts, ser
         </div>
       );
 
+    if (view === "notify" && notify)
+      return (
+        <NotifyEmails
+          initial={notify.emails}
+          saved={notify.saved}
+          needsSetup={notify.needsSetup}
+          max={notify.max}
+        />
+      );
+
     if (view === "images")
       return (
         <div>
@@ -554,11 +573,11 @@ export default function WebsiteEditor({ live, defaults, parts: initialParts, ser
   };
 
   return (
-    <div className="pb-28 md:grid md:grid-cols-[13rem_1fr] md:items-start md:gap-8">
+    <div className="pb-24 md:grid md:grid-cols-[13rem_1fr] md:items-start md:gap-8">
       {/* Side menu (a scrolling row of pills on phones) */}
-      <nav aria-label="What to edit" className="md:sticky md:top-20">
+      <nav aria-label="What to edit" className="md:sticky md:top-24">
         <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-3 md:mx-0 md:flex-col md:gap-5 md:overflow-visible md:px-0 md:pb-0">
-          {MENU.map((g) => (
+          {menu.map((g) => (
             <div key={g.heading} className="flex shrink-0 gap-2 md:flex-col md:gap-1">
               <p className="hidden px-3 text-xs font-bold uppercase tracking-wide text-muted md:block">
                 {g.heading}
@@ -589,8 +608,8 @@ export default function WebsiteEditor({ live, defaults, parts: initialParts, ser
       <div className="min-w-0 pt-2 md:pt-0">{panel()}</div>
 
       {/* Save bar (Images save on their own, so it stays out of the way there) */}
-      <div hidden={view === "images" && !dirty} className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-base/90 p-3 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-1">
+      <div hidden={SELF_SAVING.includes(view) && !dirty} className="fixed inset-x-0 bottom-[calc(3.75rem+env(safe-area-inset-bottom))] z-40 border-t border-border bg-base/90 p-3 backdrop-blur md:bottom-0">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-1">
           <p className="min-w-0 text-sm" role="status">
             {error ? (
               <span className="text-danger-text">{error}</span>

@@ -1,6 +1,7 @@
 import "server-only";
 import { createDAVClient } from "tsdav";
 import type { BusyRange } from "./availability";
+import { tzOffsetMinutes } from "./tz";
 
 /**
  * Pulls busy blocks from an Apple/iCloud calendar via CalDAV so personal
@@ -33,9 +34,22 @@ export function isAppleCalendarConfigured(): boolean {
   );
 }
 
+/** Wall-clock time in `tz` → epoch ms. Null if `tz` isn't a zone this runtime knows. */
+function wallTimeToUtcMs(
+  y: number, mo: number, d: number, h: number, mi: number, s: number,
+  tz: string,
+): number | null {
+  try {
+    const naive = Date.UTC(y, mo - 1, d, h, mi, s);
+    return naive - tzOffsetMinutes(new Date(naive), tz) * 60_000;
+  } catch {
+    return null;
+  }
+}
+
 // Very small ICS reader — just enough to pull DTSTART/DTEND/TRANSP out of
 // VEVENT blocks. Not a full RFC 5545 parser (no RRULE expansion, see above).
-function parseBusyRangesFromIcs(ics: string): BusyRange[] {
+export function parseBusyRangesFromIcs(ics: string, businessTz: string): BusyRange[] {
   // Unfold RFC 5545 continuation lines (a line starting with a space or tab
   // is a continuation of the previous line).
   const unfolded = ics.replace(/\r\n[ \t]/g, "").replace(/\n[ \t]/g, "");
@@ -47,26 +61,27 @@ function parseBusyRangesFromIcs(ics: string): BusyRange[] {
   let dtend: string | null = null;
   let transparent = false;
 
-  const parseIcsDate = (raw: string): number | null => {
-    // raw looks like "20260825T140000Z", "20260825T140000", or "20260825"
-    // (all-day). TZID= form (local time in some other zone) is treated as
-    // if it were in the business timezone — an approximation, but the
-    // alternative is a full timezone database, which is out of scope here.
+  // `line` is a whole property line, e.g.
+  //   DTSTART:20260825T140000Z                      (UTC)
+  //   DTSTART;TZID=America/Chicago:20260825T140000  (local time in that zone)
+  //   DTSTART:20260825T140000                       ("floating": business zone)
+  //   DTSTART;VALUE=DATE:20260825                   (all day: business zone)
+  const parseIcsDate = (line: string): number | null => {
+    const idx = line.indexOf(":");
+    if (idx === -1) return null;
+    const raw = line.slice(idx + 1).trim();
+    const tzid = line.slice(0, idx).match(/;TZID=([^;:]+)/i)?.[1]?.replace(/"/g, "");
     const m = raw.match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})(Z)?)?$/);
     if (!m) return null;
-    const [, y, mo, d, h, mi, s, z] = m;
-    if (h === undefined) {
-      // All-day: treat as the full day, UTC-anchored (good enough for
-      // blocking purposes — see module doc for the timezone caveat).
-      return Date.UTC(Number(y), Number(mo) - 1, Number(d));
-    }
-    const ms = Date.UTC(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi), Number(s));
-    // Non-"Z" local times aren't converted from their source timezone; see
-    // caveat above.
-    return z ? ms : ms;
+    const [y, mo, d, h, mi, s] = m.slice(1, 7).map((v) => Number(v ?? 0));
+    if (m[7]) return Date.UTC(y, mo - 1, d, h, mi, s);
+    return (
+      (tzid ? wallTimeToUtcMs(y, mo, d, h, mi, s, tzid) : null) ??
+      wallTimeToUtcMs(y, mo, d, h, mi, s, businessTz)
+    );
   };
 
-  const isAllDay = (raw: string) => /^\d{8}$/.test(raw);
+  const isAllDay = (line: string) => /:\d{8}\s*$/.test(line);
 
   for (const line of lines) {
     if (line.startsWith("BEGIN:VEVENT")) {
@@ -93,15 +108,9 @@ function parseBusyRangesFromIcs(ics: string): BusyRange[] {
     }
     if (!inEvent) continue;
 
-    if (line.startsWith("DTSTART")) {
-      const idx = line.indexOf(":");
-      if (idx !== -1) dtstart = line.slice(idx + 1).trim();
-    } else if (line.startsWith("DTEND")) {
-      const idx = line.indexOf(":");
-      if (idx !== -1) dtend = line.slice(idx + 1).trim();
-    } else if (line.startsWith("TRANSP:TRANSPARENT")) {
-      transparent = true;
-    }
+    if (line.startsWith("DTSTART")) dtstart = line;
+    else if (line.startsWith("DTEND")) dtend = line;
+    else if (line.startsWith("TRANSP:TRANSPARENT")) transparent = true;
   }
 
   return ranges;
@@ -115,6 +124,7 @@ function parseBusyRangesFromIcs(ics: string): BusyRange[] {
 export async function fetchAppleCalendarBusyRanges(
   windowStart: Date,
   windowEnd: Date,
+  businessTz: string,
 ): Promise<BusyRange[]> {
   if (!isAppleCalendarConfigured()) return [];
 
@@ -145,7 +155,7 @@ export async function fetchAppleCalendarBusyRanges(
         },
       });
       for (const obj of objects) {
-        if (obj.data) all.push(...parseBusyRangesFromIcs(obj.data));
+        if (obj.data) all.push(...parseBusyRangesFromIcs(obj.data, businessTz));
       }
     }
     return all;

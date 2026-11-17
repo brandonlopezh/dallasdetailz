@@ -8,7 +8,7 @@ import BookingDecision from "./BookingDecision";
 import CalendarButtons from "./CalendarButtons";
 import CancelAppointment from "./CancelAppointment";
 import Sheet, { BigButton } from "./Sheet";
-import { DATETIME_INPUT, patchBooking, toLocalInput } from "./patchBooking";
+import { DATETIME_INPUT, fromTzInput, patchBooking, toTzInput } from "./patchBooking";
 
 const CANCELLABLE: BookingStatus[] = ["confirmed", "in_progress"];
 
@@ -20,7 +20,7 @@ export default function BookingActions({ b, tz }: { b: AdminBooking; tz: string 
   const [error, setError] = useState<string | null>(null);
   const [rescheduling, setRescheduling] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
-  const [newStart, setNewStart] = useState(toLocalInput(start));
+  const [newStart, setNewStart] = useState(toTzInput(start, tz));
 
   const durationMs = new Date(end).getTime() - new Date(start).getTime();
 
@@ -38,8 +38,8 @@ export default function BookingActions({ b, tz }: { b: AdminBooking; tz: string 
   };
 
   const doReschedule = async () => {
-    const startDate = new Date(newStart);
-    if (Number.isNaN(startDate.getTime())) return;
+    const startDate = fromTzInput(newStart, tz);
+    if (!startDate) return;
     const ok = await patch({
       scheduled_start: startDate.toISOString(),
       scheduled_end: new Date(startDate.getTime() + durationMs).toISOString(),

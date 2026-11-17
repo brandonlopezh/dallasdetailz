@@ -50,7 +50,7 @@ export default function TwoWeekStrip({
               key={key}
               href={n === 1 ? `/admin/bookings/${onlyJob.get(key)}` : calendarHref(key.slice(0, 7), key)}
               aria-label={`${key}, ${n} job${n === 1 ? "" : "s"}`}
-              className={`relative flex min-h-16 flex-col sm:min-h-20 items-center justify-center rounded-[var(--radius-md)] border text-base font-semibold transition-colors hover:border-accent ${
+              className={`relative flex min-h-16 flex-col sm:min-h-20 items-center justify-center rounded-[var(--radius-md)] border text-[1rem] font-semibold transition-colors hover:border-accent ${
                 isToday
                   ? "border-accent bg-accent text-white"
                   : n > 0

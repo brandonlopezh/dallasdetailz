@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/client";
 
-export default function SignOutButton() {
+/** `className` restyles it (e.g. as a row inside the profile menu). */
+export default function SignOutButton({ className }: { className?: string }) {
   const router = useRouter();
   return (
     <button
@@ -16,7 +17,10 @@ export default function SignOutButton() {
       }}
       aria-label="Sign out"
       title="Sign out"
-      className="tap inline-flex h-11 items-center justify-center gap-2 rounded-full border border-border bg-surface/60 px-3 text-sm font-semibold text-ink transition-colors hover:border-accent sm:px-4"
+      className={
+        className ??
+        "tap inline-flex h-11 items-center justify-center gap-2 rounded-full border border-border bg-surface/60 px-3 text-sm font-semibold text-ink transition-colors hover:border-accent sm:px-4"
+      }
     >
       <svg
         viewBox="0 0 24 24"
@@ -30,7 +34,7 @@ export default function SignOutButton() {
       >
         <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4" />
       </svg>
-      <span className="hidden sm:inline">Sign out</span>
+      <span className={className ? undefined : "hidden sm:inline"}>Sign out</span>
     </button>
   );
 }

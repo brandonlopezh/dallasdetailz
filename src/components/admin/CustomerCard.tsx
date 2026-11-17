@@ -14,10 +14,23 @@ function Emoji({ children }: { children: string }) {
 }
 
 /** Name plus one-tap Call / Text / Email (and Instagram when we have it). */
-export default function CustomerCard({ c, tz }: { c: AdminCustomer; tz: string }) {
+export default function CustomerCard({
+  c,
+  tz,
+  standalone,
+}: {
+  c: AdminCustomer;
+  tz: string;
+  /** True when the tile sits directly on the page (Customers tab) rather than inside another card. */
+  standalone?: boolean;
+}) {
   const handle = c.instagram_handle?.replace(/^@/, "");
   return (
-    <div className="flex min-w-0 flex-col gap-3 rounded-[var(--radius-md)] border border-border bg-base/40 p-4">
+    <div
+      className={`flex min-w-0 flex-col gap-3 border border-border p-4 ${
+        standalone ? "h-full rounded-[var(--radius-lg)] bg-surface" : "rounded-[var(--radius-md)] bg-base/40"
+      }`}
+    >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="truncate text-lg font-semibold">{c.name}</p>

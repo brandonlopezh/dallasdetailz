@@ -16,7 +16,7 @@ import { INSTAGRAM_HANDLE, INSTAGRAM_URL, SNAPWIDGET_ID } from "@/lib/site-confi
  *     — so this section never renders empty or broken.
  */
 export default function InstagramFeed() {
-  const { t, parts } = useLanguage();
+  const { t, lang, parts } = useLanguage();
 
   if (SNAPWIDGET_ID) {
     return (
@@ -32,7 +32,15 @@ export default function InstagramFeed() {
   }
 
   if (parts.instagramPosts.length > 0) {
-    return <InstagramEmbedGrid urls={parts.instagramPosts} />;
+    return (
+      <>
+        {parts.instagramPosts.length > 1 && (
+          <p className="-mt-4 mb-4 text-xs text-muted sm:hidden">{lang === "es" ? "Desliza para ver más →" : "Swipe for more →"}
+          </p>
+        )}
+        <InstagramEmbedGrid urls={parts.instagramPosts} />
+      </>
+    );
   }
 
   return (

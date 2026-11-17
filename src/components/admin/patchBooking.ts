@@ -1,3 +1,5 @@
+import { tzOffsetMinutes, zonedTimeToUtc } from "@/lib/tz";
+
 /** PATCH a booking from the admin UI. Returns an error message, or null on success. */
 export async function patchBooking(
   id: string,
@@ -29,10 +31,22 @@ export const WHEN_OPTS: Intl.DateTimeFormatOptions = {
 export const whenLabel = (iso: string, tz: string) =>
   new Intl.DateTimeFormat("en-US", { timeZone: tz, ...WHEN_OPTS }).format(new Date(iso));
 
-/** datetime-local value for a UTC instant (browser tz). */
-export const toLocalInput = (iso: string) => {
+/**
+ * datetime-local value ("YYYY-MM-DDTHH:MM") for a UTC instant, shown in the
+ * business timezone, so the admin sees shop time even on a device set to
+ * another zone.
+ */
+export const toTzInput = (iso: string, tz: string) => {
   const d = new Date(iso);
-  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  return new Date(d.getTime() + tzOffsetMinutes(d, tz) * 60000).toISOString().slice(0, 16);
+};
+
+/** The reverse: a datetime-local value read as business time. Null if it isn't a valid date. */
+export const fromTzInput = (value: string, tz: string): Date | null => {
+  const m = value.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/);
+  if (!m) return null;
+  const d = zonedTimeToUtc(m[1], m[2], tz);
+  return Number.isNaN(d.getTime()) ? null : d;
 };
 
 /** Classes that keep iOS Safari's datetime-local from overflowing its card. */

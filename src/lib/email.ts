@@ -11,9 +11,6 @@ import "server-only";
 const RESEND_URL = "https://api.resend.com/emails";
 const DEFAULT_FROM = "Dallas Detailz <onboarding@resend.dev>";
 
-/** Where new-booking requests get emailed. */
-export const NOTIFY_EMAIL = process.env.ADMIN_NOTIFY_EMAIL || "brandolopz@gmail.com";
-
 export function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;")
@@ -28,7 +25,8 @@ export function escapeHtml(s: string): string {
  * up in the dashboard regardless).
  */
 export async function sendEmail(opts: {
-  to: string;
+  /** One address or several (all on the same message). */
+  to: string | string[];
   subject: string;
   html: string;
   text: string;
@@ -47,7 +45,7 @@ export async function sendEmail(opts: {
       },
       body: JSON.stringify({
         from: process.env.EMAIL_FROM || DEFAULT_FROM,
-        to: [opts.to],
+        to: Array.isArray(opts.to) ? opts.to : [opts.to],
         subject: opts.subject,
         html: opts.html,
         text: opts.text,

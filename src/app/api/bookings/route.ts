@@ -1,11 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { z } from "zod";
-import { getAddons, getServices, getSettings } from "@/lib/catalog";
+import { getAddonsCached, getServicesCached, getSettingsCached } from "@/lib/catalog";
+import { findCustomerByPhone } from "@/lib/customers";
+import { getOpenDays, isOpenSlot } from "@/lib/open-slots";
+import { formatPhone, phoneDigits } from "@/lib/phone";
 import { isSupabaseConfigured, supabaseAdmin } from "@/lib/supabase/server";
 import { sendSms } from "@/lib/sms";
-import { NOTIFY_EMAIL, escapeHtml, sendEmail } from "@/lib/email";
+import { escapeHtml, sendEmail } from "@/lib/email";
+import { getNotifyEmails } from "@/lib/notify-emails";
 import { NEAR_RADIUS_MI, locateAddress } from "@/lib/distance";
 import type { VehicleTier } from "@/lib/types";
+import { verifyTurnstile } from "@/lib/turnstile";
 
 const bodySchema = z.object({
   serviceId: z.string().min(1),
@@ -35,6 +40,10 @@ const bodySchema = z.object({
   // The customer ticked "you agree to let us contact you". Required so a
   // request can't be created without it; the time is logged in internal_notes.
   contactConsent: z.literal(true),
+  // Bot checks: Turnstile token (verified below when keys are set) and a
+  // honeypot field real visitors never see or fill in.
+  turnstileToken: z.string().max(4096).optional(),
+  website: z.string().max(200).optional(),
   source: z
     .enum(["web", "instagram", "phone", "manual", "referral"])
     .default("web"),
@@ -96,7 +105,7 @@ function requestEmailHtml(r: {
  * would then hit the DB-level conflict.
  *
  * Pricing and end time are computed server-side; client totals are never
- * trusted.
+ * trusted. The requested time must be one of the currently open slots.
  */
 export async function POST(req: NextRequest) {
   const json = await req.json().catch(() => null);
@@ -109,10 +118,30 @@ export async function POST(req: NextRequest) {
   }
   const b = parsed.data;
 
+  if (b.website) {
+    return NextResponse.json({ error: "Invalid booking" }, { status: 400 });
+  }
+  const human = await verifyTurnstile(b.turnstileToken, req.headers.get("cf-connecting-ip"));
+  if (!human) {
+    return NextResponse.json(
+      { error: "Couldn't verify you're not a bot. Please try again." },
+      { status: 403 },
+    );
+  }
+
+  const digits = phoneDigits(b.customer.phone);
+  if (!digits) {
+    return NextResponse.json(
+      { error: "Please enter a 10-digit mobile number." },
+      { status: 400 },
+    );
+  }
+  const phone = formatPhone(digits);
+
   const [services, allAddons, settings] = await Promise.all([
-    getServices(),
-    getAddons(),
-    getSettings(),
+    getServicesCached(),
+    getAddonsCached(),
+    getSettingsCached(),
   ]);
 
   const service = services.find((s) => s.id === b.serviceId);
@@ -145,30 +174,44 @@ export async function POST(req: NextRequest) {
 
   const sb = supabaseAdmin();
 
-  // Find-or-create the customer by phone.
-  let customerId: string;
-  const { data: existing } = await sb
-    .from("customers")
-    .select("id")
-    .eq("phone", b.customer.phone)
-    .maybeSingle();
+  // Three independent lookups, run together: is the time still open, where is
+  // the address (never trusted from the browser), and do we know this number.
+  const [openDays, located, existing] = await Promise.all([
+    getOpenDays(durationMin, settings),
+    locateAddress(b.address),
+    findCustomerByPhone(sb, phone),
+  ]);
 
+  if (!isOpenSlot(openDays, b.slotStart)) {
+    return NextResponse.json(
+      { error: "That time is no longer available. Please pick another time.", code: "slot_taken" },
+      { status: 409 },
+    );
+  }
+
+  // Find-or-create the customer by phone. A known customer's saved name is
+  // never overwritten from this public form (anyone could type someone
+  // else's number); only blanks are filled in, and a different name is noted
+  // on the request for the operator.
+  let customerId: string;
+  let nameFlag: string | null = null;
   if (existing) {
     customerId = existing.id;
-    await sb
-      .from("customers")
-      .update({
-        name: b.customer.name,
-        email: b.customer.email || null,
-        address: b.address,
-      })
-      .eq("id", customerId);
+    const fill: Record<string, string> = {};
+    if (!existing.email && b.customer.email) fill.email = b.customer.email;
+    if (!existing.address) fill.address = b.address;
+    if (Object.keys(fill).length > 0) {
+      await sb.from("customers").update(fill).eq("id", customerId);
+    }
+    if (existing.name.trim().toLowerCase() !== b.customer.name.trim().toLowerCase()) {
+      nameFlag = `Name given on this request: ${b.customer.name.trim()} (number on file for ${existing.name}).`;
+    }
   } else {
     const { data: created, error: custErr } = await sb
       .from("customers")
       .insert({
-        name: b.customer.name,
-        phone: b.customer.phone,
+        name: b.customer.name.trim(),
+        phone,
         email: b.customer.email || null,
         address: b.address,
       })
@@ -201,10 +244,8 @@ export async function POST(req: NextRequest) {
     vehicleId = veh?.id ?? null;
   }
 
-  // Distance from 75249, recomputed here (never trusted from the browser).
   // Far or unverifiable addresses are still accepted but flagged for the
   // operator in the internal notes, the email and the text.
-  const located = await locateAddress(b.address);
   const distanceFlag = !located
     ? "⚠ Distance unverified: address not found, check it before accepting."
     : located.distanceMi > NEAR_RADIUS_MI
@@ -233,11 +274,11 @@ export async function POST(req: NextRequest) {
       total,
       customer_notes: b.notes ?? null,
       internal_notes:
-        [distanceFlag, `Consent to be contacted accepted ${new Date().toISOString()}`]
+        [distanceFlag, nameFlag, `Consent to be contacted accepted ${new Date().toISOString()}`]
           .filter(Boolean)
           .join("\n"),
     })
-    .select("id, ref, manage_token, approval_token, scheduled_start, scheduled_end, total")
+    .select("id, ref, scheduled_start, scheduled_end, total")
     .single();
 
   if (bookErr) {
@@ -248,10 +289,8 @@ export async function POST(req: NextRequest) {
         { status: 409 },
       );
     }
-    return NextResponse.json(
-      { error: "Could not create booking", details: bookErr.message },
-      { status: 500 },
-    );
+    console.error("[bookings] insert failed", bookErr);
+    return NextResponse.json({ error: "Could not create booking" }, { status: 500 });
   }
 
   // Link add-ons at their booked price.
@@ -282,59 +321,69 @@ export async function POST(req: NextRequest) {
   const vehicleLabel =
     [b.vehicle?.year, b.vehicle?.make, b.vehicle?.model].filter(Boolean).join(" ") || null;
 
-  await sendEmail({
-    to: NOTIFY_EMAIL,
-    subject: `New booking request: ${b.customer.name}, ${when}`,
-    html: requestEmailHtml({
-      ref: booking.ref,
-      service: service.name,
-      total: Math.round(total),
-      name: b.customer.name,
-      phone: b.customer.phone,
-      email: b.customer.email || null,
-      vehicle: vehicleLabel,
-      when,
-      address: b.address,
-      notes: b.notes ?? null,
-      flag: distanceFlag,
-      dashboardUrl,
-    }),
-    text: [
-      "New booking request",
-      `${service.name} - $${Math.round(total)}`,
-      `${b.customer.name}, ${b.customer.phone}`,
-      when,
-      b.address,
-      vehicleLabel ? `Vehicle: ${vehicleLabel}` : "",
-      distanceFlag ?? "",
-      b.notes ? `Note: ${b.notes}` : "",
-      "",
-      `Accept it or offer a new time: ${dashboardUrl}`,
-    ]
-      .filter((l) => l !== "")
-      .join("\n"),
-  });
+  // Recipients are managed in /admin/website → Request emails.
+  const emailJob = async () =>
+    sendEmail({
+      to: (await getNotifyEmails()).emails,
+      subject: `New booking request: ${b.customer.name}, ${when}`,
+      html: requestEmailHtml({
+        ref: booking.ref,
+        service: service.name,
+        total: Math.round(total),
+        name: b.customer.name,
+        phone,
+        email: b.customer.email || null,
+        vehicle: vehicleLabel,
+        when,
+        address: b.address,
+        notes: b.notes ?? null,
+        flag: [distanceFlag, nameFlag].filter(Boolean).join(" ") || null,
+        dashboardUrl,
+      }),
+      text: [
+        "New booking request",
+        `${service.name} - $${Math.round(total)}`,
+        `${b.customer.name}, ${phone}`,
+        when,
+        b.address,
+        vehicleLabel ? `Vehicle: ${vehicleLabel}` : "",
+        distanceFlag ?? "",
+        nameFlag ?? "",
+        b.notes ? `Note: ${b.notes}` : "",
+        "",
+        `Accept it or offer a new time: ${dashboardUrl}`,
+      ]
+        .filter((l) => l !== "")
+        .join("\n"),
+    });
 
   const operatorPhone = process.env.OPERATOR_PHONE;
+  let smsJob: (() => Promise<boolean>) | null = null;
   if (operatorPhone) {
     const lines = [
       `New booking request (${booking.ref})`,
       `${service.name} — $${Math.round(total)}`,
-      `${b.customer.name}, ${b.customer.phone}`,
+      `${b.customer.name}, ${phone}`,
       when,
       b.address,
     ];
     if (vehicleLabel) lines.push(`Vehicle: ${vehicleLabel}`);
     if (distanceFlag) lines.push(distanceFlag);
+    if (nameFlag) lines.push(nameFlag);
     if (b.notes) lines.push(`Note: ${b.notes}`);
     lines.push(dashboardUrl);
-    await sendSms(operatorPhone, lines.join("\n"));
+    smsJob = () => sendSms(operatorPhone, lines.join("\n"));
   }
+
+  // Sent after the response, so the customer isn't kept waiting on the email
+  // and text providers. The request is already saved either way.
+  after(async () => {
+    await Promise.all([emailJob(), smsJob?.()]);
+  });
 
   return NextResponse.json(
     {
       ref: booking.ref,
-      manageToken: booking.manage_token,
       scheduledStart: booking.scheduled_start,
       scheduledEnd: booking.scheduled_end,
       total: Number(booking.total),

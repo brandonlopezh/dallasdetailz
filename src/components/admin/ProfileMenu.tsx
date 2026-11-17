@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
+import SignOutButton from "./SignOutButton";
 
 const ROLE_LABEL: Record<string, string> = {
   master: "Owner",
@@ -48,7 +49,7 @@ export default function ProfileMenu({
         aria-label="Profile"
         aria-expanded={open}
         aria-controls={panelId}
-        className="tap grid h-11 w-11 aspect-square place-items-center rounded-full border border-border bg-surface/60 text-ink transition-colors hover:border-accent"
+        className="grid h-10 w-10 aspect-square place-items-center rounded-full border border-border bg-surface/60 text-ink transition-colors hover:border-accent"
       >
         <svg
           viewBox="0 0 24 24"
@@ -88,6 +89,9 @@ export default function ProfileMenu({
                 <span aria-hidden="true">👥</span> Manage users
               </Link>
             )}
+            <div className="mt-2 border-t border-border pt-2">
+              <SignOutButton className={`${item} w-full text-left`} />
+            </div>
           </div>
         </div>
       )}

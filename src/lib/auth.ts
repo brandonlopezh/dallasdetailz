@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { supabaseServer } from "./supabase/ssr";
 import { isSupabaseConfigured, supabaseAdmin } from "./supabase/server";
 
@@ -93,8 +94,11 @@ export type AdminStatus =
 /**
  * Like getAdminUser(), but says *why* access was denied so the login page can
  * show it instead of silently bouncing the operator.
+ *
+ * Wrapped in React's cache() so the layout and the page it renders share one
+ * check per request instead of each hitting Supabase.
  */
-export async function getAdminStatus(): Promise<AdminStatus> {
+export const getAdminStatus = cache(async (): Promise<AdminStatus> => {
   if (!isSupabaseConfigured()) {
     return { user: null, reason: "Admin isn't configured on the server (missing Supabase env vars)." };
   }
@@ -125,7 +129,7 @@ export async function getAdminStatus(): Promise<AdminStatus> {
   }
   const { name, firstName } = await displayName(user.email, user.user_metadata);
   return { user: { id: user.id, email: user.email, name, firstName, role } };
-}
+});
 
 /** Returns the signed-in admin (any role), or null if not authenticated / not allowed. */
 export async function getAdminUser(): Promise<AdminUser | null> {

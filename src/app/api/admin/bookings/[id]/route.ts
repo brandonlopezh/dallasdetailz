@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { z } from "zod";
 import { getBookingsUser } from "@/lib/auth";
+import { getBooking } from "@/lib/admin-bookings";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 const patchSchema = z
@@ -21,13 +22,17 @@ const patchSchema = z
  * PATCH /api/admin/bookings/[id] — change status, reschedule, edit notes, or set payment status.
  * PRD AD-5. Reschedules that collide with another confirmed job are rejected
  * by the DB exclusion constraint (409).
+ *
+ * After the change is saved it is written to audit_log with who made it.
+ * Telling the customer is done by the operator from the dashboard's Call /
+ * Text buttons (no paid messaging service is used).
  */
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  if (!(await getBookingsUser()))
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const admin = await getBookingsUser();
+  if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
   const parsed = patchSchema.safeParse(await req.json().catch(() => null));
@@ -35,6 +40,8 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid body" }, { status: 400 });
 
   const { offered, ...fields } = parsed.data;
+  const before = await getBooking(id);
+  if (!before) return NextResponse.json({ error: "Booking not found" }, { status: 404 });
   const run = (update: Record<string, unknown>) =>
     supabaseAdmin()
       .from("bookings")
@@ -58,7 +65,27 @@ export async function PATCH(
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // TODO: write audit_log entry (actor = admin) and propagate to Google
-  // Calendar / notify the customer on reschedule+cancel (Phase 1 follow-ups).
+  // Logged after the response so the dashboard isn't kept waiting.
+  after(async () => {
+    await supabaseAdmin()
+      .from("audit_log")
+      .insert({
+        entity: "booking",
+        entity_id: id,
+        action: offered ? "offer_new_time" : "update",
+        before: {
+          status: before.status,
+          scheduled_start: before.scheduled_start,
+          scheduled_end: before.scheduled_end,
+          payment_status: before.payment_status,
+          internal_notes: before.internal_notes,
+        },
+        after: { ...fields, by: admin.email },
+      })
+      .then(({ error: auditErr }) => {
+        if (auditErr) console.error("[audit] booking update not logged", auditErr.message);
+      });
+  });
+
   return NextResponse.json({ booking: data });
 }

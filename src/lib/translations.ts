@@ -1,6 +1,6 @@
 // English/Spanish copy for the public homepage. Everything a visitor reads
 // on "/" lives here so the language toggle (see LanguageProvider.tsx) only
-// has to swap one object. Scope: the homepage only — /book, /confirm/[token],
+// has to swap one object. Scope: the homepage only — /book
 // and JSON-LD structured data stay English for now.
 
 export type Lang = "en" | "es";

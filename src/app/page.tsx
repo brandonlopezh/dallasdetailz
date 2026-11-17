@@ -1,21 +1,23 @@
 import SiteHeader from "@/components/SiteHeader";
 import MobileBookBar from "@/components/MobileBookBar";
 import HomeContent from "@/components/HomeContent";
-import { getServices } from "@/lib/catalog";
+import { getServicesCached } from "@/lib/catalog";
 import { INSTAGRAM_URL } from "@/lib/site-config";
 import { SiteContentProvider } from "@/components/LanguageProvider";
 import { getSiteContent } from "@/lib/content";
 import { BookingModalProvider } from "@/components/BookingModal";
+import ThemeScope from "@/components/ThemeScope";
 
 const CITIES = ["Duncanville", "Cedar Hill", "DeSoto", "Grand Prairie", "Dallas", "Greater DFW"];
-// Always render fresh so edits made in /admin/website show up on the next load
-// (the Workers build has no persistent ISR cache to revalidate).
+// Rendered per request (the Workers build has no persistent ISR cache to
+// revalidate). Services and content are reused for under a minute per Worker
+// instance, so edits made in /admin/website show up within about 30 seconds.
 export const dynamic = "force-dynamic";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dallasdetailz.com";
 
 export default async function Home() {
-  const [services, content] = await Promise.all([getServices(), getSiteContent()]);
+  const [services, content] = await Promise.all([getServicesCached(), getSiteContent()]);
   const priceFrom = (s: (typeof services)[number]) =>
     Math.min(...s.pricing.map((p) => p.price));
 
@@ -54,6 +56,7 @@ export default async function Home() {
 
   return (
     <SiteContentProvider content={content}>
+      <ThemeScope scope="public" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -62,7 +65,7 @@ export default async function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
-      <BookingModalProvider>
+      <BookingModalProvider services={services}>
         <SiteHeader />
         <HomeContent services={services} />
         <MobileBookBar />

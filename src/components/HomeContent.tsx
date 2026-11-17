@@ -173,7 +173,7 @@ export default function HomeContent({ services }: HomeContentProps) {
           </div>
           <div className="mx-auto w-full max-w-[260px] overflow-hidden rounded-[var(--radius-lg)] border border-border shadow-2xl shadow-black/50 sm:max-w-[300px]">
             <Image
-              src="/service-area-map.png"
+              src="/service-area-map.webp"
               alt="Map of the Dallas Detailz service area around Duncanville and Cedar Hill, showing I-20, Belt Line Rd, Cedar Ridge Preserve, and Cedar Hill State Park"
               width={586}
               height={654}

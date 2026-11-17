@@ -53,64 +53,67 @@ export default async function RequestsPage() {
   const onClient = pending.filter((b) => offered.has(b.id));
 
   return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-3 gap-3">
+    <div className="space-y-6">
+      <div className="grid grid-cols-3 gap-3 lg:gap-5">
         <Summary href="#on-me" label="Waiting on me" count={onMe.length} tone="warning" />
         <Summary href="#on-client" label="Waiting on client" count={onClient.length} tone="muted" />
         <Summary href="#approved" label="Approved" count={approved.length} tone="success" />
       </div>
 
-      <section id="on-me" className="scroll-mt-40" aria-labelledby="on-me-h">
-        <h2 id="on-me-h" className={SECTION_TITLE}>Waiting on me</h2>
-        {onMe.length === 0 ? (
-          <p className="mt-3 rounded-[var(--radius-md)] border border-dashed border-border p-6 text-center text-muted">
-            Nothing waiting on you. 🎉
-          </p>
-        ) : (
-          <div className="mt-3 grid gap-4">
-            {onMe.map((b) => (
-              <RequestCard key={b.id} b={b} tz={tz} />
-            ))}
-          </div>
-        )}
-      </section>
+      {/* One column per box above on wide screens; stacked on phones. */}
+      <div className="grid gap-8 lg:grid-cols-3 lg:items-start lg:gap-5">
+        <section id="on-me" className="min-w-0 scroll-mt-24" aria-labelledby="on-me-h">
+          <h2 id="on-me-h" className={SECTION_TITLE}>Waiting on me</h2>
+          {onMe.length === 0 ? (
+            <p className="mt-3 rounded-[var(--radius-md)] border border-dashed border-border p-6 text-center text-muted">
+              Nothing waiting on you. 🎉
+            </p>
+          ) : (
+            <div className="mt-3 grid gap-4">
+              {onMe.map((b) => (
+                <RequestCard key={b.id} b={b} tz={tz} />
+              ))}
+            </div>
+          )}
+        </section>
 
-      <section id="on-client" className="scroll-mt-40" aria-labelledby="on-client-h">
-        <h2 id="on-client-h" className={SECTION_TITLE}>Waiting on client</h2>
-        <p className="text-sm text-muted">You offered a new time. Accept once they say yes.</p>
-        {onClient.length === 0 ? (
-          <p className="mt-3 rounded-[var(--radius-md)] border border-dashed border-border p-6 text-center text-muted">
-            No one to wait on.
-          </p>
-        ) : (
-          <div className="mt-3 grid gap-4">
-            {onClient.map((b) => (
-              <RequestCard key={b.id} b={b} tz={tz} waitingOnClient />
-            ))}
-          </div>
-        )}
-      </section>
+        <section id="on-client" className="min-w-0 scroll-mt-24" aria-labelledby="on-client-h">
+          <h2 id="on-client-h" className={SECTION_TITLE}>Waiting on client</h2>
+          <p className="text-sm text-muted">You offered a new time. Accept once they say yes.</p>
+          {onClient.length === 0 ? (
+            <p className="mt-3 rounded-[var(--radius-md)] border border-dashed border-border p-6 text-center text-muted">
+              No one to wait on.
+            </p>
+          ) : (
+            <div className="mt-3 grid gap-4">
+              {onClient.map((b) => (
+                <RequestCard key={b.id} b={b} tz={tz} waitingOnClient />
+              ))}
+            </div>
+          )}
+        </section>
 
-      <section id="approved" className="scroll-mt-40" aria-labelledby="approved-h">
-        <div className="flex items-end justify-between gap-3">
-          <h2 id="approved-h" className={SECTION_TITLE}>Approved</h2>
-          <Link href="/admin" className="text-sm font-semibold text-link">
-            View calendar →
-          </Link>
-        </div>
-        <p className="text-sm text-muted">Upcoming jobs you&apos;ve confirmed.</p>
-        {approved.length === 0 ? (
-          <p className="mt-3 rounded-[var(--radius-md)] border border-dashed border-border p-6 text-center text-muted">
-            No approved jobs coming up.
-          </p>
-        ) : (
-          <div className="mt-3 grid gap-2">
-            {approved.map((b) => (
-              <BookingRow key={b.id} b={b} tz={tz} />
-            ))}
+        <section id="approved" className="min-w-0 scroll-mt-24" aria-labelledby="approved-h">
+          <div className="flex items-end justify-between gap-3">
+            <h2 id="approved-h" className={SECTION_TITLE}>Approved</h2>
+            <Link href="/admin" className="text-sm font-semibold text-link">
+              View calendar →
+            </Link>
           </div>
-        )}
-      </section>
+          <p className="text-sm text-muted">Upcoming jobs you&apos;ve confirmed.</p>
+          {approved.length === 0 ? (
+            <p className="mt-3 rounded-[var(--radius-md)] border border-dashed border-border p-6 text-center text-muted">
+              No approved jobs coming up.
+            </p>
+          ) : (
+            <div className="mt-3 grid gap-2">
+              {approved.map((b) => (
+                <BookingRow key={b.id} b={b} tz={tz} stacked />
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

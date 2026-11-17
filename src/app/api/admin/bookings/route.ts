@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getBookingsUser } from "@/lib/auth";
 import { getServices } from "@/lib/catalog";
+import { findCustomerByPhone, phoneForStorage } from "@/lib/customers";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import type { VehicleTier } from "@/lib/types";
 
@@ -47,11 +48,7 @@ export async function POST(req: NextRequest) {
 
   // Find-or-create customer by phone.
   let customerId: string;
-  const { data: existing } = await sb
-    .from("customers")
-    .select("id")
-    .eq("phone", b.customer.phone)
-    .maybeSingle();
+  const existing = await findCustomerByPhone(sb, b.customer.phone);
   if (existing) {
     customerId = existing.id;
   } else {
@@ -59,7 +56,7 @@ export async function POST(req: NextRequest) {
       .from("customers")
       .insert({
         name: b.customer.name,
-        phone: b.customer.phone,
+        phone: phoneForStorage(b.customer.phone),
         email: b.customer.email || null,
         address: b.address,
       })

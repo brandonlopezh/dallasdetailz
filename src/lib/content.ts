@@ -11,6 +11,7 @@ import {
   type Parts,
 } from "./content-schema";
 import { PHONE_DISPLAY, PHONE_TEL } from "./site-config";
+import { forget, memo } from "./memo";
 
 export interface Contact {
   display: string;
@@ -108,6 +109,17 @@ export function applyOverrides(overrides: Record<string, unknown>): SiteContent 
   return { translations, serviceTranslations, contact, parts };
 }
 
+const OVERRIDES_KEY = "content:overrides";
+
+/**
+ * Homepage content. Edits made in /admin/website are reused for up to 30
+ * seconds per Worker instance, so a change can take that long to appear.
+ */
 export async function getSiteContent(): Promise<SiteContent> {
-  return applyOverrides(await getOverrides());
+  return applyOverrides(await memo(OVERRIDES_KEY, 30_000, getOverrides));
+}
+
+/** Call after saving content so this instance serves the edit right away. */
+export function forgetSiteContent(): void {
+  forget(OVERRIDES_KEY);
 }

@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { VEHICLE_TIERS, type Service, type VehicleTier } from "@/lib/types";
+import { fromTzInput } from "./patchBooking";
 
-export default function ManualBookingForm() {
+export default function ManualBookingForm({ services, tz }: { services: Service[]; tz: string }) {
   const router = useRouter();
-  const [services, setServices] = useState<Service[]>([]);
-  const [serviceId, setServiceId] = useState("");
+  const [serviceId, setServiceId] = useState(services[0]?.id ?? "");
   const [tier, setTier] = useState<VehicleTier>("mid_suv");
   const [start, setStart] = useState("");
   const [name, setName] = useState("");
@@ -20,18 +20,14 @@ export default function ManualBookingForm() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetch("/api/catalog")
-      .then((r) => r.json())
-      .then((d) => {
-        setServices(d.services ?? []);
-        if (d.services?.[0]) setServiceId(d.services[0].id);
-      })
-      .catch(() => {});
-  }, []);
-
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // The picker is read as shop time, not the device's timezone.
+    const startDate = fromTzInput(start, tz);
+    if (!startDate) {
+      setError("Pick a date and time.");
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -41,7 +37,7 @@ export default function ManualBookingForm() {
         body: JSON.stringify({
           serviceId,
           tier,
-          start: new Date(start).toISOString(),
+          start: startDate.toISOString(),
           address,
           status,
           source,

@@ -5,7 +5,9 @@ import Link from "next/link";
 import type { Service } from "@/lib/types";
 import type { DaySlots } from "@/lib/availability";
 import { BOOKING_TEXT } from "@/lib/booking-translations";
+import { phoneDigits } from "@/lib/phone";
 import { useLanguage } from "./LanguageProvider";
+import TurnstileWidget, { TURNSTILE_ON } from "./TurnstileWidget";
 
 // Simplified flow: no vehicle-tier step, no add-ons. Three flat-price
 // services, address + time, then a request
@@ -16,6 +18,10 @@ const STORAGE_KEY = "dd-booking-v2";
 // prices the same for a given service) — this is just which tier's
 // duration we use to size the calendar slot, since we no longer ask.
 const DEFAULT_TIER = "mid_suv" as const;
+
+// Times are always shown in the shop's timezone, whatever the visitor's
+// device is set to (matches the slot labels the server sends).
+const BUSINESS_TZ = "America/Chicago";
 
 interface Draft {
   serviceId: string | null;
@@ -69,8 +75,11 @@ export function useBookingText() {
 
 export default function BookingFlow({
   initialServiceId,
+  initialServices,
   onDone,
 }: {
+  /** Services already loaded by the page, so the form shows without a fetch. */
+  initialServices?: Service[];
   /** Preselects a service (and skips straight to "Where & when"). */
   initialServiceId?: string;
   /** Called by the confirmation screen's Done button (closes the popup). */
@@ -90,7 +99,7 @@ export default function BookingFlow({
     }
     return initialServiceId ? { ...restored, serviceId: initialServiceId } : restored;
   });
-  const [services, setServices] = useState<Service[]>([]);
+  const [services, setServices] = useState<Service[]>(initialServices ?? []);
 
   // Persist on every change. draft is already correctly seeded on first
   // render (see the lazy initializer above), so there's no "wait for
@@ -100,10 +109,12 @@ export default function BookingFlow({
   }, [draft]);
 
   useEffect(() => {
+    if (initialServices?.length) return;
     fetch("/api/catalog")
       .then((r) => r.json())
       .then((d) => setServices(d.services ?? []))
       .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const service = services.find((s) => s.id === draft.serviceId) ?? null;
@@ -484,7 +495,19 @@ function StepWhen({
     });
     fetch(`/api/availability?${qs}`)
       .then((r) => r.json())
-      .then((d) => setDays(d.days ?? []))
+      .then((d) => {
+        const loaded: DaySlots[] = d.days ?? [];
+        setDays(loaded);
+        // A time saved earlier (even days ago) only stays picked if it's
+        // still open; otherwise the visitor chooses again.
+        const at = loaded.findIndex((day) => day.slots.some((s) => s.start === draft.slotStart));
+        if (at === -1) {
+          if (draft.slotStart) set({ slotStart: null });
+          setActiveDay(0);
+        } else {
+          setActiveDay(at);
+        }
+      })
       .catch(() => setDays([]))
       .finally(() => setLoading(false));
   };
@@ -575,7 +598,7 @@ function StepWhen({
         <BackBtn onClick={onBack} />
         <PrimaryBtn
           onClick={onNext}
-          disabled={loading || (!!days && days.length > 0 && !draft.slotStart)}
+          disabled={loading || !draft.slotStart}
         >
           {b.next}
         </PrimaryBtn>
@@ -608,9 +631,19 @@ function StepConfirm({
   const [done, setDone] = useState<{ ref: string } | null>(null);
   // Deliberately not part of the saved draft: consent is given fresh on every submit.
   const [consent, setConsent] = useState(false);
+  // Bot checks. The token is single use, so a failed submit bumps the key to
+  // get a fresh one. `website` is a honeypot: hidden from people, so only
+  // bots fill it in.
+  const [botToken, setBotToken] = useState<string | null>(null);
+  const [botKey, setBotKey] = useState(0);
+  const [website, setWebsite] = useState("");
 
   const canSubmit =
-    draft.name.trim().length > 0 && draft.phone.length >= 7 && draft.slotStart && consent;
+    draft.name.trim().length > 0 &&
+    phoneDigits(draft.phone) !== null &&
+    draft.slotStart &&
+    consent &&
+    (!TURNSTILE_ON || botToken);
 
   const submit = async () => {
     setSubmitting(true);
@@ -634,11 +667,17 @@ function StepConfirm({
             model: draft.vehicleModel.trim(),
           },
           contactConsent: true,
+          turnstileToken: botToken ?? undefined,
+          website,
         }),
       });
       const data = await res.json();
       if (!res.ok) {
         setError(data.error ?? b.genericError);
+        // The time got taken (or expired): unpick it so Back leads to a fresh choice.
+        if (data.code === "slot_taken") set({ slotStart: null });
+        setBotToken(null);
+        setBotKey((k) => k + 1);
       } else {
         setDone({ ref: data.ref });
         localStorage.removeItem(STORAGE_KEY);
@@ -721,6 +760,7 @@ function StepConfirm({
           value={
             slot
               ? slot.toLocaleString(b.dateLocale, {
+                  timeZone: BUSINESS_TZ,
                   weekday: "short",
                   month: "short",
                   day: "numeric",
@@ -759,6 +799,23 @@ function StepConfirm({
           {b.consent}
         </span>
       </label>
+
+      {/* Honeypot: off-screen and skipped by keyboards and screen readers. */}
+      <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+        <label>
+          Fax
+          <input
+            type="text"
+            name="fax_number"
+            tabIndex={-1}
+            autoComplete="off"
+            value={website}
+            onChange={(e) => setWebsite(e.target.value)}
+          />
+        </label>
+      </div>
+
+      <TurnstileWidget onToken={setBotToken} resetKey={botKey} />
 
       {error && (
         <p role="alert" className="mt-3 rounded-[var(--radius-sm)] border border-danger/40 bg-danger/10 p-3 text-sm text-danger-text">

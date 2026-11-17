@@ -1,6 +1,8 @@
 import WebsiteEditor from "@/components/admin/WebsiteEditor";
 import { applyOverrides, getOverrides } from "@/lib/content";
+import { getAdminUser } from "@/lib/auth";
 import { getServices } from "@/lib/catalog";
+import { MAX_NOTIFY_EMAILS, getNotifyEmails } from "@/lib/notify-emails";
 import { ALL_FIELDS, CONTACT_PHONE_KEY, LANGS, serviceKey } from "@/lib/content-schema";
 import { PHONE_DISPLAY } from "@/lib/site-config";
 import { SERVICE_TRANSLATIONS, TRANSLATIONS } from "@/lib/translations";
@@ -18,7 +20,14 @@ export default async function WebsiteEditsPage({
   searchParams: Promise<{ edit?: string }>;
 }) {
   const { edit } = await searchParams;
-  const [overrides, services] = await Promise.all([getOverrides(), getServices()]);
+  const user = await getAdminUser();
+  // Website-only editors don't manage who answers booking requests.
+  const canManageBookings = user != null && user.role !== "editor";
+  const [overrides, services, notify] = await Promise.all([
+    getOverrides(),
+    getServices(),
+    canManageBookings ? getNotifyEmails() : null,
+  ]);
   const current = applyOverrides(overrides);
 
   // Flat key → value maps: what's live now, and what the code ships with.
@@ -39,10 +48,7 @@ export default async function WebsiteEditsPage({
 
   return (
     <div>
-      <h1 className="font-[family-name:var(--font-display)] text-2xl font-extrabold">
-        Settings
-      </h1>
-      <p className="mt-1 text-sm text-muted">
+      <p className="text-sm text-muted">
         Pick what you want to change on the left. Hit Save and it&apos;s live on
         the site right away.
       </p>
@@ -52,6 +58,7 @@ export default async function WebsiteEditsPage({
           live={live}
           defaults={defaults}
           parts={current.parts}
+          notify={notify ? { ...notify, max: MAX_NOTIFY_EMAILS } : undefined}
           services={services.map((s) => ({
             id: s.id,
             name: s.name,

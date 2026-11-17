@@ -15,6 +15,11 @@ declare global {
  * the real embedded posts. No API keys, no token to refresh — the tradeoff
  * is it's a manually curated list rather than an auto-updating feed. Posts are
  * managed in /admin/website.
+ *
+ * On phones the posts sit in one swipeable row instead of a tall stack (three
+ * posts stacked ran to several screens of scrolling). Instagram's embed is
+ * never narrower than 326px, so each slide is sized to fit that and the card
+ * padding is trimmed; before, the embed ran past the right edge of its card.
  */
 export default function InstagramEmbedGrid({ urls }: { urls: string[] }) {
   const grid = useRef<HTMLDivElement>(null);
@@ -40,11 +45,14 @@ export default function InstagramEmbedGrid({ urls }: { urls: string[] }) {
 
   return (
     <>
-      <div ref={grid} className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div
+        ref={grid}
+        className="no-scrollbar -mx-4 flex snap-x snap-mandatory items-start gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3"
+      >
         {urls.map((url) => (
           <div
             key={url}
-            className="mx-auto w-full max-w-[400px] rounded-[var(--radius-lg)] border border-border bg-surface p-4 shadow-lg"
+            className="w-[340px] max-w-[92vw] shrink-0 snap-center overflow-hidden rounded-[var(--radius-lg)] border border-border bg-surface p-1.5 shadow-lg sm:mx-auto sm:w-full sm:max-w-[400px] sm:shrink sm:p-4"
           >
             <blockquote
               className="instagram-media"

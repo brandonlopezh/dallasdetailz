@@ -20,8 +20,7 @@ export default async function UsersPage() {
 
   return (
     <div>
-      <h1 className="font-[family-name:var(--font-display)] text-2xl font-extrabold">Users</h1>
-      <p className="mt-1 text-sm text-muted">
+      <p className="text-sm text-muted">
         Give other people access to the admin. They sign in at /admin/login with their email.
       </p>
       <div className="mt-6">

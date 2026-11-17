@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getAdminUser } from "@/lib/auth";
-import { toContact } from "@/lib/content";
+import { forgetSiteContent, toContact } from "@/lib/content";
 import {
   ALL_FIELDS,
   CONTACT_PHONE_KEY,
@@ -141,5 +141,6 @@ export async function PUT(req: NextRequest) {
     }
   }
 
+  forgetSiteContent();
   return NextResponse.json({ ok: true });
 }

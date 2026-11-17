@@ -6,7 +6,7 @@ import type { AdminBooking } from "@/lib/admin-bookings";
 import CalendarButtons from "./CalendarButtons";
 import ContactSheet from "./ContactSheet";
 import Sheet, { BigButton } from "./Sheet";
-import { DATETIME_INPUT, patchBooking, toLocalInput, whenLabel } from "./patchBooking";
+import { DATETIME_INPUT, fromTzInput, patchBooking, toTzInput, whenLabel } from "./patchBooking";
 
 type Outcome =
   | { kind: "booked" }
@@ -26,7 +26,7 @@ export default function BookingDecision({ b, tz }: { b: AdminBooking; tz: string
   const [error, setError] = useState<string | null>(null);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const [declining, setDeclining] = useState(false);
-  const [newStart, setNewStart] = useState(toLocalInput(b.scheduled_start));
+  const [newStart, setNewStart] = useState(toTzInput(b.scheduled_start, tz));
 
   const name = b.customers?.name ?? "Customer";
   const first = name.split(" ")[0];
@@ -51,8 +51,8 @@ export default function BookingDecision({ b, tz }: { b: AdminBooking; tz: string
   };
 
   const offer = async () => {
-    const start = new Date(newStart);
-    if (Number.isNaN(start.getTime())) return;
+    const start = fromTzInput(newStart, tz);
+    if (!start) return;
     const durationMs = new Date(b.scheduled_end).getTime() - new Date(b.scheduled_start).getTime();
     const ok = await patch({
       scheduled_start: start.toISOString(),
@@ -116,6 +116,18 @@ export default function BookingDecision({ b, tz }: { b: AdminBooking; tz: string
             <br />
             {whenLabel(b.scheduled_start, tz)}
           </p>
+          {phone && (
+            <div className="mt-5">
+              <BigButton
+                tone="primary"
+                href={`sms:${phone.replace(/[^\d+]/g, "")}?&body=${encodeURIComponent(
+                  `Hi ${first}, this is Dallas Detailz. Your ${service} is confirmed for ${whenLabel(b.scheduled_start, tz)}. See you then!`,
+                )}`}
+              >
+                <span aria-hidden="true">💬</span> Text {first} the confirmation
+              </BigButton>
+            </div>
+          )}
           <p className="mb-2 mt-5 text-sm font-semibold">Add to my calendar</p>
           <CalendarButtons b={b} />
           <div className="mt-2 grid gap-2">

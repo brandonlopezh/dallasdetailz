@@ -61,7 +61,7 @@ export function BigButton({
   external?: boolean;
   disabled?: boolean;
 }) {
-  const cls = `tap flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] px-5 text-base font-bold disabled:opacity-50 ${className} ${
+  const cls = `tap flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] px-5 text-[1rem] font-bold disabled:opacity-50 ${className} ${
     {
       default: "border border-border bg-surface text-ink",
       primary: "bg-accent text-white",

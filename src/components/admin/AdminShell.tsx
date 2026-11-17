@@ -1,12 +1,18 @@
 import Image from "next/image";
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
-import SignOutButton from "./SignOutButton";
+import ThemeScope from "@/components/ThemeScope";
+import { adminFont } from "@/lib/admin-font";
 import SessionRefresher from "./SessionRefresher";
 import ProfileMenu from "./ProfileMenu";
-import { DashGreeting, DashTabs, PendingBanner, type NavItem } from "./AdminNav";
+import { BottomTabs, DashTabs, PageTitle, PendingBanner, type NavItem } from "./AdminNav";
 
-/** Page chrome for every signed-in admin screen: top bar, section tabs, banner. */
+/**
+ * Page chrome for every signed-in admin screen. A sticky top bar holds the
+ * logo, the section tabs and the account buttons; on phones the tabs move to
+ * a bar along the bottom of the screen, within thumb reach. Then a compact
+ * page title, then the page.
+ */
 export default function AdminShell({
   user,
   requests,
@@ -18,38 +24,51 @@ export default function AdminShell({
   nav: NavItem[];
   children: React.ReactNode;
 }) {
+  const canBook = user.role !== "editor";
   return (
-    <div id="admin-root" className="min-h-screen bg-base text-ink">
+    <div id="admin-root" className={`${adminFont.variable} min-h-screen bg-base text-ink`}>
       <SessionRefresher />
+      <ThemeScope scope="admin" />
       <header className="sticky top-0 z-40 border-b border-[color:var(--topbar-border)] bg-base/95 backdrop-blur">
-        <div className="mx-auto flex min-h-16 max-w-5xl items-center justify-between gap-2 px-4 py-2">
+        <div className="mx-auto flex max-w-6xl items-center gap-x-6 px-4">
           <Link
-            href={user.role === "editor" ? "/admin/website" : "/admin"}
-            className="flex shrink-0 items-center gap-2"
+            href={canBook ? "/admin" : "/admin/website"}
+            className="flex shrink-0 items-center gap-2.5 py-2"
             aria-label="Dallas Detailz dashboard"
           >
             <Image
               src="/logo.jpg"
               alt=""
-              width={40}
-              height={40}
-              className="h-10 w-10 rounded-full ring-1 ring-border"
+              width={36}
+              height={36}
+              className="h-9 w-9 rounded-full ring-1 ring-border"
             />
-            <span className="hidden font-[family-name:var(--font-display)] text-lg font-extrabold uppercase min-[400px]:inline">
+            {/* The one place the admin keeps the brand font (see --font-brand in globals.css). */}
+            <span className="hidden font-[family-name:var(--font-brand)] text-lg font-normal uppercase min-[400px]:inline">
               DallasDetailz
             </span>
           </Link>
-          <div className="flex items-center gap-2">
+          <DashTabs items={nav} pending={requests} className="hidden md:block" />
+          <div className="ml-auto flex items-center gap-2 py-2">
+            {canBook && (
+              <Link
+                href="/admin/bookings/new"
+                className="inline-flex h-10 items-center gap-1 rounded-full bg-accent px-4 text-sm font-bold text-white transition-colors hover:bg-accent-hi"
+              >
+                <span aria-hidden="true">+</span>
+                <span>New<span className="hidden sm:inline"> booking</span></span>
+              </Link>
+            )}
+            <ThemeToggle className="h-10 w-10 !min-h-0 !min-w-0" />
             <ProfileMenu user={user} />
-            <ThemeToggle className="h-11 w-11 !min-h-0 !min-w-0" />
-            <SignOutButton />
           </div>
         </div>
       </header>
-      <DashGreeting firstName={user.firstName} />
-      <DashTabs items={nav} pending={requests} />
       <PendingBanner count={requests} />
-      <main className="mx-auto max-w-5xl px-4 py-6 pb-12">{children}</main>
+      <PageTitle firstName={user.firstName} />
+      {/* Extra room at the bottom on phones so the tab bar never covers content. */}
+      <main className="mx-auto max-w-6xl px-4 pb-28 pt-4 sm:pt-6 md:pb-16">{children}</main>
+      <BottomTabs items={nav} pending={requests} />
     </div>
   );
 }

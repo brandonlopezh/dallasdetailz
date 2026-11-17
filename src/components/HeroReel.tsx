@@ -36,6 +36,10 @@ export default function HeroReel({ reelUrl, label, watchLabel, soundOnLabel, sou
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
+    // The mockup is hidden on phones (see HomeContent), so only wider screens
+    // fetch its poster image; a poster attribute in the HTML downloads even when hidden.
+    if (videoRef.current && window.matchMedia("(min-width: 768px)").matches)
+      videoRef.current.poster = "/hero-reel-poster.jpg";
     // React sets `muted` as a property only; make sure autoplay policies see it.
     if (videoRef.current) videoRef.current.defaultMuted = videoRef.current.muted = true;
     const io = new IntersectionObserver(([entry]) => {
@@ -77,7 +81,6 @@ export default function HeroReel({ reelUrl, label, watchLabel, soundOnLabel, sou
         <video
           ref={videoRef}
           src={src}
-          poster="/hero-reel-poster.jpg"
           width={540}
           height={960}
           muted
