@@ -229,16 +229,11 @@ export default function HomeContent({ services }: HomeContentProps) {
     <>
       <main className="flex-1">
         {/* WALLPAPER WRAPPER ------------------------------------------------
-            Shared blurred backdrop for the entire page above the footer.
+            Shared solid black backdrop for the entire page above the footer.
             Every section below keeps its band-color wash, just made
-            translucent so the wallpaper reads through underneath. */}
+            translucent so the black reads through underneath. */}
         <div className="relative isolate overflow-hidden">
-          <div
-            aria-hidden="true"
-            className="fixed inset-0 -z-20 bg-[length:auto_90%] bg-center bg-no-repeat blur-sm md:bg-cover"
-            style={{ backgroundImage: "url('/wallpaper.webp')" }}
-          />
-          <div aria-hidden="true" className="absolute inset-0 -z-10 bg-base/5" />
+          <div aria-hidden="true" className="fixed inset-0 -z-20 bg-black" />
 
         {/* HERO ------------------------------------------------------------ */}
         <section className="relative isolate overflow-hidden">
