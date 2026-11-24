@@ -28,6 +28,11 @@ export interface BookingText {
   requiredNote: string;
   consent: string;
   farNotice: string; // {miles} placeholder
+  addressHint: string;
+  addressChecking: string;
+  addressVerified: string;
+  addressNotFound: string;
+  addressSuggestions: string;
   showTimes: string;
   refreshTimes: string;
   findingSlots: string;
@@ -85,6 +90,12 @@ export const BOOKING_TEXT: Record<Lang, BookingText> = {
       "By requesting an appointment, you agree to let Dallas Detailz contact you by phone call, text message, or email about your request, scheduling, and service. Message and data rates may apply; reply STOP to opt out of texts. Submitting a request does not guarantee an appointment, which is only confirmed once we confirm it with you. You confirm the information you provided is accurate.",
     farNotice:
       "This address is about {miles} miles from our home base (ZIP 75249), past our usual 10-mile range. You can still send your request, and we'll let you know if we can make it out there.",
+    addressHint: "Start typing your street address and pick it from the list.",
+    addressChecking: "Checking address…",
+    addressVerified: "Address found",
+    addressNotFound:
+      "We couldn't find that address. Enter the full street address (number, street, city and ZIP) or pick one from the suggestions.",
+    addressSuggestions: "Address suggestions",
     showTimes: "Show open times",
     refreshTimes: "Refresh times",
     findingSlots: "Finding open slots…",
@@ -141,6 +152,12 @@ export const BOOKING_TEXT: Record<Lang, BookingText> = {
       "Al solicitar una cita, aceptas que Dallas Detailz te contacte por llamada, mensaje de texto o correo electrónico sobre tu solicitud, la programación y el servicio. Pueden aplicar tarifas de mensajes y datos; responde STOP para dejar de recibir mensajes de texto. Enviar una solicitud no garantiza una cita, que solo queda confirmada cuando la confirmemos contigo. Confirmas que la información que proporcionaste es correcta.",
     farNotice:
       "Esta dirección está a unas {miles} millas de nuestra base (código postal 75249), más allá de nuestro rango habitual de 10 millas. Aún puedes enviar tu solicitud y te avisaremos si podemos llegar hasta allá.",
+    addressHint: "Empieza a escribir tu dirección y elígela de la lista.",
+    addressChecking: "Verificando dirección…",
+    addressVerified: "Dirección encontrada",
+    addressNotFound:
+      "No pudimos encontrar esa dirección. Escribe la dirección completa (número, calle, ciudad y código postal) o elige una de las sugerencias.",
+    addressSuggestions: "Sugerencias de dirección",
     showTimes: "Ver horarios disponibles",
     refreshTimes: "Actualizar horarios",
     findingSlots: "Buscando horarios disponibles…",

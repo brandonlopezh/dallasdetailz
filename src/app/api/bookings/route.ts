@@ -8,7 +8,8 @@ import { isSupabaseConfigured, supabaseAdmin } from "@/lib/supabase/server";
 import { sendSms } from "@/lib/sms";
 import { escapeHtml, sendEmail } from "@/lib/email";
 import { getNotifyEmails } from "@/lib/notify-emails";
-import { NEAR_RADIUS_MI, locateAddress } from "@/lib/distance";
+import { NEAR_RADIUS_MI, lookupAddress } from "@/lib/distance";
+import { looksLikeStreetAddress } from "@/lib/address";
 import type { VehicleTier } from "@/lib/types";
 import { verifyTurnstile } from "@/lib/turnstile";
 
@@ -17,7 +18,8 @@ const bodySchema = z.object({
   tier: z.enum(["sedan", "mid_suv", "large_suv", "xl"]),
   addonIds: z.array(z.string()).default([]),
   slotStart: z.string().datetime(), // ISO, must be a returned open slot
-  address: z.string().min(4),
+  // Must be a real street address (number + street); verified by geocoder below.
+  address: z.string().trim().min(4).max(200).refine(looksLikeStreetAddress),
   lat: z.number().optional(),
   lng: z.number().optional(),
   distanceMi: z.number().optional(), // from Distance Matrix, drives travel fee
@@ -48,6 +50,9 @@ const bodySchema = z.object({
     .enum(["web", "instagram", "phone", "manual", "referral"])
     .default("web"),
 });
+
+const BAD_ADDRESS_MESSAGE =
+  "We couldn't find that address. Please enter the full street address (number, street, city and ZIP), or pick one from the suggestions.";
 
 function travelFeeFor(
   distanceMi: number | undefined,
@@ -111,6 +116,12 @@ export async function POST(req: NextRequest) {
   const json = await req.json().catch(() => null);
   const parsed = bodySchema.safeParse(json);
   if (!parsed.success) {
+    if (parsed.error.flatten().fieldErrors.address) {
+      return NextResponse.json(
+        { error: BAD_ADDRESS_MESSAGE, code: "bad_address" },
+        { status: 422 },
+      );
+    }
     return NextResponse.json(
       { error: "Invalid booking", details: parsed.error.flatten() },
       { status: 400 },
@@ -176,11 +187,22 @@ export async function POST(req: NextRequest) {
 
   // Three independent lookups, run together: is the time still open, where is
   // the address (never trusted from the browser), and do we know this number.
-  const [openDays, located, existing] = await Promise.all([
+  const [openDays, lookup, existing] = await Promise.all([
     getOpenDays(durationMin, settings),
-    locateAddress(b.address),
+    lookupAddress(b.address),
     findCustomerByPhone(sb, phone),
   ]);
+
+  // A request needs an address we can actually drive to. Only a definite
+  // "no such address" is refused; if the lookup services are down we let it
+  // through (it's flagged for the operator below) rather than lose a customer.
+  if (lookup.status === "not_found") {
+    return NextResponse.json(
+      { error: BAD_ADDRESS_MESSAGE, code: "bad_address" },
+      { status: 422 },
+    );
+  }
+  const located = lookup.status === "found" ? lookup : null;
 
   if (!isOpenSlot(openDays, b.slotStart)) {
     return NextResponse.json(

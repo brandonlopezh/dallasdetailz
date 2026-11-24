@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import type { Service } from "@/lib/types";
 import type { DaySlots } from "@/lib/availability";
 import { BOOKING_TEXT } from "@/lib/booking-translations";
 import { phoneDigits } from "@/lib/phone";
+import { looksLikeStreetAddress, type AddressStatus } from "@/lib/address";
 import { useLanguage } from "./LanguageProvider";
 import TurnstileWidget, { TURNSTILE_ON } from "./TurnstileWidget";
 
@@ -339,26 +340,91 @@ function StepWhere({
   onNext: () => void;
 }) {
   const b = useBookingText();
-  // Soft check only: once typing pauses, see how far the address is from
-  // 75249 and warn (never block) past 10 miles. The result is keyed by the
-  // address it was computed for, so a stale answer never shows.
-  const [lookup, setLookup] = useState<{ address: string; far: boolean; miles: number | null } | null>(null);
+  // Verify the address is real: once typing pauses, ask the server whether it
+  // exists and how far it is from 75249. A made-up or incomplete address (a
+  // bare ZIP, say) blocks Continue; being far away only warns. If the lookup
+  // services are down the status is "unverified" and we let it through. The
+  // result is keyed by the address it was computed for, so a stale answer
+  // never shows.
+  const [lookup, setLookup] = useState<{
+    address: string;
+    status: AddressStatus;
+    far: boolean;
+    miles: number | null;
+  } | null>(null);
+  const [touched, setTouched] = useState(false);
+  // Picking a suggestion verifies right away instead of waiting for a pause.
+  const pickedRef = useRef(false);
   useEffect(() => {
     const address = draft.address.trim();
-    if (address.length < 8) return;
+    if (!looksLikeStreetAddress(address)) return;
     const ctrl = new AbortController();
+    const delay = pickedRef.current ? 0 : 600;
+    pickedRef.current = false;
     const timer = setTimeout(() => {
       fetch(`/api/distance?${new URLSearchParams({ address })}`, { signal: ctrl.signal })
         .then((r) => r.json())
-        .then((d) => setLookup({ address: draft.address, far: !!d.far, miles: d.distanceMi ?? null }))
-        .catch(() => {});
-    }, 800);
+        .then((d) =>
+          setLookup({
+            address: draft.address,
+            status: d.status === "found" || d.status === "not_found" ? d.status : "unverified",
+            far: !!d.far,
+            miles: d.distanceMi ?? null,
+          }),
+        )
+        // Couldn't even reach our own server: don't trap the customer here,
+        // the booking request is checked again server-side anyway.
+        .catch((e) => {
+          if (e?.name !== "AbortError") {
+            setLookup({ address: draft.address, status: "unverified", far: false, miles: null });
+          }
+        });
+    }, delay);
     return () => {
       clearTimeout(timer);
       ctrl.abort();
     };
   }, [draft.address]);
-  const far = lookup?.address === draft.address && lookup.far ? lookup : null;
+  const current = lookup?.address === draft.address ? lookup : null;
+  const far = current?.far ? current : null;
+  const wellFormed = looksLikeStreetAddress(draft.address);
+  const checking = wellFormed && !current;
+  const verified = current?.status === "found";
+  const addressNotFound =
+    current?.status === "not_found" || (touched && draft.address.trim() !== "" && !wellFormed);
+  const addressOk = wellFormed && !!current && current.status !== "not_found";
+
+  // Autocomplete suggestions (street addresses only, biased to Dallas).
+  const listId = useId();
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(-1);
+  useEffect(() => {
+    const q = draft.address.trim();
+    if (!open || q.length < 5) return;
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => {
+      fetch(`/api/address-suggest?${new URLSearchParams({ q })}`, { signal: ctrl.signal })
+        .then((r) => r.json())
+        .then((d) => {
+          setSuggestions(Array.isArray(d.suggestions) ? d.suggestions : []);
+          setActive(-1);
+        })
+        .catch(() => {});
+    }, 250);
+    return () => {
+      clearTimeout(timer);
+      ctrl.abort();
+    };
+  }, [draft.address, open]);
+  const showList = open && draft.address.trim().length >= 5 && suggestions.length > 0;
+  const pick = (label: string) => {
+    pickedRef.current = true;
+    set({ address: label });
+    setSuggestions([]);
+    setOpen(false);
+    setActive(-1);
+  };
   return (
     <section className="pb-4">
       <h1 className="font-[family-name:var(--font-display)] text-2xl font-extrabold">
@@ -369,16 +435,87 @@ function StepWhere({
       <label htmlFor="bf-address" className="mt-5 block text-sm font-semibold">
         {b.addressLabel}
       </label>
-      <input
-        id="bf-address"
-        autoComplete="street-address"
-        className="input mt-1 w-full"
-        placeholder={b.addressPlaceholder}
-        value={draft.address}
-        onChange={(e) => set({ address: e.target.value })}
-      />
+      <div className="relative">
+        <input
+          id="bf-address"
+          role="combobox"
+          aria-expanded={showList}
+          aria-controls={listId}
+          aria-autocomplete="list"
+          aria-describedby="bf-address-help"
+          aria-invalid={addressNotFound}
+          aria-activedescendant={showList && active >= 0 ? `${listId}-${active}` : undefined}
+          autoComplete="off"
+          autoCorrect="off"
+          className="input mt-1 w-full"
+          placeholder={b.addressPlaceholder}
+          value={draft.address}
+          onChange={(e) => {
+            set({ address: e.target.value });
+            setOpen(true);
+          }}
+          onFocus={() => setOpen(true)}
+          onBlur={() => {
+            setTouched(true);
+            // Delay so a tap on a suggestion lands before the list closes.
+            setTimeout(() => setOpen(false), 150);
+          }}
+          onKeyDown={(e) => {
+            if (!showList) return;
+            if (e.key === "ArrowDown") {
+              e.preventDefault();
+              setActive((i) => (i + 1) % suggestions.length);
+            } else if (e.key === "ArrowUp") {
+              e.preventDefault();
+              setActive((i) => (i <= 0 ? suggestions.length - 1 : i - 1));
+            } else if (e.key === "Enter" && active >= 0) {
+              e.preventDefault();
+              pick(suggestions[active]);
+            } else if (e.key === "Escape") {
+              setOpen(false);
+            }
+          }}
+        />
+        {showList && (
+          <ul
+            id={listId}
+            role="listbox"
+            aria-label={b.addressSuggestions}
+            className="absolute inset-x-0 z-20 mt-1 max-h-64 overflow-auto rounded-[var(--radius-md)] border border-[var(--color-control)] bg-surface shadow-lg"
+          >
+            {suggestions.map((s, i) => (
+              <li
+                key={s}
+                id={`${listId}-${i}`}
+                role="option"
+                aria-selected={i === active}
+                // mousedown (not click) so it fires before the input's blur.
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  pick(s);
+                }}
+                className={`cursor-pointer px-3 py-3 text-sm ${i === active ? "bg-link/10" : ""}`}
+              >
+                {s}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <p id="bf-address-help" className="mt-1 text-xs text-muted">
+        {b.addressHint}
+      </p>
 
       <div role="status" aria-live="polite">
+        {addressNotFound ? (
+          <p className="mt-3 rounded-[var(--radius-md)] border border-danger/50 bg-danger/10 p-3 text-sm text-danger-text">
+            {b.addressNotFound}
+          </p>
+        ) : checking ? (
+          <p className="mt-2 text-sm text-muted">{b.addressChecking}</p>
+        ) : verified ? (
+          <p className="mt-2 text-sm font-semibold text-success-text">✓ {b.addressVerified}</p>
+        ) : null}
         {far && (
           <p className="mt-3 rounded-[var(--radius-md)] border border-warning/40 bg-warning/10 p-3 text-sm">
             {b.farNotice.replace("{miles}", String(Math.round(far.miles ?? 0)))}
@@ -459,7 +596,7 @@ function StepWhere({
         <BackBtn onClick={onBack} />
         <PrimaryBtn
           onClick={onNext}
-          disabled={draft.address.length < 4 || !vehicleComplete(draft) || !draft.accessConfirmed}
+          disabled={!addressOk || !vehicleComplete(draft) || !draft.accessConfirmed}
         >
           {b.next}
         </PrimaryBtn>
