@@ -70,7 +70,7 @@ export default function HeroReel({ reelUrl, label, watchLabel, soundOnLabel, sou
   return (
     <div
       ref={wrapRef}
-      className="relative mx-auto w-[min(300px,80vw)] rounded-[3rem] md:w-[320px] bg-[#0a0a0a] lg:w-[360px] p-3 shadow-2xl shadow-black/70 ring-1 ring-white/10"
+      className="relative mx-auto w-[min(300px,80vw)] rounded-[3rem] md:w-[220px] bg-[#0a0a0a] lg:w-[250px] p-3 shadow-2xl shadow-black/70 ring-1 ring-white/10"
     >
       {/* Side buttons */}
       <span aria-hidden="true" className="absolute -left-[3px] top-28 h-8 w-[3px] rounded-l bg-[#1c1c1c]" />

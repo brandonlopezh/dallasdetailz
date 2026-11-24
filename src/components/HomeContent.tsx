@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useBookingModal } from "./BookingModal";
 import BookNowLink from "./BookNowLink";
-import GoFundMeEmbed from "./GoFundMeEmbed";
+import CarWashPattern from "./CarWashPattern";
 import InstagramFeed from "./InstagramFeed";
 import Faq from "./Faq";
 import HeroReel from "./HeroReel";
@@ -24,9 +24,6 @@ function money(n: number) {
 interface HomeContentProps {
   services: Service[];
 }
-
-const GOFUNDME_EMBED_URL =
-  "https://www.gofundme.com/f/support-ramon-through-surgery-and-recovery/widget/large?attribution_id=sl%3A0e3ba1f6-bb55-464a-845a-5fb8f9b4db63";
 
 export default function HomeContent({ services }: HomeContentProps) {
   const { lang, t, contact, serviceTranslations, parts } = useLanguage();
@@ -186,21 +183,6 @@ export default function HomeContent({ services }: HomeContentProps) {
     ),
     faq: (
       <>
-        {/* GoFundMe widget: its own shaded band above the FAQ. Full width
-            on phones, a narrow centered card on larger screens. */}
-        <section className="border-t border-border bg-band-3/70">
-          <div className="mx-auto w-[90%] max-w-6xl sm:w-auto px-4 py-12 sm:px-6">
-            <div className="mx-auto mb-6 max-w-xl text-center">
-              <h2 className="font-[family-name:var(--font-display)] text-2xl font-extrabold uppercase tracking-tight sm:text-3xl">
-                {t.fundraiser.heading}
-              </h2>
-              <p className="mt-3 text-muted">{t.fundraiser.body}</p>
-            </div>
-            <div className="mx-auto w-full overflow-hidden rounded-[var(--radius-lg)] border border-border bg-surface p-3 sm:max-w-xs">
-              <GoFundMeEmbed url={GOFUNDME_EMBED_URL} title="Support Ramon through surgery and recovery" />
-            </div>
-          </div>
-        </section>
         <section className="bg-band-2/70">
           <div className="mx-auto w-[90%] max-w-6xl sm:w-auto px-4 py-16 sm:px-6">
             <h2 className="mb-8 text-center font-[family-name:var(--font-display)] text-3xl font-extrabold uppercase tracking-tight">
@@ -229,11 +211,18 @@ export default function HomeContent({ services }: HomeContentProps) {
     <>
       <main className="flex-1">
         {/* WALLPAPER WRAPPER ------------------------------------------------
-            Shared solid black backdrop for the entire page above the footer.
-            Every section below keeps its band-color wash, just made
-            translucent so the black reads through underneath. */}
+            Shared blurred backdrop for the entire page above the footer, with
+            small car-wash icons scattered over it. Every section below keeps
+            its band-color wash, just made translucent so the wallpaper and
+            icons read through underneath. */}
         <div className="relative isolate overflow-hidden">
-          <div aria-hidden="true" className="fixed inset-0 -z-20 bg-black" />
+          <div
+            aria-hidden="true"
+            className="fixed inset-0 -z-20 bg-black bg-[length:auto_90%] bg-center bg-no-repeat blur-sm brightness-[0.28] md:bg-cover"
+            style={{ backgroundImage: "url('/wallpaper.webp')" }}
+          />
+          <CarWashPattern />
+          <div aria-hidden="true" className="absolute inset-0 -z-10 bg-base/5" />
 
         {/* HERO ------------------------------------------------------------ */}
         <section className="relative isolate overflow-hidden">
@@ -241,7 +230,7 @@ export default function HomeContent({ services }: HomeContentProps) {
               right side less so the wallpaper still reads on wide screens. */}
           <div className="absolute inset-0 -z-10 bg-gradient-to-t from-base/60 via-base/25 to-transparent" />
 
-          <div className="relative mx-auto grid w-[90%] max-w-6xl sm:w-auto items-center gap-12 px-4 pb-16 pt-16 sm:px-6 md:min-h-[600px] md:grid-cols-[1.25fr_0.75fr] lg:pb-20">
+          <div className="relative mx-auto grid w-[90%] max-w-6xl sm:w-auto items-center gap-12 px-4 pb-16 pt-16 sm:px-6 md:min-h-[600px] md:grid-cols-[minmax(0,42rem)_auto] md:justify-center md:gap-10 lg:gap-16 lg:pb-20">
             {/* Copy column — centered on phones (where it leads the page),
                 left-aligned from md up so the eye runs headline → checklist
                 → summary → CTA down one edge beside the reel. */}
@@ -249,7 +238,37 @@ export default function HomeContent({ services }: HomeContentProps) {
               {/* Two-line title: white line on top, blue accent line below. */}
               <h1 className="animate-fade-up flex flex-col font-[family-name:var(--font-display)] text-[clamp(2.25rem,11.5vw,3.75rem)] uppercase leading-[0.95] tracking-[-0.02em] sm:text-6xl lg:text-7xl">
                 <span className="whitespace-nowrap font-[family-name:var(--font-script)] normal-case tracking-normal text-ink [text-shadow:0_0_6px_rgb(255_255_255/0.7),0_0_14px_rgb(96_165_250/0.8)] max-md:[text-shadow:0_2px_4px_rgb(0_0_0/0.9),0_0_14px_rgb(0_0_0/0.8)]">{t.hero.title}</span>
-                <span className="mt-3 whitespace-nowrap text-[6.4vw] md:mt-1 text-link md:text-[0.7em] max-md:text-left max-md:[text-shadow:0_2px_4px_rgb(0_0_0/0.9),0_0_14px_rgb(0_0_0/0.8)]">{t.hero.titleAccent}</span>
+                {/* Small, wide-spaced tagline. From md up it starts under the first
+                    real word of the title ("A Showroom Shine" → under the S): an
+                    invisible copy of a leading article ("A ") in the title's own
+                    font sets the indent, so it stays aligned if the headline is
+                    edited. No indent when the title has no leading article. */}
+                <span className="mt-1 flex items-baseline whitespace-nowrap text-link md:-mt-3 lg:-mt-4 max-md:text-left max-md:[text-shadow:0_2px_4px_rgb(0_0_0/0.9),0_0_14px_rgb(0_0_0/0.8)]">
+                  {/^\S{1,2}\s/.test(t.hero.title) && (
+                    <span
+                      aria-hidden="true"
+                      className="invisible hidden font-[family-name:var(--font-script)] normal-case tracking-normal md:inline"
+                    >
+                      {t.hero.title.split(" ")[0]}&nbsp;
+                    </span>
+                  )}
+                  <span className="relative text-[5.4vw] tracking-[0.06em] [word-spacing:-0.12em] sm:text-2xl md:text-[0.36em] md:tracking-[0.1em]">
+                    {t.hero.titleAccent}
+                    {/* Sparkles sit on top of the end of the tagline and reach up
+                        toward the title, overlapping both, with a soft blue glow. */}
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute -right-11 -top-5 hidden items-start gap-0.5 text-sky-200 md:flex lg:-right-16 lg:-top-7 [filter:drop-shadow(0_0_4px_rgb(56_189_248/0.95))_drop-shadow(0_0_10px_rgb(59_130_246/0.8))]"
+                    >
+                      <svg viewBox="0 0 24 24" className="mt-2 h-7 w-7 lg:h-9 lg:w-9" fill="currentColor">
+                        <path d="M12 1l2.6 8.4L23 12l-8.4 2.6L12 23l-2.6-8.4L1 12l8.4-2.6z" />
+                      </svg>
+                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 lg:h-4 lg:w-4" fill="currentColor">
+                        <path d="M12 1l2.6 8.4L23 12l-8.4 2.6L12 23l-2.6-8.4L1 12l8.4-2.6z" />
+                      </svg>
+                    </span>
+                  </span>
+                </span>
               </h1>
 
               <h2 className="animate-fade-up mx-auto mt-6 max-w-xl text-pretty text-base italic leading-relaxed text-ink sm:text-lg md:mx-0 max-md:[text-shadow:0_2px_4px_rgb(0_0_0/0.9),0_0_14px_rgb(0_0_0/0.8)] [animation-delay:80ms]">
@@ -323,7 +342,7 @@ export default function HomeContent({ services }: HomeContentProps) {
                 customers already watch it. Sits right of the copy on wider
                 screens; hidden on phones, where it only pushed the headline
                 and CTAs down. */}
-            <div className="animate-fade-up relative order-first mx-auto hidden md:order-none md:mx-0 md:block md:mt-16 md:justify-self-start lg:-ml-6 lg:mt-24 [animation-delay:200ms]">
+            <div className="animate-fade-up relative order-first mx-auto hidden md:order-none md:mx-0 md:block md:mt-20 md:-ml-8 md:justify-self-start lg:-ml-20 lg:mt-28 [animation-delay:200ms]">
               <div aria-hidden="true" className="absolute -inset-8 -z-10 rounded-full bg-accent/25 blur-3xl" />
               <HeroReel
                 reelUrl={parts.heroReelUrl}
