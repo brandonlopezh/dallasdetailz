@@ -280,7 +280,12 @@ export default function HomeContent({ services }: HomeContentProps) {
       <section className="border-t border-border bg-band-4/70">
         <div className="mx-auto w-[90%] max-w-6xl sm:w-auto px-4 py-20 text-center sm:px-6">
           <h2 className="font-[family-name:var(--font-display)] text-4xl font-extrabold uppercase tracking-tight sm:text-5xl">
-            {t.finalCta.heading}
+            {t.finalCta.heading.split("\n").map((line, i) => (
+              <Fragment key={i}>
+                {i > 0 && <br />}
+                {line}
+              </Fragment>
+            ))}
           </h2>
           <BookNowLink className="tap mt-8 inline-flex items-center rounded-[var(--radius-md)] bg-accent px-8 text-lg font-bold text-white transition-colors hover:bg-accent-hi">
             {t.common.bookNow}

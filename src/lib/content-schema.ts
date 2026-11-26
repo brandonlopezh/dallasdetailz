@@ -56,7 +56,7 @@ export const TEXT_GROUPS: FieldGroup[] = [
   {
     title: "Bottom of page",
     fields: [
-      { path: "finalCta.heading", label: "Closing headline", kind: "text" },
+      { path: "finalCta.heading", label: "Closing headline", kind: "textarea", help: "Press Enter for a line break." },
       { path: "footer.tagline", label: "Footer tagline", kind: "text" },
     ],
   },

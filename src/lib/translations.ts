@@ -135,7 +135,7 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
         },
       ],
     },
-    finalCta: { heading: "Ready for that new-car feeling?" },
+    finalCta: { heading: "Ready for that\nnew-car feeling?" },
     footer: {
       tagline: "Mobile detailing DFW",
       call: "Call",
@@ -239,7 +239,7 @@ export const TRANSLATIONS: Record<Lang, Translations> = {
         },
       ],
     },
-    finalCta: { heading: "¿Listo para esa sensación de auto nuevo?" },
+    finalCta: { heading: "¿Listo para esa\nsensación de auto nuevo?" },
     footer: {
       tagline: "Detailing móvil en DFW",
       call: "Llamar",
