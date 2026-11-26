@@ -88,32 +88,30 @@ function rng(seed: number) {
   };
 }
 
-// Icons live only in the margins either side of the page's 72rem content
-// column, so they surround the text instead of sitting behind it. --g is the
-// free margin width on one side (the wide-screen gutter, or the 5vw edge on
-// phones, minus a little breathing room); each icon is capped at a fraction of
-// it, so on narrow screens the icons shrink and finally disappear rather than
-// run under the text.
-const PER_SIDE = 11;
+// Icons are spread over the whole backdrop. Text stays readable because the
+// hero copy sits on a soft dark glow (see HomeContent) and every other
+// section already has a translucent band over this layer.
+const COLS = 7;
+const ROWS = 8;
 const rand = rng(20261124);
-const PLACED = (["left", "right"] as const).flatMap((side, sideIdx) =>
-  Array.from({ length: PER_SIDE }, (_, i) => ({
-    side,
-    icon: ORDER[(i * 3 + sideIdx * 4) % ORDER.length],
-    // Jittered rows: even vertical coverage, never stacked on each other.
-    top: ((i + 0.1 + rand() * 0.8) / PER_SIDE) * 100,
-    // Where inside the margin (0 = page edge, 1 = against the text column).
-    across: 0.05 + rand() * 0.9,
-    size: 28 + Math.round(rand() * 18),
+const PLACED = Array.from({ length: COLS * ROWS }, (_, i) => {
+  const col = i % COLS;
+  const row = Math.floor(i / COLS);
+  // Jittered grid: even coverage, no two icons stacked on each other.
+  return {
+    icon: ORDER[(i * 3 + row) % ORDER.length],
+    left: ((col + 0.1 + rand() * 0.8) / COLS) * 100,
+    top: ((row + 0.1 + rand() * 0.8) / ROWS) * 100,
+    size: 26 + Math.round(rand() * 18),
     rotate: Math.round(rand() * 60 - 30),
-  })),
-);
+  };
+});
 
 export default function CarWashPattern() {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 -z-20 overflow-hidden text-sky-300/80 [--g:calc(max(0px,(100vw-72rem)/2)+0.75rem)] max-sm:[--g:calc(5vw+0.75rem)]"
+      className="pointer-events-none fixed inset-0 -z-20 overflow-hidden text-sky-300/70"
       // One blue neon glow for the whole layer (cheaper than a filter per icon).
       style={{
         filter:
@@ -130,16 +128,14 @@ export default function CarWashPattern() {
           strokeLinecap="round"
           strokeLinejoin="round"
           className="absolute"
-          style={
-            {
-              "--w": `min(${p.size}px, calc(var(--g) * 0.7))`,
-              width: "var(--w)",
-              height: "var(--w)",
-              top: `${p.top}%`,
-              [p.side]: `calc((var(--g) - var(--w)) * ${p.across.toFixed(3)})`,
-              transform: `rotate(${p.rotate}deg)`,
-            } as React.CSSProperties
-          }
+          style={{
+            // Smaller on phones so they don't crowd a narrow screen.
+            width: `min(${p.size}px, 9vw)`,
+            height: `min(${p.size}px, 9vw)`,
+            left: `${p.left}%`,
+            top: `${p.top}%`,
+            transform: `rotate(${p.rotate}deg)`,
+          }}
         >
           {ICONS[p.icon]}
         </svg>

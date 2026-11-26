@@ -17,6 +17,13 @@ import type { SectionId } from "@/lib/content-schema";
 import type { Service } from "@/lib/types";
 import { SERVICE_DETAILS, SERVICE_PITCH } from "@/lib/translations";
 
+// Fixed catalog ids of the two services the Full Detail package combines.
+const EXTERIOR_ID = "11111111-1111-1111-1111-111111111111";
+const INTERIOR_ID = "22222222-2222-2222-2222-222222222222";
+
+// Typical market price of a full detail, used in the Best Deal card's blurb.
+const FULL_DETAIL_VALUE = 120;
+
 function money(n: number) {
   return `$${Math.round(n)}`;
 }
@@ -25,10 +32,53 @@ interface HomeContentProps {
   services: Service[];
 }
 
+// The headline, with a glowing sparkle in place of the dot of the first "i" in
+// its last word ("A Showroom Shine" → the i in Shine). That letter is drawn as
+// a dotless "ı" (the script font has it) and a zero-width marker right before
+// it holds the star, so the star takes the dot's spot. The visual copy is
+// hidden from assistive tech; a plain-text copy keeps the real headline.
+function TitleWithSparkle({ title }: { title: string }) {
+  const at = title.indexOf("i", title.lastIndexOf(" ") + 1);
+  if (at === -1) return <>{title}</>;
+  return (
+    <>
+      <span className="sr-only">{title}</span>
+      <span aria-hidden="true">
+        {title.slice(0, at)}
+        <span className="relative">
+          <svg
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            className="pointer-events-none absolute left-[0.04em] top-[0.1em] h-[0.34em] w-[0.34em] text-sky-100 [filter:drop-shadow(0_0_3px_rgb(56_189_248))_drop-shadow(0_0_8px_rgb(59_130_246))]"
+          >
+            <path d="M12 1l2.6 8.4L23 12l-8.4 2.6L12 23l-2.6-8.4L1 12l8.4-2.6z" />
+          </svg>
+        </span>
+        {"\u0131"}
+        {title.slice(at + 1)}
+      </span>
+    </>
+  );
+}
+
 export default function HomeContent({ services }: HomeContentProps) {
   const { lang, t, contact, serviceTranslations, parts } = useLanguage();
   const { open: openBooking } = useBookingModal();
   const [detailsId, setDetailsId] = useState<string | null>(null);
+  // The Full Detail package is Exterior + Interior, so its popup lists both
+  // services' checklists under their own names.
+  const fullDetailGroups = (id: string) => {
+    if (services.find((x) => x.id === id)?.category !== "full") return undefined;
+    return [EXTERIOR_ID, INTERIOR_ID].flatMap((sid) => {
+      const items = SERVICE_DETAILS[sid]?.[lang];
+      if (!items) return [];
+      const name =
+        (lang === "es" ? serviceTranslations[sid]?.name : undefined) ??
+        services.find((x) => x.id === sid)?.name ??
+        "";
+      return [{ title: name, items }];
+    });
+  };
   const priceFrom = (s: Service) => Math.min(...s.pricing.map((p) => p.price));
   const lowestPrice = Math.min(...services.map(priceFrom));
   const textLabel = lang === "es" ? "Envíanos un mensaje" : "Text us";
@@ -58,6 +108,14 @@ export default function HomeContent({ services }: HomeContentProps) {
               const cut = text.indexOf(". ");
               const firstSentence = cut === -1 ? text : text.slice(0, cut + 1);
               const restSentences = cut === -1 ? "" : text.slice(cut + 2);
+              // Best Deal card only: frames the price against what a full detail
+              // typically costs. Skipped if our price ever reaches that value.
+              const valueLine =
+                isBestDeal && FULL_DETAIL_VALUE > priceFrom(s)
+                  ? lang === "es"
+                    ? `¡Un valor de ${money(FULL_DETAIL_VALUE)} por la mitad del precio!`
+                    : `A ${money(FULL_DETAIL_VALUE)} value for half the price!`
+                  : null;
               return (
                 <div
                   key={s.id}
@@ -86,12 +144,37 @@ export default function HomeContent({ services }: HomeContentProps) {
                       {name}
                     </h3>
                     <div className="mt-3 flex-1">
-                      <p className="text-sm leading-relaxed text-muted">
-                        {pitch ?? firstSentence}
-                        {!pitch && restSentences && (
-                          <span className="mt-2 block text-ink">{restSentences}</span>
-                        )}
-                      </p>
+                      {/* On the Best Deal card the first sentence ("Everything in
+                          Exterior + Interior.") becomes the link below the blurb
+                          instead of leading it, like "What's included +" elsewhere. */}
+                      {(() => {
+                        const asLink = isBestDeal && !pitch && !!firstSentence;
+                        const lead = asLink ? "" : (pitch ?? firstSentence);
+                        const rest = [!pitch && restSentences, valueLine].filter(Boolean).join(" ");
+                        return (
+                          <>
+                            {(lead || rest) && (
+                              <p className="text-sm italic leading-relaxed text-ink">
+                                {lead}
+                                {rest && (
+                                  <span className={`block text-ink ${lead ? "mt-2" : ""}`}>{rest}</span>
+                                )}
+                              </p>
+                            )}
+                            {asLink && (
+                              // Opens a popup listing the Exterior and Interior
+                              // services this package combines.
+                              <button
+                                type="button"
+                                onClick={() => setDetailsId(s.id)}
+                                className="mt-3 cursor-pointer text-left text-sm font-semibold text-link underline-offset-4 hover:underline"
+                              >
+                                {firstSentence.replace(/\.$/, "")} <span aria-hidden="true">+</span>
+                              </button>
+                            )}
+                          </>
+                        );
+                      })()}
                       {details && (
                         <button
                           type="button"
@@ -234,10 +317,13 @@ export default function HomeContent({ services }: HomeContentProps) {
             {/* Copy column — centered on phones (where it leads the page),
                 left-aligned from md up so the eye runs headline → checklist
                 → summary → CTA down one edge beside the reel. */}
-            <div className="flex min-w-0 flex-col items-center text-center md:items-start md:text-left">
+            <div className="relative isolate flex min-w-0 flex-col items-center text-center md:items-start md:text-left">
+              {/* Soft dark glow behind the copy so the icons can run behind it
+                  without hurting legibility; blurred, so there's no hard box. */}
+              <div aria-hidden="true" className="absolute -inset-x-6 -inset-y-8 -z-10 rounded-[2rem] bg-black/65 blur-2xl" />
               {/* Two-line title: white line on top, blue accent line below. */}
               <h1 className="animate-fade-up flex flex-col font-[family-name:var(--font-display)] text-[clamp(2.25rem,11.5vw,3.75rem)] uppercase leading-[0.95] tracking-[-0.02em] sm:text-6xl lg:text-7xl">
-                <span className="whitespace-nowrap font-[family-name:var(--font-script)] normal-case tracking-normal text-ink [text-shadow:0_0_6px_rgb(255_255_255/0.7),0_0_14px_rgb(96_165_250/0.8)] max-md:[text-shadow:0_2px_4px_rgb(0_0_0/0.9),0_0_14px_rgb(0_0_0/0.8)]">{t.hero.title}</span>
+                <span className="whitespace-nowrap font-[family-name:var(--font-script)] normal-case tracking-normal text-ink [text-shadow:0_0_6px_rgb(255_255_255/0.7),0_0_14px_rgb(96_165_250/0.8)] max-md:[text-shadow:0_2px_4px_rgb(0_0_0/0.9),0_0_14px_rgb(0_0_0/0.8)]"><TitleWithSparkle title={t.hero.title} /></span>
                 {/* Small, wide-spaced tagline. From md up it starts under the first
                     real word of the title ("A Showroom Shine" → under the S): an
                     invisible copy of a leading article ("A ") in the title's own
@@ -252,21 +338,8 @@ export default function HomeContent({ services }: HomeContentProps) {
                       {t.hero.title.split(" ")[0]}&nbsp;
                     </span>
                   )}
-                  <span className="relative text-[5.4vw] tracking-[0.06em] [word-spacing:-0.12em] sm:text-2xl md:text-[0.36em] md:tracking-[0.1em]">
+                  <span className="relative text-[5.4vw] tracking-[0.06em] sm:text-2xl md:text-[0.36em] md:tracking-[0.1em] md:[word-spacing:-0.12em]">
                     {t.hero.titleAccent}
-                    {/* Sparkles sit on top of the end of the tagline and reach up
-                        toward the title, overlapping both, with a soft blue glow. */}
-                    <span
-                      aria-hidden="true"
-                      className="pointer-events-none absolute -right-11 -top-5 hidden items-start gap-0.5 text-sky-200 md:flex lg:-right-16 lg:-top-7 [filter:drop-shadow(0_0_4px_rgb(56_189_248/0.95))_drop-shadow(0_0_10px_rgb(59_130_246/0.8))]"
-                    >
-                      <svg viewBox="0 0 24 24" className="mt-2 h-7 w-7 lg:h-9 lg:w-9" fill="currentColor">
-                        <path d="M12 1l2.6 8.4L23 12l-8.4 2.6L12 23l-2.6-8.4L1 12l8.4-2.6z" />
-                      </svg>
-                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 lg:h-4 lg:w-4" fill="currentColor">
-                        <path d="M12 1l2.6 8.4L23 12l-8.4 2.6L12 23l-2.6-8.4L1 12l8.4-2.6z" />
-                      </svg>
-                    </span>
                   </span>
                 </span>
               </h1>
@@ -397,7 +470,7 @@ export default function HomeContent({ services }: HomeContentProps) {
           <p className="text-xs text-muted">© {new Date().getFullYear()} Dallas Detailz</p>
         </div>
       </footer>
-      {detailsId && SERVICE_DETAILS[detailsId]?.[lang] && (
+      {detailsId && (SERVICE_DETAILS[detailsId]?.[lang] || fullDetailGroups(detailsId)) && (
         <ServiceDetailsDialog
           title={
             (lang === "es" ? serviceTranslations[detailsId]?.name : undefined) ??
@@ -405,7 +478,8 @@ export default function HomeContent({ services }: HomeContentProps) {
             ""
           }
           heading={t.services.included}
-          items={SERVICE_DETAILS[detailsId][lang]}
+          items={SERVICE_DETAILS[detailsId]?.[lang]}
+          groups={fullDetailGroups(detailsId)}
           closeLabel={t.services.close}
           onClose={() => setDetailsId(null)}
         />

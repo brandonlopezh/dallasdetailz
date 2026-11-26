@@ -8,12 +8,16 @@ export default function ServiceDetailsDialog({
   title,
   heading,
   items,
+  groups,
   closeLabel,
   onClose,
 }: {
   title: string;
   heading: string;
-  items: string[];
+  /** A single checklist. */
+  items?: string[];
+  /** Or several labeled checklists (e.g. a package made of other services). */
+  groups?: { title: string; items: string[] }[];
   closeLabel: string;
   onClose: () => void;
 }) {
@@ -56,14 +60,23 @@ export default function ServiceDetailsDialog({
             <span aria-hidden="true">✕</span>
           </button>
         </div>
-        <ul className="mt-4 flex flex-col gap-2 text-sm text-muted">
-          {items.map((item) => (
-            <li key={item} className="flex gap-2">
-              <span aria-hidden="true" className="text-link">✓</span>
-              {item}
-            </li>
-          ))}
-        </ul>
+        {(groups ?? [{ title: "", items: items ?? [] }]).map((g) => (
+          <div key={g.title} className="mt-4">
+            {g.title && (
+              <h3 className="font-[family-name:var(--font-display)] text-base font-bold text-ink">
+                {g.title}
+              </h3>
+            )}
+            <ul className="mt-2 flex flex-col gap-2 text-sm text-muted">
+              {g.items.map((item) => (
+                <li key={item} className="flex gap-2">
+                  <span aria-hidden="true" className="text-link">✓</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
     </div>
   );
